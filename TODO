@@ -1,0 +1,9 @@
+// Last updated on: Feb 10
+
+[ ] Complete face_rect(...)
+	- Returns a CvRect after detecting faces using Haar-like-features
+
+[ ] Complete process_img(...)
+	- Processes image
+
+[ ] Assemble training set
