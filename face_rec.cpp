@@ -27,8 +27,8 @@
 #include <cassert>
 #include <ctime>
 
-#include <cv>
-#include <highgui>
+#include <cv.h>
+#include <highgui.h>
 
 #define vi vector<int>
 #define v2di vector< vector<int> >
@@ -55,7 +55,7 @@ CvRect detectFace(IplImage* image, CvHaarClassifierCascade* cascade)
 		    | CV_HAAR_DO_ROUGH_SEARCH; // Terminate search when first candidate if found
 		    // | CV_HAAR_DO_CANNY_PRUNING; // Ignore flat regions
 	float searchScaleFactor = 1.1f; // Increase search window size by 10%
-	int minNeighbours = 3, // Minimum Neighbours. Prevent false positives by detecting faces with atleast 3 overlapping regions
+	int minNeighbours = 3; // Minimum Neighbours. Prevent false positives by detecting faces with atleast 3 overlapping regions
 	IplImage *detectImg;
 	IplImage *grayImg = 0;
 	CvMemStorage *storage;
@@ -90,15 +90,15 @@ CvRect detectFace(IplImage* image, CvHaarClassifierCascade* cascade)
 	rect = (nFaces > 0)? *(CvRect*)cvGetSeqElem(rects, 0) : cvRect(-1, -1, -1, -1);
 
 	if(grayImg)
-		cvReleaseImage(grayImg);
-	cvReleaseMemStorage(storage);
+		cvReleaseImage(&grayImg);
+	cvReleaseMemStorage(&storage);
 
-	return rc;
+	return rect;
 }
 
 void drawBox(IplImage* image, CvRect rect)
 {
-	static CvScalar white[] = {255, 255, 255};
+	static CvScalar white = {255, 255, 255};
 	cvRectangle(image,
 		    cvPoint(rect.x,rect.y),
 		    cvPoint(rect.x + rect.width, rect.y + rect.height),
@@ -133,7 +133,7 @@ int main(int argc, char** argv)
 	assert( capture != NULL );
 
 	IplImage* frame;
-	char faceCascadeFileName = "haarcascade_frontalface_default.xml";
+	char faceCascadeFileName[] = "haarcascade_frontalface_default.xml";
 	CvHaarClassifierCascade* faceCascade;
 	faceCascade = (CvHaarClassifierCascade*)cvLoad(faceCascadeFileName, 0, 0, 0);
 	assert(faceCascade != NULL);
@@ -143,7 +143,6 @@ int main(int argc, char** argv)
 		frame = cvQueryFrame(capture);
 		if( !frame )
 			break;
-		
 		CvRect faceRect = detectFace(frame, faceCascade);
 		drawBox(frame, faceRect);
 		cvShowImage("CA", frame);
