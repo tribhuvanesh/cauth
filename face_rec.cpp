@@ -1,4 +1,3 @@
-// spacemanspiff
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
@@ -29,6 +28,7 @@
 
 #include <cv.h>
 #include <highgui.h>
+//#include "face_rec.h"
 
 #define vi vector<int>
 #define v2di vector< vector<int> >
@@ -39,13 +39,82 @@
 #define ull unsigned long long int
 #define ll long long int
 
-#define DEBUG 0
+#define DEBUG 1
 #define FILEOP 0
 
 using namespace std;
 
-//map<string, string> cascadeFileMap;
-//map<string, int*> colourMap;
+// Global variables
+map<string, CvScalar> colourMap;
+map<string, string> cascadeFileMap;
+int faceHeight = 180;
+int faceWidth  = 180;
+
+// Initializes constants and static data
+void init()
+{
+	cascadeFileMap["default"] = "haarcascade_frontalface_default.xml";
+	cascadeFileMap["alt"] = "haarcascade_frontalface_alt.xml";
+	cascadeFileMap["alt2"] = "haarcascade_frontalface_alt2.xml";
+	cascadeFileMap["alt_tree"] = "haarcascade_frontalface_alt_tree.xml";
+
+	colourMap["white"] = cvScalar(255, 255, 255);
+	colourMap["red"]   = cvScalar(255, 0, 0);
+	colourMap["green"] = cvScalar(0, 255, 0);
+	colourMap["blue"]  = cvScalar(0, 0, 255);
+}
+
+
+// Return image of the face in the frame defined by faceRect
+IplImage* cropImage(IplImage* srcImage, CvRect faceRect)
+{
+	IplImage* tempImage;
+	IplImage* rgbImage;
+	CvSize size = cvSize(srcImage->width, srcImage->height);
+
+	// Assert if image is not a BGR, 8-bit per pixel image
+	assert(srcImage->depth == IPL_DEPTH_8U);
+
+	// Create tempImage and initially store the original contents
+	tempImage = cvCreateImage(size, IPL_DEPTH_8U, srcImage->nChannels);
+	cvCopy(srcImage, tempImage, NULL);
+
+	// Set region of interest as faceRect
+	cvSetImageROI(tempImage, faceRect);
+
+	// Copy the region of interest into rgbImage
+	size = cvSize(faceRect.width, faceRect.height);
+	rgbImage = cvCreateImage(size, IPL_DEPTH_8U, srcImage->nChannels);
+	cvCopy(tempImage, rgbImage, NULL);
+
+	cvReleaseImage(&tempImage);
+	return rgbImage;
+}
+
+
+IplImage* resizeImage(IplImage* srcImage, bool preserveAspectRatio = true,
+		      int newHeight = faceHeight, int newWidth = faceWidth)
+{
+	
+}
+
+
+
+IplImage* convertImageToGrayscale(IplImage* srcImage)
+{
+	IplImage* grayImage;
+	if(srcImage->nChannels > 1)
+	{
+		grayImage = cvCreateImage(cvGetSize(srcImage), IPL_DEPTH_8U, 1);
+		cvCvtColor(srcImage, grayImage, CV_BGR2GRAY);
+	}
+	else
+	{
+		grayImage = cvCloneImage(srcImage);
+	}
+	return grayImage;
+}
+
 
 // Return a CvRect bounding detected faces in the gray-scale converted image
 CvRect detectFace(IplImage* image, CvHaarClassifierCascade* cascade)
@@ -56,8 +125,8 @@ CvRect detectFace(IplImage* image, CvHaarClassifierCascade* cascade)
 		    // | CV_HAAR_DO_CANNY_PRUNING; // Ignore flat regions
 	float searchScaleFactor = 1.1f; // Increase search window size by 10%
 	int minNeighbours = 3; // Minimum Neighbours. Prevent false positives by detecting faces with atleast 3 overlapping regions
-	IplImage *detectImg;
-	IplImage *grayImg = 0;
+	IplImage *detectImage;
+	IplImage *grayImage = 0;
 	CvMemStorage *storage;
 	CvRect rect;
 	CvSeq* rects;
@@ -69,32 +138,33 @@ CvRect detectFace(IplImage* image, CvHaarClassifierCascade* cascade)
 	cvClearMemStorage(storage);
 
 	// If image is RGB, convert to grayscale
-	detectImg = (IplImage*)image;
-	if(image->nChannels > 1)
-	{
-		size = cvSize(image->width, image->height);
-		grayImg = cvCreateImage(size, IPL_DEPTH_8U, 1);
-		cvCvtColor(image, grayImg, CV_BGR2GRAY);
-		detectImg = grayImg;
-	}
+	detectImage = convertImageToGrayscale((IplImage*)image);
+	// if(image->nChannels > 1)
+	// {
+	// 	size = cvSize(image->width, image->height);
+	// 	grayImage = cvCreateImage(size, IPL_DEPTH_8U, 1);
+	// 	cvCvtColor(image, grayImage, CV_BGR2GRAY);
+	// 	detectImage = grayImage;
+	// }
 
 	// Detect all faces
-	rects = cvHaarDetectObjects(detectImg, cascade, storage, searchScaleFactor, minNeighbours,
+	rects = cvHaarDetectObjects(detectImage, cascade, storage, searchScaleFactor, minNeighbours,
 				    flags, minFaceSize);
 	nFaces = rects->total;
 
 #if DEBUG
-	printf("Detected %d faces", nFaces);
+	printf("Detected %d faces\n", nFaces);
 #endif
 	// Return first detected object, else return negative
 	rect = (nFaces > 0)? *(CvRect*)cvGetSeqElem(rects, 0) : cvRect(-1, -1, -1, -1);
 
-	if(grayImg)
-		cvReleaseImage(&grayImg);
+	if(grayImage)
+		cvReleaseImage(&grayImage);
 	cvReleaseMemStorage(&storage);
 
 	return rect;
 }
+
 
 void drawBox(IplImage* image, CvRect rect)
 {
@@ -102,8 +172,9 @@ void drawBox(IplImage* image, CvRect rect)
 	cvRectangle(image,
 		    cvPoint(rect.x,rect.y),
 		    cvPoint(rect.x + rect.width, rect.y + rect.height),
-		    white);
+		    colourMap["white"]);
 }
+
 
 int main(int argc, char** argv)
 {
@@ -118,9 +189,14 @@ int main(int argc, char** argv)
 		}
 	}
 #endif
-	
-	cvNamedWindow("CA", CV_WINDOW_AUTOSIZE);
+	IplImage* frame;
+	IplImage *faceImage = 0;
+	// char faceCascadeFileName[] = "haarcascade_frontalface_default.xml";
+	CvHaarClassifierCascade* faceCascade;
 	CvCapture* capture;
+
+	init();
+	cvNamedWindow("CA", CV_WINDOW_AUTOSIZE);
 
 	switch(argc)
 	{
@@ -132,19 +208,44 @@ int main(int argc, char** argv)
 	}
 	assert( capture != NULL );
 
-	IplImage* frame;
-	char faceCascadeFileName[] = "haarcascade_frontalface_default.xml";
-	CvHaarClassifierCascade* faceCascade;
-	faceCascade = (CvHaarClassifierCascade*)cvLoad(faceCascadeFileName, 0, 0, 0);
+#if DEBUG
+	cout<<"Cam dimensions: "<<cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH)<<" "<<cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT)<<endl;
+	//cout<<"FPS: "<<cvGetCaptureProperty(capture, CV_CAP_PROP_FPS);
+
+	// cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH, 500);
+	// cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, 500);
+
+	cout<<"Cam dimensions now set to: "<<cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH)<<" "<<cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT)<<endl;
+	//cout<<"FPS: "<<cvGetCaptureProperty(capture, CV_CAP_PROP_FPS);
+#endif
+
+	// Choose from default, alt, alt2 or alt_tree
+	faceCascade = (CvHaarClassifierCascade*)cvLoad(cascadeFileMap["default"].c_str(), 0, 0, 0);
 	assert(faceCascade != NULL);
 
 	while(true)
 	{
 		frame = cvQueryFrame(capture);
+		//frame = convertImageToGrayscale(frame);
 		if( !frame )
 			break;
+
 		CvRect faceRect = detectFace(frame, faceCascade);
 		drawBox(frame, faceRect);
+
+#if DEBUG
+		cout<<"Size of face: "<<faceRect.width<<" x "<<faceRect.height<<endl;
+#endif
+
+		if(faceRect.width > 0)
+		{
+			// 1. Get image content from faceRect
+			faceImage = cropImage(frame, faceRect);
+			// 2. Resize image to 180x180 pixels
+			resizedImage = resizeImage(faceImage, faceWidth, faceHeight);
+			equalizedImage = equalizeImage();
+		}
+
 		cvShowImage("CA", frame);
 
 		char c = cvWaitKey(33);
