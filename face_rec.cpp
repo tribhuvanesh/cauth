@@ -237,6 +237,7 @@ int main(int argc, char** argv)
 	IplImage* frame;
 	IplImage *faceImage = 0;
 	IplImage *resizedImage;
+	IplImage *equalizedImage;
 	// char faceCascadeFileName[] = "haarcascade_frontalface_default.xml";
 	CvHaarClassifierCascade* faceCascade;
 	CvCapture* capture;
@@ -290,16 +291,17 @@ int main(int argc, char** argv)
 			faceImage = cropImage(frame, faceRect);
 			// 2. Resize image to 180x180 pixels
 			resizedImage = resizeImage(faceImage, faceWidth, faceHeight);
-			//equalizedImage = equalizeImage();
+                        // 3. Convert to grayscale and equalize image
+                        equalizedImage = cvCreateImage(cvGetSize(resizedImage), 8, 1);
+			cvEqualizeHist(convertImageToGrayscale(resizedImage), equalizedImage);
 		}
 
 		cvShowImage("CA", frame);
-		cvShowImage("test", resizedImage);
+		cvShowImage("test", equalizedImage);
 
 		char c = cvWaitKey(33);
 		if( c == 27 )
 			break;
-
 	}
 
 	cvReleaseHaarClassifierCascade(&faceCascade);
