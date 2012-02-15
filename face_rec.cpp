@@ -95,7 +95,52 @@ IplImage* cropImage(IplImage* srcImage, CvRect faceRect)
 IplImage* resizeImage(IplImage* srcImage, bool preserveAspectRatio = true,
 		      int newHeight = faceHeight, int newWidth = faceWidth)
 {
-	
+	IplImage* outImage;
+        int origWidth;
+        int origHeight;
+        CvRect rect;
+        if(srcImage)
+        {
+            origWidth = srcImage->width;
+            origHeight = srcImage->height;
+        }
+        if(preserveAspectRatio)
+        {
+            float origAspectRatio = (float) origWidth / origHeight;
+            float newAspectRatio = (float) newWidth / newHeight;
+
+            if(origAspectRatio > newAspectRatio)
+            {
+                int wTemp = ( origHeight * newWidth ) / newHeight;
+                rect = cvRect((origWidth - wTemp)/2, 0, wTemp, origHeight); 
+            }
+            else
+            {
+                int hTemp = ( origWidth * newHeight ) / newWidth;
+                rect = cvRect(0, (origHeight - hTemp)/2, origWidth, hTemp); 
+            }
+            
+            IplImage* croppedImage = cropImage(srcImage, rect);
+            outImage = resizeImage(croppedImage, false);
+        }
+        else
+        {
+            outImage = cvCreateImage(cvSize(newWidth, newHeight), srcImage->depth,
+                                     srcImage->nChannels);
+            if((newWidth > srcImage->width) && (newHeight > srcImage->height))
+            {
+                cvResetImageROI((IplImage*)srcImage);
+                // To enlarge
+                cvResize(srcImage, outImage, CV_INTER_LINEAR);
+            }
+            else
+            {
+                cvResetImageROI((IplImage*)srcImage);
+                // To shrink
+                cvResize(srcImage, outImage, CV_INTER_AREA);
+            }
+        }
+        return outImage;
 }
 
 
@@ -191,12 +236,14 @@ int main(int argc, char** argv)
 #endif
 	IplImage* frame;
 	IplImage *faceImage = 0;
+	IplImage *resizedImage;
 	// char faceCascadeFileName[] = "haarcascade_frontalface_default.xml";
 	CvHaarClassifierCascade* faceCascade;
 	CvCapture* capture;
 
 	init();
 	cvNamedWindow("CA", CV_WINDOW_AUTOSIZE);
+	cvNamedWindow("test", CV_WINDOW_AUTOSIZE);
 
 	switch(argc)
 	{
@@ -243,10 +290,11 @@ int main(int argc, char** argv)
 			faceImage = cropImage(frame, faceRect);
 			// 2. Resize image to 180x180 pixels
 			resizedImage = resizeImage(faceImage, faceWidth, faceHeight);
-			equalizedImage = equalizeImage();
+			//equalizedImage = equalizeImage();
 		}
 
 		cvShowImage("CA", frame);
+		cvShowImage("test", resizedImage);
 
 		char c = cvWaitKey(33);
 		if( c == 27 )
@@ -257,6 +305,7 @@ int main(int argc, char** argv)
 	cvReleaseHaarClassifierCascade(&faceCascade);
 	cvReleaseCapture(&capture);
 	cvDestroyWindow("CA");
+	cvDestroyWindow("test");
 
 	return 0;
 }
