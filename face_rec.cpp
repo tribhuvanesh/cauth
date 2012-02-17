@@ -242,18 +242,50 @@ int main(int argc, char** argv)
 	CvHaarClassifierCascade* faceCascade;
 	CvCapture* capture;
 
+	int delay = 33;
+	bool runFlag = true;
+
 	init();
 	cvNamedWindow("CA", CV_WINDOW_AUTOSIZE);
 	cvNamedWindow("test", CV_WINDOW_AUTOSIZE);
 
-	switch(argc)
-	{
-		case 2: capture = cvCreateFileCapture( argv[1] );
-			break;
+	bool collectFlag = false;
+	int collectCount = 50;
+	int count = 0;
+	string prefix;
+	string extension = ".jpeg";
+	string filename;
+	stringstream sstm;
 
-		default: capture = cvCreateCameraCapture( -1 );
-			 break;
+	// switch(argc)
+	// {
+	// 	case 2: cout<<argv[1];
+	// 		if(argv[1] == "train")
+	// 		{
+	// 			capture = cvCreateFileCapture( argv[1] );
+	// 			cout<<"----- Data collection mode -----"<<endl;
+	// 			collectFlag = true;
+	// 		}
+	// 		break;
+
+	// 	default: capture = cvCreateCameraCapture( -1 );
+	// 		 break;
+	//
+	
+	if(argc == 2)
+	{
+		string cmd = argv[1];	
+		if(cmd == "train")
+		{
+			cout<<"----- Data collection mode -----"<<endl;
+			collectFlag = true;
+			delay = 100;
+			cout<<"Enter prefix: ";
+			cin>>prefix;
+		}
 	}
+
+	capture = cvCreateCameraCapture(-1);
 	assert( capture != NULL );
 
 #if DEBUG
@@ -271,7 +303,7 @@ int main(int argc, char** argv)
 	faceCascade = (CvHaarClassifierCascade*)cvLoad(cascadeFileMap["default"].c_str(), 0, 0, 0);
 	assert(faceCascade != NULL);
 
-	while(true)
+	while(runFlag)
 	{
 		frame = cvQueryFrame(capture);
 		//frame = convertImageToGrayscale(frame);
@@ -285,6 +317,8 @@ int main(int argc, char** argv)
 		cout<<"Size of face: "<<faceRect.width<<" x "<<faceRect.height<<endl;
 #endif
 
+		cvShowImage("CA", frame);
+
 		if(faceRect.width > 0)
 		{
 			// 1. Get image content from faceRect
@@ -294,12 +328,26 @@ int main(int argc, char** argv)
                         // 3. Convert to grayscale and equalize image
                         equalizedImage = cvCreateImage(cvGetSize(resizedImage), 8, 1);
 			cvEqualizeHist(convertImageToGrayscale(resizedImage), equalizedImage);
-		}
+			
+			cvShowImage("test", equalizedImage);
 
-		cvShowImage("CA", frame);
-		cvShowImage("test", equalizedImage);
+			if(collectFlag)
+			{
+				//sstm<<"./data/"<<prefix<<"-"<<++count<<extension;
+				//filename = sstm.str();
 
-		char c = cvWaitKey(33);
+				char numstr[20];
+				sprintf(numstr, "%d", ++count);
+				filename = "./data/" + prefix + "-" + numstr + extension;
+				cout<<"Saving "<<filename<<endl;
+				cvSaveImage(filename.c_str(), equalizedImage);
+				if(count > collectCount) runFlag = false;
+			}
+	}
+
+
+
+		char c = cvWaitKey(delay);
 		if( c == 27 )
 			break;
 	}
