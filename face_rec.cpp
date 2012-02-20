@@ -123,7 +123,42 @@ void learn()
 
 void doPCA()
 {
+	int i;
+	CvTermCriteria calcLimit;
+	CvSize faceImageSize;
 
+	// Set number of eigenvalues
+	nEigens = nTrainFaces - 1;
+
+	// Allocate the eigenvector images
+	faceImageSize.width = faceImageArr[0]->width;
+	faceImageSize.height = faceImageArr[0]->height;
+	eigenVectArr = (IplImage**)cvAlloc(sizeof(iplImage*) * nEigens);
+	for (i = 0; i < nEigens; i++)
+		eigenVectArr[i] = cvCreateImage(faceImageSize, IPL_DEPTH_32F, 1);
+	
+	// Allocate eigenvalue array
+	eigenValMat = cvCreateMat(1, nEigens, CV_32FC1);
+
+	// Allocate the averaged image
+	pAvgTrainImage = cvCreateImage(faceImageSize, IPL_DEPTH_32FC1);
+
+	// Set PCA termination criterion
+	calcLimit = cvTermCriteria(CV_TERMCRIT_ITER, nEigens, 1);
+
+	// Compute average image, eigenvalue and eigenvectors
+	cvCalcEigenObjects( nTrainFaces,            // No. of source objects
+			    (void*) faceImageArr,   // input array
+			    (void*) eigenVectArr,   // output array
+			    CV_EIGOBJ_NO_CALLBACK,  // flags
+			    0,                      // IO buffer size 
+			    0,			    // Pointer to DS containing data for callbacks
+			    &calcLimit,             // PCA termination criterion
+			    pAvgTrainImage,         // Averaged object
+			    eigenValMat->data.fl    // Pointer to the data values in eigenValMat
+			);
+	
+	cvNormalize(eigenValMat, eigenValMat, 1, 0, CV_L1, 0);
 }
 
 
@@ -164,6 +199,32 @@ void loadFaceImageArr(char* filename)
 	return nFaces;
 }
 
+void storeTrainingData()
+{
+	CvFileStorage* fileStorage;
+	int i;
+
+	// Create a file-storage interface
+	fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_WRITE);
+	
+	// Store all data
+	cvWriteInt(fileStorage, "nEigens", nEigens);
+	cvWriteInt(fileStorage, "nTrainFaces", nTrainFaces);
+	cvWrite(fileStorage, "trainPersonNumMat", personNumTruthMat, cvAttrList(0,0));
+	cvWrite(fileStorage, "eigenValMat", eigenValMat, cvAttrList(0,0));
+	cvWrite(fileStorage, "projectedTrainFaceMat", projectedTrainFaceMat, cvAttrList(0,0));
+	cvWrite(fileStorage, "avgTrainImg", pAvgTrainImg, cvAttrList(0,0));
+
+	for(i=0; i<nEigens; i++)
+	{
+		char varname[200];
+		snprintf( varname, sizeof(varname)-1, "eigenVect_%d", i );
+		cvWrite(fileStorage, varname, eigenVectArr[i], cvAttrList(0,0));
+	}
+
+	// Release the file-storage interface
+	cvReleaseFileStorage( &fileStorage );
+}
 
 
 // Return image of the face in the frame defined by faceRect
@@ -376,7 +437,6 @@ int main(int argc, char** argv)
 	if(argc == 2)
 	{
 		string cmd = argv[1];	
-<<<<<<< HEAD
 		if( (cmd == "--collect") || (cmd == "-c") )
 		{
 			cout<<"----- Data collection mode -----"<<endl;
@@ -390,7 +450,6 @@ int main(int argc, char** argv)
 			cout<<"Usage:"<<endl;
 			cout<<"face_rec [--collect | -c] || [--help | -h | -?]";
 		}
-=======
 		if(cmd == "train")
 		{
 			cout<<"----- Data collection mode -----"<<endl;
@@ -399,7 +458,6 @@ int main(int argc, char** argv)
 			cout<<"Enter prefix: ";
 			cin>>prefix;
 		}
->>>>>>> 0b4b09cd249ff2a535b68c7c4c85f4718dfa28c2
 	}
 
 	capture = cvCreateCameraCapture(-1);
@@ -460,17 +518,8 @@ int main(int argc, char** argv)
 				cvSaveImage(filename.c_str(), equalizedImage);
 				if(count > collectCount) runFlag = false;
 			}
-<<<<<<< HEAD
 		}
-
-
-
-=======
-	}
-
-
-
->>>>>>> 0b4b09cd249ff2a535b68c7c4c85f4718dfa28c2
+		
 		char c = cvWaitKey(delay);
 		if( c == 27 )
 			break;
