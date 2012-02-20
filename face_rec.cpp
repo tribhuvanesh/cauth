@@ -376,6 +376,7 @@ int main(int argc, char** argv)
 	if(argc == 2)
 	{
 		string cmd = argv[1];	
+<<<<<<< HEAD
 		if( (cmd == "--collect") || (cmd == "-c") )
 		{
 			cout<<"----- Data collection mode -----"<<endl;
@@ -389,6 +390,16 @@ int main(int argc, char** argv)
 			cout<<"Usage:"<<endl;
 			cout<<"face_rec [--collect | -c] || [--help | -h | -?]";
 		}
+=======
+		if(cmd == "train")
+		{
+			cout<<"----- Data collection mode -----"<<endl;
+			collectFlag = true;
+			delay = 100;
+			cout<<"Enter prefix: ";
+			cin>>prefix;
+		}
+>>>>>>> 0b4b09cd249ff2a535b68c7c4c85f4718dfa28c2
 	}
 
 	capture = cvCreateCameraCapture(-1);
@@ -449,10 +460,17 @@ int main(int argc, char** argv)
 				cvSaveImage(filename.c_str(), equalizedImage);
 				if(count > collectCount) runFlag = false;
 			}
+<<<<<<< HEAD
 		}
 
 
 
+=======
+	}
+
+
+
+>>>>>>> 0b4b09cd249ff2a535b68c7c4c85f4718dfa28c2
 		char c = cvWaitKey(delay);
 		if( c == 27 )
 			break;
