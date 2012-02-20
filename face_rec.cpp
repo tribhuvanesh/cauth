@@ -27,6 +27,7 @@
 #include <ctime>
 
 #include <cv.h>
+#include <cvaux.h>
 #include <highgui.h>
 //#include "face_rec.h"
 
@@ -44,11 +45,38 @@
 
 using namespace std;
 
+
 // Global variables
 map<string, CvScalar> colourMap;
-map<string, string> cascadeFileMap;
-int faceHeight = 180;
-int faceWidth  = 180;
+map<string, string>   cascadeFileMap;
+int                   faceHeight	    = 180;
+int                   faceWidth		    = 180;
+int                   nTrainFaces	    = 0;
+int                   nEigens		    = 0;
+IplImage**	      faceImageArr            = 0;
+CvMat*		      personNumTruthMat     = 0;
+IplImage*	      pAvgTrainImage        = 0;
+IplImage**	      eigenVectArr          = 0;
+CvMat*		      eigenValMat	    = 0;
+CvMat*		      projectedTrainFaceMat = 0;
+
+
+// Function prototypes
+void      init(void);
+IplImage* cropImage(IplImage* srcImage, CvRect faceRect);
+IplImage* resizeImage(IplImage* srcImage, bool preserveAspectRatio, int newHeight, int newWidth);
+IplImage* convertImageToGrayscale(IplImage* srcImage);
+CvRect    detectFace(IplImage* image, CvHaarClassifierCascade* cascade);
+void      drawBox(IplImage* image, CvRect rect);
+
+void learn();
+void recognize();
+void doPCA();
+void storeTrainingData();
+int loadTrainingData(CvMat** pTrainPersonNumMat);
+int findNearestNeighbout(float* projectedTestFace);
+int loadFaceImageArr(char* filename);
+
 
 // Initializes constants and static data
 void init()
@@ -63,6 +91,79 @@ void init()
 	colourMap["green"] = cvScalar(0, 255, 0);
 	colourMap["blue"]  = cvScalar(0, 0, 255);
 }
+
+
+void learn()
+{
+	int i;
+
+	// Load training data
+	nTrainFaces = loadFaceImageArr("train.txt");
+	assert(nTrainFaces > 2);
+
+	// Do PCA on training images to find a subspace
+	doPCA();
+
+	// Project the training images on to the PCA subspace
+	for (i = 0; i < nTrainFaces; i++) 
+	{
+		cvEigenDecomposite( faceImageArr[i],
+				    nEigens,
+				    eigenVectArr, 
+				    0, 0, 
+				    pAvgTrainImage, 
+				    projectedTrainFaceMat->data.f1 + i * nEigens 
+				  );
+	}
+
+	// Store data as an xml file
+	storeTrainingData();
+}
+
+
+void doPCA()
+{
+
+}
+
+
+void loadFaceImageArr(char* filename)
+{
+	FILE* imgListFile = 0;
+	char imgFileName[512];
+	int iFace, nFaces = 0;
+
+	// Open input file
+	imgListFile = fopen(filename, "r");
+
+	// Count number of faces
+	while( fgets(imgFileName, 512, imgListFile) )
+		++nFaces;
+	rewind(imgListFile);
+
+	// Allocate 
+	// 1. faceImageArr : face image array, 
+	// 2. personNumTruthMat : The "ground truth", i.e. values in this variable are the true values
+	//			  for each face image. CV_32SC1 => 32-bit OS, Signed, 1 Channel
+	faceImageArr = (IplImage**) cvAlloc(nFaces * sizeof(IplImage*));
+	personNumTruthMat = cvCreateMat(1, nFaces, CV_32SC1);
+
+	// Store the face images from disk into faceImageArr
+	for (iFace = 0; iFace < nFaces; iFace++) 
+	{
+		// Read person number and path to image from file
+		// data is a union in CvMat, and is accessed as data.i. Add iFace to account for offset.
+		fscanf(imgListFile, "%d %s", personNumTruthMat->data.i + iFace, imgFileName);
+
+		// Load face image
+		faceImageArr[iFace] = cvLoadImage(imgFileName, CV_LOAD_IMAGE_GRAYSCALE);
+	}
+
+	fclose(imgListFile);
+
+	return nFaces;
+}
+
 
 
 // Return image of the face in the frame defined by faceRect
@@ -275,13 +376,18 @@ int main(int argc, char** argv)
 	if(argc == 2)
 	{
 		string cmd = argv[1];	
-		if(cmd == "train")
+		if( (cmd == "--collect") || (cmd == "-c") )
 		{
 			cout<<"----- Data collection mode -----"<<endl;
 			collectFlag = true;
-			delay = 100;
+			delay = 500;
 			cout<<"Enter prefix: ";
 			cin>>prefix;
+		}
+		else if( (cmd == "--help") || (cmd == "-h") || (cmd == "-?") )
+		{
+			cout<<"Usage:"<<endl;
+			cout<<"face_rec [--collect | -c] || [--help | -h | -?]";
 		}
 	}
 
@@ -343,7 +449,7 @@ int main(int argc, char** argv)
 				cvSaveImage(filename.c_str(), equalizedImage);
 				if(count > collectCount) runFlag = false;
 			}
-	}
+		}
 
 
 
