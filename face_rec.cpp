@@ -97,7 +97,8 @@ void learn()
 	int i;
 
 	// Load training data
-	nTrainFaces = loadFaceImageArr("train.txt");
+	char trainingFile[] = "train.txt";
+	nTrainFaces = loadFaceImageArr(trainingFile);
 	assert(nTrainFaces > 2);
 
 	// Do PCA on training images to find a subspace
@@ -111,7 +112,7 @@ void learn()
 				    eigenVectArr,    // Pointer to array of IplImage input objects
 				    0, 0,            // ioFlags and userData
 				    pAvgTrainImage,  // Averaged object
-				    projectedTrainFaceMat->data.f1 + i * nEigens // Output - calculated coefficients
+				    projectedTrainFaceMat->data.fl + i * nEigens // Output - calculated coefficients
 				  );
 	}
 
@@ -132,7 +133,7 @@ void doPCA()
 	// Allocate the eigenvector images
 	faceImageSize.width = faceImageArr[0]->width;
 	faceImageSize.height = faceImageArr[0]->height;
-	eigenVectArr = (IplImage**)cvAlloc(sizeof(iplImage*) * nEigens);
+	eigenVectArr = (IplImage**)cvAlloc(sizeof(IplImage*) * nEigens);
 	for (i = 0; i < nEigens; i++)
 		eigenVectArr[i] = cvCreateImage(faceImageSize, IPL_DEPTH_32F, 1);
 	
@@ -140,7 +141,7 @@ void doPCA()
 	eigenValMat = cvCreateMat(1, nEigens, CV_32FC1);
 
 	// Allocate the averaged image
-	pAvgTrainImage = cvCreateImage(faceImageSize, IPL_DEPTH_32FC1);
+	pAvgTrainImage = cvCreateImage(faceImageSize, IPL_DEPTH_32F, 1);
 
 	// Set PCA termination criterion
 	calcLimit = cvTermCriteria(CV_TERMCRIT_ITER, nEigens, 1);
@@ -192,7 +193,7 @@ int findNearestNeighbour(float* projectedTestFace, float* confidence)
 }
 
 
-void loadTrainingData(CvMat** pTrainPersonNumMat)
+int loadTrainingData(CvMat** pTrainPersonNumMat)
 {
 	CvFileStorage* fileStorage;
 	int i;
@@ -223,7 +224,7 @@ void loadTrainingData(CvMat** pTrainPersonNumMat)
 }
 
 
-void loadFaceImageArr(char* filename)
+int loadFaceImageArr(char* filename)
 {
 	FILE* imgListFile = 0;
 	char imgFileName[512];
@@ -460,6 +461,7 @@ int main(int argc, char** argv)
 	IplImage *faceImage = 0;
 	IplImage *resizedImage;
 	IplImage *equalizedImage;
+	CvMat* trainPersonNumMat;
 	// char faceCascadeFileName[] = "haarcascade_frontalface_default.xml";
 	CvHaarClassifierCascade* faceCascade;
 	CvCapture* capture;
@@ -574,9 +576,9 @@ int main(int argc, char** argv)
 				if (nEigens > 0)
 				{
 					int iNearest, nearest, truth;
-					float *projectedTestFace = 0;
+					float *projectedTestFace = 0, confidence;
 
-					cvEigenDecomposite( faceImageArr[i], // Input object
+					cvEigenDecomposite( equalizedImage, // Input object
 							    nEigens,         // no. of eigenvalues
 							    eigenVectArr,    // Pointer to array of IplImage input objects
 							    0, 0,            // ioFlags and userData
@@ -594,7 +596,12 @@ int main(int argc, char** argv)
 		char c = cvWaitKey(delay);
 		if( c == 27 )
 			break;
+
+		cvReleaseImage(&faceImage);
+		cvReleaseImage(&resizedImage);
+		cvReleaseImage(&equalizedImage);
 	}
+
 
 	cvReleaseHaarClassifierCascade(&faceCascade);
 	cvReleaseCapture(&capture);
