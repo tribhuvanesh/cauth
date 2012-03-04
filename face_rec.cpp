@@ -51,14 +51,14 @@ map<string, CvScalar> colourMap;
 map<string, string>   cascadeFileMap;
 int                   faceHeight	    = 180;
 int                   faceWidth		    = 180;
-int                   nTrainFaces	    = 0;
-int                   nEigens		    = 0;
-IplImage**	      faceImageArr            = 0;
-CvMat*		      personNumTruthMat     = 0;
-IplImage*	      pAvgTrainImage        = 0;
-IplImage**	      eigenVectArr          = 0;
-CvMat*		      eigenValMat	    = 0;
-CvMat*		      projectedTrainFaceMat = 0;
+int                   nTrainFaces	    = 0; // No. of training images
+int                   nEigens		    = 0; // No. of eigenvalues
+IplImage**	      faceImageArr            = 0; // Array of face images
+CvMat*		      personNumTruthMat     = 0; // Array of person numbers
+IplImage*	      pAvgTrainImage        = 0; // Average image
+IplImage**	      eigenVectArr          = 0; // eigenvectors
+CvMat*		      eigenValMat	    = 0; // eigenvalues
+CvMat*		      projectedTrainFaceMat = 0; // Projected training faces
 
 
 // Function prototypes
@@ -70,11 +70,10 @@ CvRect    detectFace(IplImage* image, CvHaarClassifierCascade* cascade);
 void      drawBox(IplImage* image, CvRect rect);
 
 void learn();
-void recognize();
 void doPCA();
 void storeTrainingData();
 int loadTrainingData(CvMat** pTrainPersonNumMat);
-int findNearestNeighbout(float* projectedTestFace);
+int findNearestNeighbour(float* projectedTestFace, float* confidence);
 int loadFaceImageArr(char* filename);
 
 
@@ -107,12 +106,12 @@ void learn()
 	// Project the training images on to the PCA subspace
 	for (i = 0; i < nTrainFaces; i++) 
 	{
-		cvEigenDecomposite( faceImageArr[i],
-				    nEigens,
-				    eigenVectArr, 
-				    0, 0, 
-				    pAvgTrainImage, 
-				    projectedTrainFaceMat->data.f1 + i * nEigens 
+		cvEigenDecomposite( faceImageArr[i], // Input object
+				    nEigens,         // no. of eigenvalues
+				    eigenVectArr,    // Pointer to array of IplImage input objects
+				    0, 0,            // ioFlags and userData
+				    pAvgTrainImage,  // Averaged object
+				    projectedTrainFaceMat->data.f1 + i * nEigens // Output - calculated coefficients
 				  );
 	}
 
@@ -159,6 +158,68 @@ void doPCA()
 			);
 	
 	cvNormalize(eigenValMat, eigenValMat, 1, 0, CV_L1, 0);
+}
+
+
+int findNearestNeighbour(float* projectedTestFace, float* confidence)
+{
+	double leastDistSq = DBL_MAX;
+	int i, iTrain, iNearest = 0;
+
+	for (iTrain = 0; iTrain < nTrainFaces; iTrain++) {
+		double distSq = 0;
+
+		for (i = 0; i < nEigens; i++) {
+			float d_i = projectedTestFace[i] - projectedTrainFaceMat->data.fl[iTrain*nEigens + i];
+#ifdef USE_MAHALANOBIS_DISTANCE
+			distSq += d_i * d_i / eigenValMat->data.fl[i];
+#else
+			distSq += d_i * d_i;
+#endif
+		}
+
+		if(distSq < leastDistSq)
+		{
+			leastDistSq = distSq;
+			iNearest = iTrain;
+		}
+	}
+	
+	// Return confidence based on Euclidean distance
+	*confidence = 1.0f - sqrt( leastDistSq / (float)(nTrainFaces * nEigens) ) / 255.0f;
+
+	return iNearest;
+}
+
+
+void loadTrainingData(CvMat** pTrainPersonNumMat)
+{
+	CvFileStorage* fileStorage;
+	int i;
+
+	fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_READ);
+	if(!fileStorage)
+	{
+		printf("Can't open training database file\n");
+		return 0;
+	}
+
+	nEigens = cvReadIntByName(fileStorage, 0, "nEigens", 0);
+	nTrainFaces = cvReadIntByName(fileStorage, 0, "nTrainFaces", 0);
+	*pTrainPersonNumMat = (CvMat*)cvReadByName(fileStorage, 0, "trainPersonNumMat");
+	eigenValMat = (CvMat *)cvReadByName(fileStorage, 0, "eigenValMat");
+	projectedTrainFaceMat = (CvMat *)cvReadByName(fileStorage, 0, "projectedTrainFaceMat");
+	pAvgTrainImage = (IplImage *)cvReadByName(fileStorage, 0, "pAvgTrainImage");
+	eigenVectArr = (IplImage **)cvAlloc(nTrainFaces * sizeof(IplImage *));
+	for (i = 0; i < nEigens; i++)
+	{
+		char varname[200];
+		sprintf(varname, "eigenVect_%d", i);
+		eigenVectArr[i] = (IplImage *)cvReadByName(fileStorage, 0, varname, 0);
+	}
+
+	cvReleaseFileStorage(&fileStorage);
+	return 1;
 }
 
 
@@ -213,7 +274,7 @@ void storeTrainingData()
 	cvWrite(fileStorage, "trainPersonNumMat", personNumTruthMat, cvAttrList(0,0));
 	cvWrite(fileStorage, "eigenValMat", eigenValMat, cvAttrList(0,0));
 	cvWrite(fileStorage, "projectedTrainFaceMat", projectedTrainFaceMat, cvAttrList(0,0));
-	cvWrite(fileStorage, "avgTrainImg", pAvgTrainImg, cvAttrList(0,0));
+	cvWrite(fileStorage, "avgTrainImage", pAvgTrainImage, cvAttrList(0,0));
 
 	for(i=0; i<nEigens; i++)
 	{
@@ -304,7 +365,6 @@ IplImage* resizeImage(IplImage* srcImage, bool preserveAspectRatio = true,
         }
         return outImage;
 }
-
 
 
 IplImage* convertImageToGrayscale(IplImage* srcImage)
@@ -432,7 +492,6 @@ int main(int argc, char** argv)
 
 	// 	default: capture = cvCreateCameraCapture( -1 );
 	// 		 break;
-	//
 	
 	if(argc == 2)
 	{
@@ -449,14 +508,6 @@ int main(int argc, char** argv)
 		{
 			cout<<"Usage:"<<endl;
 			cout<<"face_rec [--collect | -c] || [--help | -h | -?]";
-		}
-		if(cmd == "train")
-		{
-			cout<<"----- Data collection mode -----"<<endl;
-			collectFlag = true;
-			delay = 100;
-			cout<<"Enter prefix: ";
-			cin>>prefix;
 		}
 	}
 
@@ -517,6 +568,26 @@ int main(int argc, char** argv)
 				cout<<"Saving "<<filename<<endl;
 				cvSaveImage(filename.c_str(), equalizedImage);
 				if(count > collectCount) runFlag = false;
+			}
+			else
+			{
+				if (nEigens > 0)
+				{
+					int iNearest, nearest, truth;
+					float *projectedTestFace = 0;
+
+					cvEigenDecomposite( faceImageArr[i], // Input object
+							    nEigens,         // no. of eigenvalues
+							    eigenVectArr,    // Pointer to array of IplImage input objects
+							    0, 0,            // ioFlags and userData
+							    pAvgTrainImage,  // Averaged object
+							    projectedTestFace// Output - calculated coefficients
+							  );
+					iNearest = findNearestNeighbour(projectedTestFace, &confidence);
+					nearest = trainPersonNumMat->data.i[iNearest];
+
+					printf("Nearest = %d, Confidence = %f\n", nearest, confidence);
+				}
 			}
 		}
 		
