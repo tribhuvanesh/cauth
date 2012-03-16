@@ -99,14 +99,18 @@ void learn()
 	// Load training data
 	char trainingFile[] = "train.txt";
 	nTrainFaces = loadFaceImageArr(trainingFile);
+        printf("Read %d faces..\n", nTrainFaces);
 	assert(nTrainFaces > 2);
 
 	// Do PCA on training images to find a subspace
 	doPCA();
+        printf("Completed PCA\n");
 
 	// Project the training images on to the PCA subspace
+        projectedTrainFaceMat = cvCreateMat(nTrainFaces, nEigens, CV_32FC1);
 	for (i = 0; i < nTrainFaces; i++) 
 	{
+                printf("Projecting face %d\n", i);
 		cvEigenDecomposite( faceImageArr[i], // Input object
 				    nEigens,         // no. of eigenvalues
 				    eigenVectArr,    // Pointer to array of IplImage input objects
@@ -116,6 +120,7 @@ void learn()
 				  );
 	}
 
+        printf("Completed PCA projection\n");
 	// Store data as an xml file
 	storeTrainingData();
 }
@@ -159,6 +164,8 @@ void doPCA()
 			);
 	
 	cvNormalize(eigenValMat, eigenValMat, 1, 0, CV_L1, 0);
+
+        cvSaveImage("avg_image.jpeg", pAvgTrainImage);
 }
 
 
@@ -226,17 +233,28 @@ int loadTrainingData(CvMat** pTrainPersonNumMat)
 
 int loadFaceImageArr(char* filename)
 {
+#if DEBUG
+        printf("Loading face image array...\n");
+#endif
 	FILE* imgListFile = 0;
 	char imgFileName[512];
 	int iFace, nFaces = 0;
 
 	// Open input file
 	imgListFile = fopen(filename, "r");
+        assert(imgListFile != NULL);
+#if DEBUG
+        printf("Read image file list\n");
+#endif
 
 	// Count number of faces
 	while( fgets(imgFileName, 512, imgListFile) )
 		++nFaces;
 	rewind(imgListFile);
+
+#if DEBUG
+        printf("Read %d faces\n", nFaces);
+#endif
 
 	// Allocate 
 	// 1. faceImageArr : face image array, 
@@ -251,6 +269,9 @@ int loadFaceImageArr(char* filename)
 		// Read person number and path to image from file
 		// data is a union in CvMat, and is accessed as data.i. Add iFace to account for offset.
 		fscanf(imgListFile, "%d %s", personNumTruthMat->data.i + iFace, imgFileName);
+#if DEBUG
+                printf("Read %s\n", imgFileName);
+#endif
 
 		// Load face image
 		faceImageArr[iFace] = cvLoadImage(imgFileName, CV_LOAD_IMAGE_GRAYSCALE);
@@ -476,6 +497,7 @@ int main(int argc, char** argv)
 	bool collectFlag = false;
 	int collectCount = 50;
 	int count = 0;
+        unsigned int i;
 	string prefix;
 	string extension = ".jpeg";
 	string filename;
@@ -495,21 +517,28 @@ int main(int argc, char** argv)
 	// 	default: capture = cvCreateCameraCapture( -1 );
 	// 		 break;
 	
-	if(argc == 2)
+        for(i = 1; i < argc; i++)
 	{
-		string cmd = argv[1];	
+		string cmd = argv[i];	
 		if( (cmd == "--collect") || (cmd == "-c") )
 		{
-			cout<<"----- Data collection mode -----"<<endl;
-			collectFlag = true;
-			delay = 500;
-			cout<<"Enter prefix: ";
-			cin>>prefix;
+                    cout<<"----- Data collection mode -----"<<endl;
+                    collectFlag = true;
+                    delay = 500;
+                    cout<<"Enter prefix: ";
+                    cin>>prefix;
 		}
+                else if(( cmd == "--learn") || (cmd == "-l") )
+                {
+                    printf("Now training...\n");
+                    learn();
+                    printf("Training completed.\n");
+                    return 0;
+                }
 		else if( (cmd == "--help") || (cmd == "-h") || (cmd == "-?") )
 		{
-			cout<<"Usage:"<<endl;
-			cout<<"face_rec [--collect | -c] || [--help | -h | -?]";
+                    cout<<"Usage:"<<endl;
+                    cout<<"face_rec [--collect | -c] || [--help | -h | -?]";
 		}
 	}
 
@@ -566,10 +595,16 @@ int main(int argc, char** argv)
 
 				char numstr[20];
 				sprintf(numstr, "%d", ++count);
-				filename = "./data/" + prefix + "-" + numstr + extension;
+				filename = prefix + "-" + numstr + extension;
 				cout<<"Saving "<<filename<<endl;
 				cvSaveImage(filename.c_str(), equalizedImage);
-				if(count > collectCount) runFlag = false;
+				if(count > collectCount)
+                                {
+                                    // Stop collecting training data. Use data to train/retrain images.
+                                    runFlag = false;
+                                    printf("Training...\n");
+                                    learn();
+                                }
 			}
 			else
 			{
