@@ -42,6 +42,7 @@
 
 #define DEBUG 1
 #define FILEOP 0
+#define STORE_EIGEN 1
 
 using namespace std;
 
@@ -165,7 +166,8 @@ void doPCA()
 	
 	cvNormalize(eigenValMat, eigenValMat, 1, 0, CV_L1, 0);
 
-        cvSaveImage("avg_image.jpeg", pAvgTrainImage);
+        if(STORE_EIGEN)
+            cvSaveImage("avg_image.jpeg", pAvgTrainImage);
 }
 
 
@@ -516,31 +518,45 @@ int main(int argc, char** argv)
 
 	// 	default: capture = cvCreateCameraCapture( -1 );
 	// 		 break;
-	
-        for(i = 1; i < argc; i++)
-	{
-		string cmd = argv[i];	
-		if( (cmd == "--collect") || (cmd == "-c") )
-		{
-                    cout<<"----- Data collection mode -----"<<endl;
-                    collectFlag = true;
-                    delay = 500;
-                    cout<<"Enter prefix: ";
-                    cin>>prefix;
-		}
-                else if(( cmd == "--learn") || (cmd == "-l") )
-                {
-                    printf("Now training...\n");
-                    learn();
-                    printf("Training completed.\n");
-                    return 0;
-                }
-		else if( (cmd == "--help") || (cmd == "-h") || (cmd == "-?") )
-		{
-                    cout<<"Usage:"<<endl;
-                    cout<<"face_rec [--collect | -c] || [--help | -h | -?]";
-		}
-	}
+
+        if(argc == 1)
+        {
+            // No extra arguments. Load training data and start recognition phase.
+            if( !loadTrainingData(&trainPersonNumMat) )
+            {
+                printf("Unable to load training data. Aborting\n");
+                exit(0);
+            }
+            else
+                printf("Loaded training data successfully\n");
+        }
+	else
+        {
+            for(i = 1; i < argc; i++)
+            {
+                    string cmd = argv[i];	
+                    if( (cmd == "--collect") || (cmd == "-c") )
+                    {
+                        cout<<"----- Data collection mode -----"<<endl;
+                        collectFlag = true;
+                        delay = 500;
+                        cout<<"Enter prefix: ";
+                        cin>>prefix;
+                    }
+                    else if(( cmd == "--learn") || (cmd == "-l") )
+                    {
+                        printf("Now training...\n");
+                        learn();
+                        printf("Training completed.\n");
+                        return 0;
+                    }
+                    else if( (cmd == "--help") || (cmd == "-h") || (cmd == "-?") )
+                    {
+                        cout<<"Usage:"<<endl;
+                        cout<<"face_rec [--collect | -c] || [--help | -h | -?]";
+                    }
+            }
+        }
 
 	capture = cvCreateCameraCapture(-1);
 	assert( capture != NULL );
@@ -575,6 +591,8 @@ int main(int argc, char** argv)
 #endif
 
 		cvShowImage("CA", frame);
+                
+                printf("Dimentsions of faceRect = %d x %d\n", faceRect.width, faceRect.height);
 
 		if(faceRect.width > 0)
 		{
@@ -603,6 +621,7 @@ int main(int argc, char** argv)
                                     // Stop collecting training data. Use data to train/retrain images.
                                     runFlag = false;
                                     printf("Training...\n");
+                                    // TODO Insert reorganize.py here
                                     learn();
                                 }
 			}
@@ -627,6 +646,8 @@ int main(int argc, char** argv)
 				}
 			}
 		}
+                else
+                    continue;
 		
 		char c = cvWaitKey(delay);
 		if( c == 27 )

@@ -45,7 +45,7 @@ def main():
             except IOError:
                 os.mkdir(os.path.join(savePath, prefix))
 
-        with open( os.path.join(os.getcwd(), 'train.txt') , "a") as f:
+        with open( os.path.join(os.getcwd(), 'train.txt') , "w") as f:
             f.write(lines)
 
         str = json.dumps(user_map)
