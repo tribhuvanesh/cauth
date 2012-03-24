@@ -54,7 +54,7 @@ int                   faceHeight	    = 180;
 int                   faceWidth		    = 180;
 int                   nTrainFaces	    = 0; // No. of training images
 int                   nEigens		    = 0; // No. of eigenvalues
-IplImage**	      faceImageArr            = 0; // Array of face images
+IplImage**	      faceImageArr          = 0; // Array of face images
 CvMat*		      personNumTruthMat     = 0; // Array of person numbers
 IplImage*	      pAvgTrainImage        = 0; // Average image
 IplImage**	      eigenVectArr          = 0; // eigenvectors
@@ -69,6 +69,7 @@ IplImage* resizeImage(IplImage* srcImage, bool preserveAspectRatio, int newHeigh
 IplImage* convertImageToGrayscale(IplImage* srcImage);
 CvRect    detectFace(IplImage* image, CvHaarClassifierCascade* cascade);
 void      drawBox(IplImage* image, CvRect rect);
+void      storeEigenfaceImages();
 
 void learn();
 void doPCA();
@@ -92,6 +93,33 @@ void init()
 	colourMap["blue"]  = cvScalar(0, 0, 255);
 }
 
+// Get an 8-bit equivalent of the 32-bit Float image.
+// Returns a new image, so remember to call 'cvReleaseImage()' on the result.
+IplImage* convertFloatImageToUcharImage(const IplImage *srcImg)
+{
+	IplImage *dstImg = 0;
+	if ((srcImg) && (srcImg->width > 0 && srcImg->height > 0)) {
+
+		// Spread the 32bit floating point pixels to fit within 8bit pixel range.
+		double minVal, maxVal;
+		cvMinMaxLoc(srcImg, &minVal, &maxVal);
+
+		//cout << "FloatImage:(minV=" << minVal << ", maxV=" << maxVal << ")." << endl;
+
+		// Deal with NaN and extreme values, since the DFT seems to give some NaN results.
+		if (cvIsNaN(minVal) || minVal < -1e30)
+			minVal = -1e30;
+		if (cvIsNaN(maxVal) || maxVal > 1e30)
+			maxVal = 1e30;
+		if (maxVal-minVal == 0.0f)
+			maxVal = minVal + 0.001;	// remove potential divide by zero errors.
+
+		// Convert the format
+		dstImg = cvCreateImage(cvSize(srcImg->width, srcImg->height), 8, 1);
+		cvConvertScale(srcImg, dstImg, 255.0 / (maxVal - minVal), - minVal * 255.0 / (maxVal-minVal));
+	}
+	return dstImg;
+}
 
 void learn()
 {
@@ -167,7 +195,10 @@ void doPCA()
 	cvNormalize(eigenValMat, eigenValMat, 1, 0, CV_L1, 0);
 
         if(STORE_EIGEN)
+	{
             cvSaveImage("avg_image.jpeg", pAvgTrainImage);
+	    storeEigenfaceImages();
+	}
 }
 
 
@@ -224,7 +255,7 @@ int loadTrainingData(CvMat** pTrainPersonNumMat)
 	for (i = 0; i < nEigens; i++)
 	{
 		char varname[200];
-		sprintf(varname, "eigenVect_%d", i);
+		snprintf(varname, sizeof(varname)-1, "eigenVect_%d", i);
 		eigenVectArr[i] = (IplImage *)cvReadByName(fileStorage, 0, varname, 0);
 	}
 
@@ -304,11 +335,52 @@ void storeTrainingData()
 	{
 		char varname[200];
 		snprintf( varname, sizeof(varname)-1, "eigenVect_%d", i );
-		cvWrite(fileStorage, varname, eigenVectArr[i], cvAttrList(0,0));
+                char fname[200];
+                 strcpy(fname, varname);
+                strcat(fname, ".jpeg");
+                // cout<<"Storing "<<fname<<endl;
+	        cvWrite(fileStorage, varname, eigenVectArr[i], cvAttrList(0,0));
+                // cvSave(fname, convertFloatImageToUcharImage(eigenVectArr[i]));
 	}
 
 	// Release the file-storage interface
 	cvReleaseFileStorage( &fileStorage );
+}
+
+// Save all the eigenvectors as images, so that they can be checked.
+void storeEigenfaceImages()
+{
+	// Store the average image to a file
+	printf("Saving the image of the average face as 'out_averageImage.bmp'.\n");
+	cvSaveImage("out_averageImage.bmp", pAvgTrainImage);
+	// Create a large image made of many eigenface images.
+	// Must also convert each eigenface image to a normal 8-bit UCHAR image instead of a 32-bit float image.
+	printf("Saving the %d eigenvector images as 'out_eigenfaces.bmp'\n", nEigens);
+	if (nEigens > 0) {
+		// Put all the eigenfaces next to each other.
+		int COLUMNS = 8;	// Put upto 8 images on a row.
+		int nCols = min(nEigens, COLUMNS);
+		int nRows = 1 + (nEigens / COLUMNS);	// Put the rest on new rows.
+		int w = eigenVectArr[0]->width;
+		int h = eigenVectArr[0]->height;
+		CvSize size;
+		size = cvSize(nCols * w, nRows * h);
+		IplImage *bigImg = cvCreateImage(size, IPL_DEPTH_8U, 1);	// 8-bit Greyscale UCHAR image
+		for (int i=0; i<nEigens; i++) {
+			// Get the eigenface image.
+			IplImage *byteImg = convertFloatImageToUcharImage(eigenVectArr[i]);
+			// Paste it into the correct position.
+			int x = w * (i % COLUMNS);
+			int y = h * (i / COLUMNS);
+			CvRect ROI = cvRect(x, y, w, h);
+			cvSetImageROI(bigImg, ROI);
+			cvCopyImage(byteImg, bigImg);
+			cvResetImageROI(bigImg);
+			cvReleaseImage(&byteImg);
+		}
+		cvSaveImage("out_eigenfaces.bmp", bigImg);
+		cvReleaseImage(&bigImg);
+	}
 }
 
 
@@ -484,6 +556,7 @@ int main(int argc, char** argv)
 	IplImage *faceImage = 0;
 	IplImage *resizedImage;
 	IplImage *equalizedImage;
+	IplImage *processedFaceImage;
 	CvMat* trainPersonNumMat;
 	// char faceCascadeFileName[] = "haarcascade_frontalface_default.xml";
 	CvHaarClassifierCascade* faceCascade;
@@ -603,8 +676,6 @@ int main(int argc, char** argv)
                         // 3. Convert to grayscale and equalize image
                         equalizedImage = cvCreateImage(cvGetSize(resizedImage), 8, 1);
 			cvEqualizeHist(convertImageToGrayscale(resizedImage), equalizedImage);
-			
-			cvShowImage("test", equalizedImage);
 
 			if(collectFlag)
 			{
@@ -627,18 +698,27 @@ int main(int argc, char** argv)
 			}
 			else
 			{
+                                printf("Recognizing! %d\n", nEigens);
+			        cvShowImage("test", equalizedImage);
+                                processedFaceImage = equalizedImage;
 				if (nEigens > 0)
 				{
 					int iNearest, nearest, truth;
 					float *projectedTestFace = 0, confidence;
 
-					cvEigenDecomposite( equalizedImage, // Input object
-							    nEigens,         // no. of eigenvalues
-							    eigenVectArr,    // Pointer to array of IplImage input objects
-							    0, 0,            // ioFlags and userData
-							    pAvgTrainImage,  // Averaged object
-							    projectedTestFace// Output - calculated coefficients
+					cvFree(&projectedTestFace);
+                                        projectedTestFace = (float *)cvAlloc(nEigens*sizeof(float));
+
+                                        printf("Projecting! \n");
+					// TODO unrecognized array type
+					cvEigenDecomposite( processedFaceImage,   // Input object
+							    nEigens,          // no. of eigenvalues
+							    eigenVectArr,     // Pointer to array of IplImage input objects
+							    0, 0,             // ioFlags and userData
+							    pAvgTrainImage,   // Averaged object
+							    projectedTestFace // Output - calculated coefficients
 							  );
+                                        printf("Done projecting! \n");
 					iNearest = findNearestNeighbour(projectedTestFace, &confidence);
 					nearest = trainPersonNumMat->data.i[iNearest];
 
