@@ -132,6 +132,7 @@ void learn()
 	assert(nTrainFaces > 2);
 
 	// Do PCA on training images to find a subspace
+	printf("Starting PCAin learn()\n");
 	doPCA();
         printf("Completed PCA\n");
 
@@ -180,6 +181,9 @@ void doPCA()
 	// Set PCA termination criterion
 	calcLimit = cvTermCriteria(CV_TERMCRIT_ITER, nEigens, 1);
 
+	// printf("Started PCA... %d\n", nTrainFaces);
+	printf("Started PCA...\n");
+
 	// Compute average image, eigenvalue and eigenvectors
 	cvCalcEigenObjects( nTrainFaces,            // No. of source objects
 			    (void*) faceImageArr,   // input array
@@ -194,11 +198,6 @@ void doPCA()
 	
 	cvNormalize(eigenValMat, eigenValMat, 1, 0, CV_L1, 0);
 
-        if(STORE_EIGEN)
-	{
-            cvSaveImage("avg_image.jpeg", pAvgTrainImage);
-	    storeEigenfaceImages();
-	}
 }
 
 
@@ -232,36 +231,79 @@ int findNearestNeighbour(float* projectedTestFace, float* confidence)
 	return iNearest;
 }
 
-
-int loadTrainingData(CvMat** pTrainPersonNumMat)
+int loadTrainingData(CvMat **pTrainPersonNumMat)
 {
-	CvFileStorage* fileStorage;
+	CvFileStorage * fileStorage;
 	int i;
 
-	fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_READ);
-	if(!fileStorage)
-	{
-		printf("Can't open training database file\n");
+	// create a file-storage interface
+	fileStorage = cvOpenFileStorage( "facedata.xml", 0, CV_STORAGE_READ );
+	if( !fileStorage ) {
+		printf("Can't open training database file 'facedata.xml'.\n");
 		return 0;
 	}
 
+	// Load the data
 	nEigens = cvReadIntByName(fileStorage, 0, "nEigens", 0);
 	nTrainFaces = cvReadIntByName(fileStorage, 0, "nTrainFaces", 0);
-	*pTrainPersonNumMat = (CvMat*)cvReadByName(fileStorage, 0, "trainPersonNumMat");
-	eigenValMat = (CvMat *)cvReadByName(fileStorage, 0, "eigenValMat");
-	projectedTrainFaceMat = (CvMat *)cvReadByName(fileStorage, 0, "projectedTrainFaceMat");
-	pAvgTrainImage = (IplImage *)cvReadByName(fileStorage, 0, "pAvgTrainImage");
-	eigenVectArr = (IplImage **)cvAlloc(nTrainFaces * sizeof(IplImage *));
-	for (i = 0; i < nEigens; i++)
+	*pTrainPersonNumMat = (CvMat *)cvReadByName(fileStorage, 0, "trainPersonNumMat", 0);
+	eigenValMat  = (CvMat *)cvReadByName(fileStorage, 0, "eigenValMat", 0);
+	projectedTrainFaceMat = (CvMat *)cvReadByName(fileStorage, 0, "projectedTrainFaceMat", 0);
+	pAvgTrainImage = (IplImage *)cvReadByName(fileStorage, 0, "avgTrainImage", 0);
+	eigenVectArr = (IplImage **)cvAlloc(nTrainFaces*sizeof(IplImage *));
+	for(i=0; i<nEigens; i++)
 	{
 		char varname[200];
-		snprintf(varname, sizeof(varname)-1, "eigenVect_%d", i);
+		snprintf( varname, sizeof(varname)-1, "eigenVect_%d", i );
 		eigenVectArr[i] = (IplImage *)cvReadByName(fileStorage, 0, varname, 0);
 	}
+	
+	if(STORE_EIGEN)
+	{
+            cvSaveImage("avg_image.jpeg", pAvgTrainImage);
+	    storeEigenfaceImages();
+	}
 
-	cvReleaseFileStorage(&fileStorage);
-	return 1;
+	// release the file-storage interface
+	cvReleaseFileStorage( &fileStorage );
+
 }
+
+
+// int loadTrainingData(CvMat** pTrainPersonNumMat)
+// {
+// 	CvFileStorage* fileStorage;
+// 	int i;
+// 
+// 	fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_READ);
+// 	if(!fileStorage)
+// 	{
+// 		printf("Can't open training database file\n");
+// 		return 0;
+// 	}
+// 
+// 	nEigens = cvReadIntByName(fileStorage, 0, "nEigens", 0);
+// 	nTrainFaces = cvReadIntByName(fileStorage, 0, "nTrainFaces", 0);
+// 	*pTrainPersonNumMat = (CvMat*)cvReadByName(fileStorage, 0, "trainPersonNumMat", 0);
+// 	eigenValMat = (CvMat *)cvReadByName(fileStorage, 0, "eigenValMat", 0);
+// 	projectedTrainFaceMat = (CvMat *)cvReadByName(fileStorage, 0, "projectedTrainFaceMat", 0);
+// 	pAvgTrainImage = (IplImage *)cvReadByName(fileStorage, 0, "pAvgTrainImage", 0);
+// 	eigenVectArr = (IplImage **)cvAlloc(nTrainFaces * sizeof(IplImage *));
+// 	for (i = 0; i < nEigens; i++)
+// 	{
+// 		char varname[200];
+// 		snprintf(varname, sizeof(varname)-1, "eigenVect_%d", i);
+// 		eigenVectArr[i] = (IplImage *)cvReadByName(fileStorage, 0, varname, 0);
+// 	}
+// 
+// 	if(STORE_EIGEN)
+// 	{
+//             cvSaveImage("avg_image.jpeg", pAvgTrainImage);
+// 	    storeEigenfaceImages();
+// 	}
+// 	cvReleaseFileStorage(&fileStorage);
+// 	return 1;
+// }
 
 
 int loadFaceImageArr(char* filename)
@@ -595,13 +637,17 @@ int main(int argc, char** argv)
         if(argc == 1)
         {
             // No extra arguments. Load training data and start recognition phase.
-            if( !loadTrainingData(&trainPersonNumMat) )
+            if( loadTrainingData(&trainPersonNumMat) )
             {
-                printf("Unable to load training data. Aborting\n");
-                exit(0);
+		faceWidth = pAvgTrainImage->width;
+		    faceHeight = pAvgTrainImage->height;
+		    printf("Loaded training data successfully\n");
             }
             else
-                printf("Loaded training data successfully\n");
+	    {
+		    printf("Unable to load training data. Aborting\n");
+                exit(0);
+	    }
         }
 	else
         {
@@ -701,6 +747,7 @@ int main(int argc, char** argv)
                                 printf("Recognizing! %d\n", nEigens);
 			        cvShowImage("test", equalizedImage);
                                 processedFaceImage = equalizedImage;
+				 // /*
 				if (nEigens > 0)
 				{
 					int iNearest, nearest, truth;
@@ -724,6 +771,7 @@ int main(int argc, char** argv)
 
 					printf("Nearest = %d, Confidence = %f\n", nearest, confidence);
 				}
+				// */
 			}
 		}
                 else
