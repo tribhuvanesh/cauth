@@ -81,10 +81,10 @@ int loadFaceImageArr(char* filename);
 // Initializes constants and static data
 void init()
 {
-	cascadeFileMap["default"] = "haarcascade_frontalface_default.xml";
-	cascadeFileMap["alt"] = "haarcascade_frontalface_alt.xml";
-	cascadeFileMap["alt2"] = "haarcascade_frontalface_alt2.xml";
-	cascadeFileMap["alt_tree"] = "haarcascade_frontalface_alt_tree.xml";
+	cascadeFileMap["default"] = "haar/haarcascade_frontalface_default.xml";
+	cascadeFileMap["alt"] = "haar/haarcascade_frontalface_alt.xml";
+	cascadeFileMap["alt2"] = "haar/haarcascade_frontalface_alt2.xml";
+	cascadeFileMap["alt_tree"] = "haar/haarcascade_frontalface_alt_tree.xml";
 
 	colourMap["white"] = cvScalar(255, 255, 255);
 	colourMap["red"]   = cvScalar(255, 0, 0);
@@ -615,7 +615,6 @@ int main(int argc, char** argv)
                                     // Stop collecting training data. Use data to train/retrain images.
                                     runFlag = false;
                                     printf("Training...\n");
-                                    // TODO Insert reorganize.py here
 				    if( system("python2 reorganize.py") == -1 )
 				    {
 					    printf("Failed to reorganize files. Now exiting...\n");
