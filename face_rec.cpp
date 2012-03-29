@@ -29,7 +29,8 @@
 #include <cv.h>
 #include <cvaux.h>
 #include <highgui.h>
-//#include "face_rec.h"
+#include "detect.h"
+#include "utils.h"
 
 #define vi vector<int>
 #define v2di vector< vector<int> >
@@ -66,10 +67,6 @@ vector<string>        personNames;
 
 // Function prototypes
 void      init(void);
-IplImage* cropImage(IplImage* srcImage, CvRect faceRect);
-IplImage* resizeImage(IplImage* srcImage, bool preserveAspectRatio, int newHeight, int newWidth);
-IplImage* convertImageToGrayscale(IplImage* srcImage);
-CvRect    detectFace(IplImage* image, CvHaarClassifierCascade* cascade);
 void      drawBox(IplImage* image, CvRect rect);
 void      storeEigenfaceImages();
 
@@ -451,151 +448,6 @@ void storeEigenfaceImages()
 }
 
 
-// Return image of the face in the frame defined by faceRect
-IplImage* cropImage(IplImage* srcImage, CvRect faceRect)
-{
-	IplImage* tempImage;
-	IplImage* rgbImage;
-	CvSize size = cvSize(srcImage->width, srcImage->height);
-
-	// Assert if image is not a BGR, 8-bit per pixel image
-	assert(srcImage->depth == IPL_DEPTH_8U);
-
-	// Create tempImage and initially store the original contents
-	tempImage = cvCreateImage(size, IPL_DEPTH_8U, srcImage->nChannels);
-	cvCopy(srcImage, tempImage, NULL);
-
-	// Set region of interest as faceRect
-	cvSetImageROI(tempImage, faceRect);
-
-	// Copy the region of interest into rgbImage
-	size = cvSize(faceRect.width, faceRect.height);
-	rgbImage = cvCreateImage(size, IPL_DEPTH_8U, srcImage->nChannels);
-	cvCopy(tempImage, rgbImage, NULL);
-
-	cvReleaseImage(&tempImage);
-	return rgbImage;
-}
-
-
-IplImage* resizeImage(IplImage* srcImage, bool preserveAspectRatio = true,
-		      int newHeight = faceHeight, int newWidth = faceWidth)
-{
-	IplImage* outImage;
-        int origWidth;
-        int origHeight;
-        CvRect rect;
-        if(srcImage)
-        {
-            origWidth = srcImage->width;
-            origHeight = srcImage->height;
-        }
-        if(preserveAspectRatio)
-        {
-            float origAspectRatio = (float) origWidth / origHeight;
-            float newAspectRatio = (float) newWidth / newHeight;
-
-            if(origAspectRatio > newAspectRatio)
-            {
-                int wTemp = ( origHeight * newWidth ) / newHeight;
-                rect = cvRect((origWidth - wTemp)/2, 0, wTemp, origHeight); 
-            }
-            else
-            {
-                int hTemp = ( origWidth * newHeight ) / newWidth;
-                rect = cvRect(0, (origHeight - hTemp)/2, origWidth, hTemp); 
-            }
-            
-            IplImage* croppedImage = cropImage(srcImage, rect);
-            outImage = resizeImage(croppedImage, false);
-        }
-        else
-        {
-            outImage = cvCreateImage(cvSize(newWidth, newHeight), srcImage->depth,
-                                     srcImage->nChannels);
-            if((newWidth > srcImage->width) && (newHeight > srcImage->height))
-            {
-                cvResetImageROI((IplImage*)srcImage);
-                // To enlarge
-                cvResize(srcImage, outImage, CV_INTER_LINEAR);
-            }
-            else
-            {
-                cvResetImageROI((IplImage*)srcImage);
-                // To shrink
-                cvResize(srcImage, outImage, CV_INTER_AREA);
-            }
-        }
-        return outImage;
-}
-
-
-IplImage* convertImageToGrayscale(IplImage* srcImage)
-{
-	IplImage* grayImage;
-	if(srcImage->nChannels > 1)
-	{
-		grayImage = cvCreateImage(cvGetSize(srcImage), IPL_DEPTH_8U, 1);
-		cvCvtColor(srcImage, grayImage, CV_BGR2GRAY);
-	}
-	else
-	{
-		grayImage = cvCloneImage(srcImage);
-	}
-	return grayImage;
-}
-
-
-// Return a CvRect bounding detected faces in the gray-scale converted image
-CvRect detectFace(IplImage* image, CvHaarClassifierCascade* cascade)
-{
-	CvSize minFaceSize = cvSize(20, 20); // Restrict to images greater than 20x20 pixels
-	int flags = CV_HAAR_FIND_BIGGEST_OBJECT
-		    | CV_HAAR_DO_ROUGH_SEARCH; // Terminate search when first candidate if found
-		    // | CV_HAAR_DO_CANNY_PRUNING; // Ignore flat regions
-	float searchScaleFactor = 1.1f; // Increase search window size by 10%
-	int minNeighbours = 3; // Minimum Neighbours. Prevent false positives by detecting faces with atleast 3 overlapping regions
-	IplImage *detectImage;
-	IplImage *grayImage = 0;
-	CvMemStorage *storage;
-	CvRect rect;
-	CvSeq* rects;
-	CvSize size;
-	int nFaces;
-
-	// Create empty storage with block size set to default value
-	storage = cvCreateMemStorage(0);
-	cvClearMemStorage(storage);
-
-	// If image is RGB, convert to grayscale
-	detectImage = convertImageToGrayscale((IplImage*)image);
-	// if(image->nChannels > 1)
-	// {
-	// 	size = cvSize(image->width, image->height);
-	// 	grayImage = cvCreateImage(size, IPL_DEPTH_8U, 1);
-	// 	cvCvtColor(image, grayImage, CV_BGR2GRAY);
-	// 	detectImage = grayImage;
-	// }
-
-	// Detect all faces
-	rects = cvHaarDetectObjects(detectImage, cascade, storage, searchScaleFactor, minNeighbours,
-				    flags, minFaceSize);
-	nFaces = rects->total;
-
-#if DEBUG
-	printf("Detected %d faces\n", nFaces);
-#endif
-	// Return first detected object, else return negative
-	rect = (nFaces > 0)? *(CvRect*)cvGetSeqElem(rects, 0) : cvRect(-1, -1, -1, -1);
-
-	if(grayImage)
-		cvReleaseImage(&grayImage);
-	cvReleaseMemStorage(&storage);
-
-	return rect;
-}
-
-
 void drawBox(IplImage* image, CvRect rect)
 {
 	static CvScalar white = {255, 255, 255};
@@ -743,7 +595,7 @@ int main(int argc, char** argv)
 			// 1. Get image content from faceRect
 			faceImage = cropImage(frame, faceRect);
 			// 2. Resize image to 180x180 pixels
-			resizedImage = resizeImage(faceImage, faceWidth, faceHeight);
+			resizedImage = resizeImage(faceImage, true, faceWidth, faceHeight);
                         // 3. Convert to grayscale and equalize image
                         equalizedImage = cvCreateImage(cvGetSize(resizedImage), 8, 1);
 			cvEqualizeHist(convertImageToGrayscale(resizedImage), equalizedImage);
