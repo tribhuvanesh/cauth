@@ -54,12 +54,14 @@ int                   faceHeight	    = 180;
 int                   faceWidth		    = 180;
 int                   nTrainFaces	    = 0; // No. of training images
 int                   nEigens		    = 0; // No. of eigenvalues
+int		      nPersons		    = 0; // No. of people in the training set
 IplImage**	      faceImageArr          = 0; // Array of face images
 CvMat*		      personNumTruthMat     = 0; // Array of person numbers
 IplImage*	      pAvgTrainImage        = 0; // Average image
 IplImage**	      eigenVectArr          = 0; // eigenvectors
 CvMat*		      eigenValMat	    = 0; // eigenvalues
 CvMat*		      projectedTrainFaceMat = 0; // Projected training faces
+vector<string>        personNames;
 
 
 // Function prototypes
@@ -140,7 +142,7 @@ void learn()
         projectedTrainFaceMat = cvCreateMat(nTrainFaces, nEigens, CV_32FC1);
 	for (i = 0; i < nTrainFaces; i++) 
 	{
-                printf("Projecting face %d\n", i);
+                // printf("Projecting face %d\n", i);
 		cvEigenDecomposite( faceImageArr[i], // Input object
 				    nEigens,         // no. of eigenvalues
 				    eigenVectArr,    // Pointer to array of IplImage input objects
@@ -237,11 +239,33 @@ int loadTrainingData(CvMat **pTrainPersonNumMat)
 	int i;
 
 	// create a file-storage interface
+	printf("Loading facedata.xml!\n");
 	fileStorage = cvOpenFileStorage( "facedata.xml", 0, CV_STORAGE_READ );
 	if( !fileStorage ) {
 		printf("Can't open training database file 'facedata.xml'.\n");
 		return 0;
 	}
+
+	personNames.clear();
+	nPersons = cvReadIntByName(fileStorage, 0, "nPersons", 0);
+	if(nPersons == 0)
+	{
+		printf("Database is empty. \n");
+		return 0;
+	}
+
+	cout<<"nPersons: "<<nPersons<<endl;
+	for (i = 0; i < nPersons; i++)
+	{
+		string sPersonName;
+		char varname[200];
+		snprintf(varname, sizeof(varname)-1, "personName_%d", (i+1));
+		cout<<"Reading string "<<varname<<endl;
+		sPersonName = cvReadStringByName(fileStorage, 0, varname);
+		cout<<"Loaded person: "<<sPersonName<<endl;
+		personNames.push_back(sPersonName);
+	}
+	cout<<"Loaded nPersons"<<endl;
 
 	// Load the data
 	nEigens = cvReadIntByName(fileStorage, 0, "nEigens", 0);
@@ -258,52 +282,13 @@ int loadTrainingData(CvMat **pTrainPersonNumMat)
 		eigenVectArr[i] = (IplImage *)cvReadByName(fileStorage, 0, varname, 0);
 	}
 	
-	if(STORE_EIGEN)
-	{
-            cvSaveImage("avg_image.jpeg", pAvgTrainImage);
-	    storeEigenfaceImages();
-	}
 
 	// release the file-storage interface
 	cvReleaseFileStorage( &fileStorage );
 
+	printf("Training data loaded of %d people.\n", nPersons);
+
 }
-
-
-// int loadTrainingData(CvMat** pTrainPersonNumMat)
-// {
-// 	CvFileStorage* fileStorage;
-// 	int i;
-// 
-// 	fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_READ);
-// 	if(!fileStorage)
-// 	{
-// 		printf("Can't open training database file\n");
-// 		return 0;
-// 	}
-// 
-// 	nEigens = cvReadIntByName(fileStorage, 0, "nEigens", 0);
-// 	nTrainFaces = cvReadIntByName(fileStorage, 0, "nTrainFaces", 0);
-// 	*pTrainPersonNumMat = (CvMat*)cvReadByName(fileStorage, 0, "trainPersonNumMat", 0);
-// 	eigenValMat = (CvMat *)cvReadByName(fileStorage, 0, "eigenValMat", 0);
-// 	projectedTrainFaceMat = (CvMat *)cvReadByName(fileStorage, 0, "projectedTrainFaceMat", 0);
-// 	pAvgTrainImage = (IplImage *)cvReadByName(fileStorage, 0, "pAvgTrainImage", 0);
-// 	eigenVectArr = (IplImage **)cvAlloc(nTrainFaces * sizeof(IplImage *));
-// 	for (i = 0; i < nEigens; i++)
-// 	{
-// 		char varname[200];
-// 		snprintf(varname, sizeof(varname)-1, "eigenVect_%d", i);
-// 		eigenVectArr[i] = (IplImage *)cvReadByName(fileStorage, 0, varname, 0);
-// 	}
-// 
-// 	if(STORE_EIGEN)
-// 	{
-//             cvSaveImage("avg_image.jpeg", pAvgTrainImage);
-// 	    storeEigenfaceImages();
-// 	}
-// 	cvReleaseFileStorage(&fileStorage);
-// 	return 1;
-// }
 
 
 int loadFaceImageArr(char* filename)
@@ -314,6 +299,7 @@ int loadFaceImageArr(char* filename)
 	FILE* imgListFile = 0;
 	char imgFileName[512];
 	int iFace, nFaces = 0;
+	int i;
 
 	// Open input file
 	imgListFile = fopen(filename, "r");
@@ -323,7 +309,7 @@ int loadFaceImageArr(char* filename)
 #endif
 
 	// Count number of faces
-	while( fgets(imgFileName, 512, imgListFile) )
+	while( fgets(imgFileName, sizeof(imgFileName)-1, imgListFile) )
 		++nFaces;
 	rewind(imgListFile);
 
@@ -341,18 +327,42 @@ int loadFaceImageArr(char* filename)
 	// Store the face images from disk into faceImageArr
 	for (iFace = 0; iFace < nFaces; iFace++) 
 	{
+		char personName[256];
+		string sPersonName;
+		int personNumber;
+
 		// Read person number and path to image from file
 		// data is a union in CvMat, and is accessed as data.i. Add iFace to account for offset.
-		fscanf(imgListFile, "%d %s", personNumTruthMat->data.i + iFace, imgFileName);
+		fscanf(imgListFile, "%d %s %s", &personNumber, personName, imgFileName);
+		sPersonName = personName;
 #if DEBUG
                 printf("Read %s\n", imgFileName);
 #endif
+		if(personNumber > nPersons)
+		{
+			for (i = nPersons; i < personNumber; i++)
+			{
+				personNames.push_back(sPersonName);
+			}
+			nPersons = personNumber;
+		}
+
+		personNumTruthMat->data.i[iFace] = personNumber;
 
 		// Load face image
 		faceImageArr[iFace] = cvLoadImage(imgFileName, CV_LOAD_IMAGE_GRAYSCALE);
 	}
 
 	fclose(imgListFile);
+
+	printf("Data loaded from '%s': (%d images of %d people).\n", filename, nFaces, nPersons);
+	printf("People: ");
+	if (nPersons > 0)
+		printf("<%s>", personNames[0].c_str());
+	for (i=1; i<nPersons; i++) {
+		printf(", <%s>", personNames[i].c_str());
+	}
+	printf(".\n");
 
 	return nFaces;
 }
@@ -364,6 +374,15 @@ void storeTrainingData()
 
 	// Create a file-storage interface
 	fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_WRITE);
+
+	cvWriteInt(fileStorage, "nPersons", nPersons);
+	printf("Stored data for %d persons.\n", nPersons);
+	for (i = 0; i < nPersons; i++)
+	{
+		char varname[200];
+		snprintf( varname, sizeof(varname)-1, "personName_%d", (i+1) );
+		cvWriteString(fileStorage, varname, personNames[i].c_str(), 0);
+	}
 	
 	// Store all data
 	cvWriteInt(fileStorage, "nEigens", nEigens);
@@ -378,11 +397,17 @@ void storeTrainingData()
 		char varname[200];
 		snprintf( varname, sizeof(varname)-1, "eigenVect_%d", i );
                 char fname[200];
-                 strcpy(fname, varname);
+                strcpy(fname, varname);
                 strcat(fname, ".jpeg");
                 // cout<<"Storing "<<fname<<endl;
 	        cvWrite(fileStorage, varname, eigenVectArr[i], cvAttrList(0,0));
                 // cvSave(fname, convertFloatImageToUcharImage(eigenVectArr[i]));
+	}
+
+	if(STORE_EIGEN)
+	{
+            cvSaveImage("avg_image.jpeg", pAvgTrainImage);
+	    storeEigenfaceImages();
 	}
 
 	// Release the file-storage interface
@@ -612,7 +637,7 @@ int main(int argc, char** argv)
 	cvNamedWindow("test", CV_WINDOW_AUTOSIZE);
 
 	bool collectFlag = false;
-	int collectCount = 50;
+	int collectCount = 10;
 	int count = 0;
         unsigned int i;
 	string prefix;
@@ -739,6 +764,12 @@ int main(int argc, char** argv)
                                     runFlag = false;
                                     printf("Training...\n");
                                     // TODO Insert reorganize.py here
+				    if( system("python2 reorganize.py") == -1 )
+				    {
+					    printf("Failed to reorganize files. Now exiting...\n");
+					    exit(1);
+				    }
+				    printf("Reorganized files!\n");
                                     learn();
                                 }
 			}
@@ -757,7 +788,6 @@ int main(int argc, char** argv)
                                         projectedTestFace = (float *)cvAlloc(nEigens*sizeof(float));
 
                                         printf("Projecting! \n");
-					// TODO unrecognized array type
 					cvEigenDecomposite( processedFaceImage,   // Input object
 							    nEigens,          // no. of eigenvalues
 							    eigenVectArr,     // Pointer to array of IplImage input objects
@@ -769,7 +799,7 @@ int main(int argc, char** argv)
 					iNearest = findNearestNeighbour(projectedTestFace, &confidence);
 					nearest = trainPersonNumMat->data.i[iNearest];
 
-					printf("Nearest = %d, Confidence = %f\n", nearest, confidence);
+					printf("Nearest = %d, Person = %s, Confidence = %f\n", nearest, personNames[nearest-1].c_str(), confidence);
 				}
 				// */
 			}

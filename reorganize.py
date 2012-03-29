@@ -1,6 +1,10 @@
 """
 Re-organizes collected images from current directory and moves them into appropriate folders.
 Also creates a text file which lists out names and location of images.
+
+Note:
+ls : Current working directory
+savePath : ./data/
 """
 
 import os, shutil
@@ -39,34 +43,43 @@ def main():
         src = os.path.join(os.getcwd(), file)
 
         if fileExt == EXTENSION:
+            prefix, num = (None, None)
             try:
                 prefix, num = fileName.split('-')
             except ValueError:
                 pass
 
-            try:
-                dst = os.path.join(savePath, prefix, file)
-                shutil.move(src, dst)
-                if prefix not in user_map.keys():
-                    user_map[prefix] = user_index
-                    user_index += 1
-                # lines += "%d %s %s\n" % (user_map[prefix], prefix, dst)
-                move_count += 1
-            except IOError:
-                os.mkdir(os.path.join(savePath, prefix))
+            if prefix and num:
+                try:
+                    dst = os.path.join(savePath, prefix, file)
+                    shutil.move(src, dst)
+                    if prefix not in user_map.keys():
+                        user_map[prefix] = user_index
+                        user_index += 1
+                    # lines += "%d %s %s\n" % (user_map[prefix], prefix, dst)
+                    move_count += 1
+                except IOError:
+                    os.mkdir(os.path.join(savePath, prefix))
+
 
     print "Moved %d files" % move_count
     print user_map
 
     # Iterate through all jpegs in data folder and list them out in train.txt
+    img_path_lines = []
+    for prefix in user_map.keys():
+        cur_dir = os.path.join(savePath, prefix)
+        ls_images = os.listdir(cur_dir)
+        for img in ls_images:
+            if os.path.splitext(img)[1] == EXTENSION:
+                img_path_line =  "%d %s %s" % (user_map[prefix], prefix, os.path.join(savePath, prefix, img))
+                # print img_path_line
+                img_path_lines.append(img_path_line)
+
     with open("train.txt", "w") as f:
-        for prefix in user_map.keys():
-            cur_dir = os.path.join(savePath, prefix)
-            ls_images = os.listdir(cur_dir)
-            for img in ls_images:
-                if os.path.splitext(img)[1] == EXTENSION:
-                    img_path = os.path.join(savePath, prefix, img) + '\n'
-                    f.write(img_path)
+        # lines = sorted(img_path_lines, key=lambda x:int(x.split()[0]))
+        lines = sorted(img_path_lines)
+        for line in lines : f.write(line+"\n")
 
     # Dump current contents of user_map into file
     with open(os.path.join(savePath, 'user_map'), "w") as f:
