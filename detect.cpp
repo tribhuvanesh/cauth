@@ -65,13 +65,6 @@ CvRect detectFace(IplImage* image, CvHaarClassifierCascade* cascade)
 
 	// If image is RGB, convert to grayscale
 	detectImage = convertImageToGrayscale((IplImage*)image);
-	// if(image->nChannels > 1)
-	// {
-	// 	size = cvSize(image->width, image->height);
-	// 	grayImage = cvCreateImage(size, IPL_DEPTH_8U, 1);
-	// 	cvCvtColor(image, grayImage, CV_BGR2GRAY);
-	// 	detectImage = grayImage;
-	// }
 
 	// Detect all faces
 	rects = cvHaarDetectObjects(detectImage, cascade, storage, searchScaleFactor, minNeighbours,

@@ -104,3 +104,12 @@ IplImage* resizeImage(IplImage* srcImage, bool preserveAspectRatio = true,
         }
         return outImage;
 }
+
+void drawBox(IplImage* image, CvRect rect, CvScalar colour)
+{
+	cvRectangle(image,
+		    cvPoint(rect.x,rect.y),
+		    cvPoint(rect.x + rect.width, rect.y + rect.height),
+		    colour);
+}
+

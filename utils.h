@@ -58,4 +58,7 @@ using namespace std;
     IplImage* resizeImage(IplImage*, bool, int, int);
 #endif
 
-
+#ifndef DRAW_BOX
+#define DRAW_BOX 
+    void drawBox(IplImage*, CvRect, CvScalar);
+#endif
