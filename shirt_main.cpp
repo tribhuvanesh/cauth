@@ -28,17 +28,17 @@ const char* cascadeFileFace = "haar/haarcascade_frontalface_alt.xml";	// Path to
 
 // Various color types for detected shirt colors.
 enum                             {cBLACK=0,cWHITE, cGREY, cRED, cORANGE, cYELLOW, cGREEN, cAQUA, cBLUE, cPURPLE, cPINK,  NUM_COLOR_TYPES};
-char* sCTypes[NUM_COLOR_TYPES] = {"Black", "White","Grey","Red","Orange","Yellow","Green","Aqua","Blue","Purple","Pink"};
+char sCTypes[][NUM_COLOR_TYPES] = {"Black", "White","Grey","Red","Orange","Yellow","Green","Aqua","Blue","Purple","Pink"};
 uchar cCTHue[NUM_COLOR_TYPES] =    {0,       0,      0,     0,     20,      30,      55,    85,   115,    138,     161};
 uchar cCTSat[NUM_COLOR_TYPES] =    {0,       0,      0,    255,   255,     255,     255,   255,   255,    255,     255};
 uchar cCTVal[NUM_COLOR_TYPES] =    {0,      255,    120,   255,   255,     255,     255,   255,   255,    255,     255};
 
-struct shirtcolor_template
+struct shirt_template
 {
 	IplImage * shirt_hsv;
 	int color_perc[NUM_COLOR_TYPES];
 };
-typedef struct shirtcolor_template * S_TEMPL;
+typedef struct shirt_template * S_TEMPL;
 
 // Determine what type of color the HSV pixel is. Returns the colorType between 0 and NUM_COLOR_TYPES.
 int getPixelColorType(int H, int S, int V)
@@ -73,17 +73,17 @@ int getPixelColorType(int H, int S, int V)
 	return color;
 }
 
-void create_template(S_TEMPL init_templ)
+void create_template(S_TEMPL init_templ,CvCapture* capture,CvHaarClassifierCascade* cascadeFace)
 {
 	IplImage * imageIn;
-	CvCapture* capture;
+	//CvCapture* capture;
 
-	capture = cvCreateCameraCapture(getenv("CAM")==NULL? -1:1);
+	//capture = cvCreateCameraCapture(getenv("CAM")==NULL? -1:1);
 	assert( capture != NULL );
 	
 	// Load the HaarCascade classifier for face detection. Added by Shervin on 22/9/09
-	cout << "Loading Face HaarCascade in '" << cascadeFileFace << "'" << endl;
-	CvHaarClassifierCascade* cascadeFace = (CvHaarClassifierCascade*)cvLoad(cascadeFileFace, 0, 0, 0 );
+	//cout << "Loading Face HaarCascade in '" << cascadeFileFace << "'" << endl;
+	//CvHaarClassifierCascade* cascadeFace = (CvHaarClassifierCascade*)cvLoad(cascadeFileFace, 0, 0, 0 );
 	if( !cascadeFace ) 
 	{
 		cerr << "ERROR: Couldn't load face detector classifier in '" << cascadeFileFace << "'\n";
@@ -91,8 +91,9 @@ void create_template(S_TEMPL init_templ)
 	}	
 	cout<<"initialising initial template"<<endl;
 	for(int k=0; k<NUM_COLOR_TYPES; k++)
-		init_templ->color_perc[k]=0.0f;		
+		init_templ->color_perc[k]=0;		
 
+	cvNamedWindow("Shirt", 1);	
 	cout<<"beginning capture for initial template"<<endl;	
 	int j=0;	
 	while(j< 5)
@@ -103,6 +104,7 @@ void create_template(S_TEMPL init_templ)
 		
 		IplImage* imageDisplay = cvCloneImage(imageIn);	//display image with rectangles
 		CvRect rectFace;
+		cvShowImage("Shirt", imageDisplay);		
 		rectFace = detectFace(imageIn, cascadeFace);
 		drawBox(imageDisplay, rectFace, CV_RGB(255,0,0));
 		//cout << "Detecting shirt color below the face." << endl;
@@ -155,19 +157,18 @@ void create_template(S_TEMPL init_templ)
 			// Convert the shirt region from RGB colors to HSV colors
 			cout << "Converting shirt region to HSV" << endl;
 			IplImage *imageShirt = cropImage(imageIn, rectShirt);
-			init_templ->shirt_hsv = cvCreateImage(cvGetSize(imageShirt), 8, 3);	//store in template
-			cvCvtColor(imageShirt, init_templ->shirt_hsv, CV_BGR2HSV);	// (note that OpenCV stores RGB images in B,G,R order.)	
-			if( !(init_templ->shirt_hsv) ) 
+			IplImage *imageShirtHSV = cvCreateImage(cvGetSize(imageShirt), 8, 3);	
+			cvCvtColor(imageShirt, imageShirtHSV, CV_BGR2HSV);	// (note that OpenCV stores RGB images in B,G,R order.)	
+			if( !(imageShirtHSV) ) 
 			{
 				cerr << "ERROR: Couldn't convert Shirt image from BGR2HSV." << endl;
 				exit(1);
 			}
 			cout << "Determining color type of the shirt" << endl;
-			IplImage *temp = init_templ->shirt_hsv;
-			int h = temp->height;				// Pixel height
-			int w = temp->width;				// Pixel width
-			int rowSize = temp->widthStep;		// Size of row in bytes, including extra padding
-			char *pixOfsh = temp->imageData;	// Pointer to the start of the image HSV pixels.
+			int h = imageShirtHSV->height;				// Pixel height
+			int w = imageShirtHSV->width;				// Pixel width
+			int rowSize = imageShirtHSV->widthStep;		// Size of row in bytes, including extra padding
+			char *pixOfsh = imageShirtHSV->imageData;	// Pointer to the start of the image HSV pixels.
 			cout<<"reached here";
 			// Create an empty tally of pixel counts for each color type
 			int tallyColors[NUM_COLOR_TYPES];
@@ -191,7 +192,7 @@ void create_template(S_TEMPL init_templ)
 				}
 			}
 			
-			cvNamedWindow("Shirt", 1);
+			
 	    		cvShowImage("Shirt", imageDisplay);
 		
 			cout<<" Store into template the sum of 5 shirt images based on color types";
@@ -201,17 +202,19 @@ void create_template(S_TEMPL init_templ)
 			
 			// Free resources.
 			cvReleaseImage( &imageShirt );
+			cvReleaseImage( &imageShirtHSV );		
 		}//end if valid height
 		cvReleaseImage(&imageDisplay);
 		cvReleaseImage(&imageIn);
+		
 	
 	}//end while loop for 5 shirt images
 	for (int i=0; i<NUM_COLOR_TYPES; i++)	//calculate avg of image HSV colours
 		init_templ->color_perc[i] /= 5;					
 
 	// Free resources.
-	cvReleaseHaarClassifierCascade( &cascadeFace );
-	cvReleaseCapture(&capture);
+	//cvReleaseHaarClassifierCascade( &cascadeFace );
+	//cvReleaseCapture(&capture);
 	cvDestroyWindow("Shirt");
 }
 
@@ -234,12 +237,9 @@ int main(int argc, char **argv)
 {	
 	IplImage * imageIn;
 	CvCapture* capture;
-	S_TEMPL init_templ;
+	S_TEMPL init_templ= (struct shirt_template*) malloc(sizeof(struct shirt_template));
 	//int flag =0;
 	
-	create_template(init_templ);	//CREATES INITIAL TEMPLATE
-	cout<<"template creation completed";	
-
 	capture = cvCreateCameraCapture(getenv("CAM")==NULL? -1:1);
 	assert( capture != NULL );
 
@@ -252,9 +252,12 @@ int main(int argc, char **argv)
 		exit(1);
 	}	
 
+	create_template(init_templ,capture,cascadeFace);	//CREATES INITIAL TEMPLATE
+	cout<<"template creation completed";	
+	
 	while(run_shirt)
 	{						
-		S_TEMPL sCompare;
+		S_TEMPL sCompare= (struct shirt_template*) malloc(sizeof(struct shirt_template));
 	
 		for (int i=0; i<NUM_COLOR_TYPES; i++)
 			sCompare->color_perc[i]=0;			
