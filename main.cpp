@@ -23,6 +23,10 @@ detect.h:
 #include <cassert>
 #include <ctime>
 
+#include<cryptopp/sha.h>
+#include<cryptopp/filters.h>
+#include<cryptopp/hex.h>
+
 #include <cv.h>
 #include <cvaux.h>
 #include <highgui.h>
@@ -282,7 +286,6 @@ int loadTrainingData(CvMat **pTrainPersonNumMat)
 		eigenVectArr[i] = (IplImage *)cvReadByName(fileStorage, 0, varname, 0);
 	}
 	
-
 	// release the file-storage interface
 	cvReleaseFileStorage( &fileStorage );
 
@@ -669,14 +672,66 @@ void collect(string prefix, int collectCount)
 	cvDestroyWindow("test");
 }
 
+string create_hash(string source)
+{
+	CryptoPP::SHA1 sha1;
+	string source = pwd1;
+	string hash = ""
+	CryptoPP::StringSource(source, true, 
+				new CryptoPP::HashFilter(sha1, 
+				new CryptoPP::HexEncoder(new CryptoPP::StringSink(hash))));
+	return hash;
+}
+
+bool verify_pwd()
+{
+	int timeout = 3;
+	string ipwd, ihash = "", storedHash;
+	CvFileStorage* fileStorage;
+	fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_WRITE);
+
+	// Obtain username and password of the user, and hash it
+	cout<<"Enter username: ";
+	cin>>prefix;
+	cout<<endl;
+
+	// Obtain hash of this user stored during account creation
+	char username[200];
+	snprintf(username, sizeof(username)-1, "user_%s", prefix.c_str());
+	storedHash = cvReadStringByName(fileStorage, 0, username);
+#if DEBUG
+	cout<<storedHash<<endl;
+#endif
+	cout<<username<<"\t"<<hash<<endl;
+	while((storedHash != ihash) && (timeout--))
+	{
+		cout<<"Enter password: ";
+		cin>>ipwd;
+		cout<<endl;
+
+		ihash = create_hash(ipwd);
+	}
+
+	cvReleaseFileStorage(&fileStorage);
+
+	// Compare hashes and return
+	return (storedHash == ihash);
+}
 
 int main(int argc, char** argv)
 {
 	init();
+	string hash = "";
 
 	switch(argc)
 	{
-		case 1: recognizeFromCam();
+		case 1: if(verify_pwd());
+				recognizeFromCam();
+			else
+			{
+				cout<<"Password time-out. Now exiting."<<endl;
+				return 0;
+			}
 			break;
 
 		case 2: string cmd = argv[1];
@@ -689,16 +744,34 @@ int main(int argc, char** argv)
 			else if (cmd == "--collect")
 			{
 				string prefix, pwd1, pwd2;
+				string pwd_sha1_str;
+				int time_out = 3;
 				printf("Enter prefix: ");
 				cin>>prefix;
 				// TODO Erase each character as it is entered
 				printf("Enter password: ");
 				cin>>pwd1;
-				while(pwd1 != pwd2)
+				// TODO erase each character thats printed out on STDOUT
+				while((pwd1 != pwd2) && (time_out--))
 				{
 					//Store password for this particular user
 					printf("Re-enter password\n");
+					// TODO erase each character thats printed out on STDOUT
 					cin>>pwd2;
+				}
+
+				if(pwd1 == pwd2)
+				{
+					// unsigned char pwd_sha1[100];
+					// unsigned char* pwd_org = new unsigned char[pwd1.size() + 1];
+					// copy(pwd1.begin(), pwd1.end(), pwd_org);
+					// /* SHA1(const_cast<unsigned char*>(pwd1.c_str()), pwd1.length(), pwd_sha1); */
+					// SHA1(pwd_org, pwd1.length(), pwd_sha1);
+					// //printf("%u\n%c\n%X\n", pwd_sha1, pwd_sha1, pwd_sha1);
+					// // vector<char> pwd_enc;
+					// // fR(i, 0, strlen((char*)pwd_sha1)) pwd_enc.push_back(pwd_sha1[i]);
+					// fR(i, 0, strlen((char*)pwd_sha1)) printf("%02x", pwd_sha1[i]);
+					hash = create_hash(pwd1);
 				}
 				printf("\n");
 
@@ -709,7 +782,17 @@ int main(int argc, char** argv)
 				printf("Learning phase initiated.\n");
 				learn();
 				printf("Learning phase completed.\n");
+			
+				// Write username and password to file	
+				CvFileStorage* fileStorage;
+				fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_WRITE);
 
+				char username[200];
+				snprintf(username, sizeof(username)-1, "user_%s", prefix.c_str());
+				cout<<username<<"\t"<<hash<<endl;
+				cvWrite(fileStorage, username, hash.c_str(), cvAttrList(0,0));
+
+				cvReleaseFileStorage(&fileStorage);
 				// printf("**Printing names!! 2: \n");
 				// fR(i, 0, personNames.size()) cout<<personNames[i]<<"\t";
 				

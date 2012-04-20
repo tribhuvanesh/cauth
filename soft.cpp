@@ -9,8 +9,8 @@
 //ImageUtil includes
 #include <vector>	// Used for C++ vectors
 #include <map>
-#include<algorithm>
-#include<numeric>
+#include <algorithm>
+#include <numeric>
 //#include <sstream>	// for printing floats in C++
 //#include <fstream>	// for opening files in C++
 
@@ -22,7 +22,7 @@
 #include "detect.h"
 #include "utils.h"
 
-#define AVG_TEMP_COUNT 5
+#define AVG_TEMP_COUNT 10
 #define EPSILON 0.01
 bool run_shirt=true;
 
@@ -37,7 +37,7 @@ string colour_types[] = {"Black", "White","Grey","Red","Orange","Yellow","Green"
 
 // Function prototypes
 int		    getPixelColorType(int H, int S, int V);
-map<string, float>  get_temp( IplImage*, CvHaarClassifierCascade* );
+map<string, float>  getTemplate( IplImage*, CvHaarClassifierCascade* );
 map<string, float>  createAverage( vector< map<string, float> > );
 float		    sigmoid( float );
 float		    nrmsd( map<string, float>, map<string, float> );
@@ -86,7 +86,7 @@ int getPixelColorType(int H, int S, int V)
 }
 
 
-map<string, float> get_temp(IplImage* imageIn, CvHaarClassifierCascade *cascadeFace)
+map<string, float> getTemplate(IplImage* imageIn, CvHaarClassifierCascade *cascadeFace)
 {	
 						
 		assert( imageIn != NULL );			
@@ -277,18 +277,18 @@ map<string, float> get_temp(IplImage* imageIn, CvHaarClassifierCascade *cascadeF
 	return cmap;
 }
 
-map<string, float> createAverage( vector< map<string, float> > cmap_vect )
+map<string, float> createAverage( vector< map<string, float> > cmapVect )
 {
 	int i, j;
 	map<string, float> avgTemplate;
 
 	for (i = 0; i < colour_vect.size(); i++)
 	{
-		for (j = 0; j < cmap_vect.size(); j++)
+		for (j = 0; j < cmapVect.size(); j++)
 		{
-			avgTemplate[colour_vect[i]] += cmap_vect[j][colour_vect[i]];
+			avgTemplate[colour_vect[i]] += cmapVect[j][colour_vect[i]];
 		}
-		avgTemplate[colour_vect[i]] /= cmap_vect.size();
+		avgTemplate[colour_vect[i]] /= cmapVect.size();
 	}
 
 	return avgTemplate;
@@ -315,27 +315,50 @@ float nrmsd(map<string, float> avgTemplate, map<string, float> currentTemplate)
 
 	rmsd = sqrt( accumulate(delta.begin(), delta.end(), 0) / delta.size() );
 
-	//cout<<"RMSD = "<<rmsd;
-	//cout<<"\t Range = "<<range_norm<<endl;
-
 	return 1 - rmsd/range_norm;
 }
+
+map<string, float> createTemplate(CvCapture* capture, CvHaarClassifierCascade* cascadeFace, int avgIterations)
+{
+	vector< map<string, float> > cmapVect;
+	IplImage* imageIn;
+
+	while(true)
+	{
+		imageIn = cvQueryFrame(capture);
+		map<string, float> cmap = getTemplate(imageIn, cascadeFace);
+		
+		if(cmapVect.size() == avgIterations)
+			break;
+		else
+			if(cmap.size() != 0)
+				cmapVect.push_back(cmap);
+
+		char c = cvWaitKey(30);
+		if( c == 27 )
+			break;
+		
+	}
+
+	return createAverage(cmapVect);
+}
+
 
 int main(int argc, char** argv)
 {
 	int i;
 	IplImage * imageIn;
 	CvCapture* capture;
-	cvNamedWindow("Shirt", CV_WINDOW_AUTOSIZE);
-	//S_TEMPL init_templ= (struct shirt_template*) malloc(sizeof(struct shirt_template));
-	printf("Initialized template");
-	//cvShowImage("Shirt", init_templ->shirt_hsv);
 	
 	map<string, float>::iterator it;
 	map<string, float> avgTemplate;
+	vector< map<string, float> > cmapVect;
 
 	capture = cvCreateCameraCapture(getenv("CAM")==NULL? -1:1);
 	assert( capture != NULL );
+
+	cvNamedWindow("Shirt", CV_WINDOW_AUTOSIZE);
+	printf("Initialized template");
 
 	//Load the HaarCascade classifier for face detection. Added by Shervin on 22/9/09
 	cout << "Loading Face HaarCascade in '" << cascadeFileFace << "'" << endl;
@@ -346,42 +369,14 @@ int main(int argc, char** argv)
 		exit(1);
 	}	
 
-	vector< map<string, float> > cmap_vect;
-
 	// Creating average template by using the next 5 valid frames
-	while(true)
-	{
-		imageIn = cvQueryFrame(capture);
-		map<string, float> cmap = get_temp(imageIn, cascadeFace);
-		map<string, float>::iterator it;
-		
-		// cout<<"**cmap size: "<<cmap.size()<<endl;
-		// for (it = cmap.begin(); it != cmap.end(); it++)
-		// {
-		// 	cout<<(*it).first<<" => "<<(*it).second<<"  ";
-		// }
-
-		cout<<endl;
-
-		if(cmap_vect.size() == AVG_TEMP_COUNT)
-			break;
-		else
-			if(cmap.size() != 0)
-				cmap_vect.push_back(cmap);
-
-		char c = cvWaitKey(30);
-		if( c == 27 )
-			break;
-		
-	}
-
-	avgTemplate = createAverage(cmap_vect);
+	avgTemplate = createTemplate(capture, cascadeFace, AVG_TEMP_COUNT);
 
 #if DEBUG
 	cout<<"Printing the 5 colours templates"<<endl;
-	for (i = 0; i < cmap_vect.size(); i++)
+	for (i = 0; i < cmapVect.size(); i++)
 	{
-		for (it = cmap_vect[i].begin(); it != cmap_vect[i].end(); it++)
+		for (it = cmapVect[i].begin(); it != cmapVect[i].end(); it++)
 		{
 			cout<<(*it).first<<" => "<<(*it).second<<"  ";
 		}
@@ -400,7 +395,7 @@ int main(int argc, char** argv)
 	while(true)
 	{
 		imageIn = cvQueryFrame(capture);
-		map<string, float> currentmap = get_temp(imageIn, cascadeFace);
+		map<string, float> currentmap = getTemplate(imageIn, cascadeFace);
 
 		if(currentmap.size() != 0)
 		{	
