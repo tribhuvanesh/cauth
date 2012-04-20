@@ -23,14 +23,21 @@ detect.h:
 #include <cassert>
 #include <ctime>
 
+// To obtain password from the user
+#include <unistd.h>
+
+
+// For SHA1 encoding of password before storing it in the xml file
 #include<cryptopp/sha.h>
 #include<cryptopp/filters.h>
 #include<cryptopp/hex.h>
 
+// OpenCV libraries
 #include <cv.h>
 #include <cvaux.h>
 #include <highgui.h>
 
+// Other independent modules
 #include "detect.h"
 #include "utils.h"
 
@@ -68,6 +75,9 @@ IplImage**	      eigenVectArr          = 0; // eigenvectors
 CvMat*		      eigenValMat	    = 0; // eigenvalues
 CvMat*		      projectedTrainFaceMat = 0; // Projected training faces
 vector<string>        personNames;
+
+char prompt[]                               = "Enter password: ";
+char promptAgain[]                          = "Re-enter password: ";
 
 
 // Function prototypes
@@ -675,8 +685,7 @@ void collect(string prefix, int collectCount)
 string create_hash(string source)
 {
 	CryptoPP::SHA1 sha1;
-	string source = pwd1;
-	string hash = ""
+	string hash = "";
 	CryptoPP::StringSource(source, true, 
 				new CryptoPP::HashFilter(sha1, 
 				new CryptoPP::HexEncoder(new CryptoPP::StringSink(hash))));
@@ -686,29 +695,26 @@ string create_hash(string source)
 bool verify_pwd()
 {
 	int timeout = 3;
-	string ipwd, ihash = "", storedHash;
+	string ipwd, ihash = "", storedHash, prefix;
 	CvFileStorage* fileStorage;
 	fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_WRITE);
 
 	// Obtain username and password of the user, and hash it
 	cout<<"Enter username: ";
 	cin>>prefix;
-	cout<<endl;
 
 	// Obtain hash of this user stored during account creation
 	char username[200];
 	snprintf(username, sizeof(username)-1, "user_%s", prefix.c_str());
-	storedHash = cvReadStringByName(fileStorage, 0, username);
+	//storedHash = cvReadStringByName(fileStorage, 0, username);
+	storedHash = "ABC";
 #if DEBUG
 	cout<<storedHash<<endl;
 #endif
-	cout<<username<<"\t"<<hash<<endl;
 	while((storedHash != ihash) && (timeout--))
 	{
-		cout<<"Enter password: ";
-		cin>>ipwd;
-		cout<<endl;
-
+		ipwd = getpass(prompt);
+		printf("\n");
 		ihash = create_hash(ipwd);
 	}
 
@@ -725,7 +731,7 @@ int main(int argc, char** argv)
 
 	switch(argc)
 	{
-		case 1: if(verify_pwd());
+		case 1: if(verify_pwd())
 				recognizeFromCam();
 			else
 			{
@@ -749,15 +755,11 @@ int main(int argc, char** argv)
 				printf("Enter prefix: ");
 				cin>>prefix;
 				// TODO Erase each character as it is entered
-				printf("Enter password: ");
-				cin>>pwd1;
+				pwd1 = getpass(prompt);
 				// TODO erase each character thats printed out on STDOUT
 				while((pwd1 != pwd2) && (time_out--))
 				{
-					//Store password for this particular user
-					printf("Re-enter password\n");
-					// TODO erase each character thats printed out on STDOUT
-					cin>>pwd2;
+					pwd2 = getpass(promptAgain);
 				}
 
 				if(pwd1 == pwd2)
