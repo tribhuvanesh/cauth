@@ -76,6 +76,11 @@ CvMat*		      eigenValMat	    = 0; // eigenvalues
 CvMat*		      projectedTrainFaceMat = 0; // Projected training faces
 vector<string>        personNames;
 
+// If a new account has been created, store the following
+// bool		      createAccount = false;
+// char		      uname[200];
+// char		      upwd[200];
+
 char prompt[]                               = "Enter password: ";
 char promptAgain[]                          = "Re-enter password: ";
 
@@ -697,17 +702,24 @@ bool verify_pwd()
 	int timeout = 3;
 	string ipwd, ihash = "", storedHash, prefix;
 	CvFileStorage* fileStorage;
-	fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_WRITE);
+	fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_READ);
 
 	// Obtain username and password of the user, and hash it
 	cout<<"Enter username: ";
 	cin>>prefix;
 
+	cout<<"Starting verification"<<endl;
+
 	// Obtain hash of this user stored during account creation
+	char user_[] = "user_";
 	char username[200];
-	snprintf(username, sizeof(username)-1, "user_%s", prefix.c_str());
-	//storedHash = cvReadStringByName(fileStorage, 0, username);
-	storedHash = "ABC";
+	//snprintf(username, sizeof(username)-1, "user_%s", prefix.c_str());
+	strcpy(username, user_);
+	strcat(username, prefix.c_str());
+	cout<<username;
+	storedHash = cvReadStringByName(fileStorage, 0, username);
+	cout<<"Read Hash: "<<storedHash<<endl;
+	//storedHash = "ABC";
 #if DEBUG
 	cout<<storedHash<<endl;
 #endif
@@ -787,18 +799,25 @@ int main(int argc, char** argv)
 			
 				// Write username and password to file	
 				CvFileStorage* fileStorage;
-				fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_WRITE);
+				fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_APPEND);
 
+				char user_[] = "user_";
 				char username[200];
-				snprintf(username, sizeof(username)-1, "user_%s", prefix.c_str());
+				//snprintf(username, sizeof(username)-1, "user_%s", prefix.c_str());
+				strcpy(username, user_);
+				strcat(username, prefix.c_str());
 				cout<<username<<"\t"<<hash<<endl;
-				cvWrite(fileStorage, username, hash.c_str(), cvAttrList(0,0));
-
+				cvWriteString(fileStorage, username, hash.c_str(), 0);
 				cvReleaseFileStorage(&fileStorage);
+
+				// fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_READ);
+				// string s = cvReadString(fileStorage, 0, username);
+				// cout<<s<<endl;
+				// cvReleaseFileStorage(&fileStorage);
+
 				// printf("**Printing names!! 2: \n");
 				// fR(i, 0, personNames.size()) cout<<personNames[i]<<"\t";
 				
-				// TODO personNames.size()[-1] maps to ID newly added account. Store password in the xml file.
 
 			}
 	}
