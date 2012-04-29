@@ -27,23 +27,24 @@
 
 #define AVG_TEMP_COUNT 10
 #define EPSILON 0.01
-extern bool run_shirt=true;
 
+extern bool run_shirt;
 // Various colour types for detected shirt colours.
-extern enum                             {cBLACK=0,cWHITE, cGREY, cRED, cORANGE, cYELLOW, cGREEN, cAQUA, cBLUE, cPURPLE, cPINK,  NUM_COLOUR_TYPES};
-extern char sCTypes[][NUM_COLOUR_TYPES] = {"Black", "White","Grey","Red","Orange","Yellow","Green","Aqua","Blue","Purple","Pink"};
-extern uchar cCTHue[NUM_COLOUR_TYPES] =    {0,       0,      0,     0,     20,      30,      55,    85,   115,    138,     161};
-extern uchar cCTSat[NUM_COLOUR_TYPES] =    {0,       0,      0,    255,   255,     255,     255,   255,   255,    255,     255};
-extern uchar cCTVal[NUM_COLOUR_TYPES] =    {0,      255,    120,   255,   255,     255,     255,   255,   255,    255,     255};
+enum                             {cBLACK=0,cWHITE, cGREY, cRED, cORANGE, cYELLOW, cGREEN, cAQUA, cBLUE, cPURPLE, cPINK,  NUM_COLOUR_TYPES};
+extern char sCTypes[][NUM_COLOUR_TYPES];
+extern uchar cCTHue[NUM_COLOUR_TYPES];
+extern uchar cCTSat[NUM_COLOUR_TYPES];
+extern uchar cCTVal[NUM_COLOUR_TYPES];
 
-extern string colour_types[] = {"Black", "White","Grey","Red","Orange","Yellow","Green","Aqua","Blue","Purple","Pink"};
+extern string colour_types[];
 
 // Initialize vector with colours
 // vector<string> colour_vect(sCTypes, sCTypes + NUM_COLOUR_TYPES);
 
 // Range for normalizing RMSD
-extern float range_norm = sqrt((2*100*100) / NUM_COLOUR_TYPES);
+extern float range_norm;
 
+extern const char* cascadeFileFace;	// Path to the Face Detection HaarCascade XML file
 #ifndef GET_PIXEL_COLOR_TYPE
 #define GET_PIXEL_COLOR_TYPE
     int getPixelColorType(int, int, int);
@@ -66,7 +67,7 @@ extern float range_norm = sqrt((2*100*100) / NUM_COLOUR_TYPES);
 
 #ifndef NRMSD
 #define NRMSD
-    map<string, float> nrmsd(map<string, float>, map<string, float>);
+    float nrmsd(map<string, float>, map<string, float>);
 #endif
 
 #ifndef CREATE_TEMPLATE

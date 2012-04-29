@@ -40,6 +40,7 @@ detect.h:
 // Other independent modules
 #include "detect.h"
 #include "utils.h"
+#include "soft.h"
 
 #define vi vector<int>
 #define v2di vector< vector<int> >
@@ -84,6 +85,17 @@ vector<string>        personNames;
 char prompt[]                               = "Enter password: ";
 char promptAgain[]                          = "Re-enter password: ";
 
+// Initialize variables for soft biometric tests
+bool run_shirt=true;
+// Various colour types for detected shirt colours.
+//enum                             {cBLACK=0,cWHITE, cGREY, cRED, cORANGE, cYELLOW, cGREEN, cAQUA, cBLUE, cPURPLE, cPINK,  NUM_COLOUR_TYPES};
+char sCTypes[][NUM_COLOUR_TYPES] = {"Black", "White","Grey","Red","Orange","Yellow","Green","Aqua","Blue","Purple","Pink"};
+uchar cCTHue[NUM_COLOUR_TYPES] =    {0,       0,      0,     0,     20,      30,      55,    85,   115,    138,     161};
+uchar cCTSat[NUM_COLOUR_TYPES] =    {0,       0,      0,    255,   255,     255,     255,   255,   255,    255,     255};
+uchar cCTVal[NUM_COLOUR_TYPES] =    {0,      255,    120,   255,   255,     255,     255,   255,   255,    255,     255};
+string colour_types[] = {"Black", "White","Grey","Red","Orange","Yellow","Green","Aqua","Blue","Purple","Pink"};
+float range_norm = sqrt((2*100*100) / NUM_COLOUR_TYPES);
+//const char* cascadeFileFace = "haar/haarcascade_frontalface_alt.xml";	// Path to the Face Detection HaarCascade XML file
 
 // Function prototypes
 void      init(void);
@@ -764,11 +776,12 @@ int main(int argc, char** argv)
 				string prefix, pwd1, pwd2;
 				string pwd_sha1_str;
 				int time_out = 3;
-				printf("Enter prefix: ");
+
+				printf("Enter username: ");
 				cin>>prefix;
-				// TODO Erase each character as it is entered
+
 				pwd1 = getpass(prompt);
-				// TODO erase each character thats printed out on STDOUT
+
 				while((pwd1 != pwd2) && (time_out--))
 				{
 					pwd2 = getpass(promptAgain);

@@ -21,19 +21,21 @@
 #include <highgui.h>
 #include "detect.h"
 #include "utils.h"
+#include "soft.h"
 
 #define AVG_TEMP_COUNT 10
 #define EPSILON 0.01
-bool run_shirt=true;
 
+
+//bool run_shirt=true;
 // Various colour types for detected shirt colours.
-enum                             {cBLACK=0,cWHITE, cGREY, cRED, cORANGE, cYELLOW, cGREEN, cAQUA, cBLUE, cPURPLE, cPINK,  NUM_COLOUR_TYPES};
-char sCTypes[][NUM_COLOUR_TYPES] = {"Black", "White","Grey","Red","Orange","Yellow","Green","Aqua","Blue","Purple","Pink"};
-uchar cCTHue[NUM_COLOUR_TYPES] =    {0,       0,      0,     0,     20,      30,      55,    85,   115,    138,     161};
-uchar cCTSat[NUM_COLOUR_TYPES] =    {0,       0,      0,    255,   255,     255,     255,   255,   255,    255,     255};
-uchar cCTVal[NUM_COLOUR_TYPES] =    {0,      255,    120,   255,   255,     255,     255,   255,   255,    255,     255};
-
-string colour_types[] = {"Black", "White","Grey","Red","Orange","Yellow","Green","Aqua","Blue","Purple","Pink"};
+//enum                             {cBLACK=0,cWHITE, cGREY, cRED, cORANGE, cYELLOW, cGREEN, cAQUA, cBLUE, cPURPLE, cPINK,  NUM_COLOUR_TYPES};
+// char sCTypes[][NUM_COLOUR_TYPES] = {"Black", "White","Grey","Red","Orange","Yellow","Green","Aqua","Blue","Purple","Pink"};
+// uchar cCTHue[NUM_COLOUR_TYPES] =    {0,       0,      0,     0,     20,      30,      55,    85,   115,    138,     161};
+// uchar cCTSat[NUM_COLOUR_TYPES] =    {0,       0,      0,    255,   255,     255,     255,   255,   255,    255,     255};
+// uchar cCTVal[NUM_COLOUR_TYPES] =    {0,      255,    120,   255,   255,     255,     255,   255,   255,    255,     255};
+// 
+// string colour_types[] = {"Black", "White","Grey","Red","Orange","Yellow","Green","Aqua","Blue","Purple","Pink"};
 
 // Function prototypes
 int		    getPixelColorType(int H, int S, int V);
@@ -46,10 +48,10 @@ float		    nrmsd( map<string, float>, map<string, float> );
 vector<string> colour_vect(sCTypes, sCTypes + NUM_COLOUR_TYPES);
 
 // Range for normalizing RMSD
-float range_norm = sqrt((2*100*100) / NUM_COLOUR_TYPES);
+/* float range_norm = sqrt((2*100*100) / NUM_COLOUR_TYPES); */
 
 // Face Detection HaarCascade Classifier file for OpenCV (downloadable from "http://alereimondo.no-ip.org/OpenCV/34").
-const char* cascadeFileFace = "haar/haarcascade_frontalface_alt.xml";	// Path to the Face Detection HaarCascade XML file
+//const char* cascadeFileFace = "haar/haarcascade_frontalface_alt.xml";	// Path to the Face Detection HaarCascade XML file
 
 
 // Determine what type of colour the HSV pixel is. Returns the colourType between 0 and NUM_COLOUR_TYPES.
@@ -343,7 +345,7 @@ map<string, float> createTemplate(CvCapture* capture, CvHaarClassifierCascade* c
 	return createAverage(cmapVect);
 }
 
-
+/*
 int main(int argc, char** argv)
 {
 	int i;
@@ -428,3 +430,4 @@ int main(int argc, char** argv)
 
 	return 0;
 }
+*/
