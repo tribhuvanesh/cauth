@@ -26,7 +26,6 @@ detect.h:
 // To obtain password from the user
 #include <unistd.h>
 
-
 // For SHA1 encoding of password before storing it in the xml file
 #include<cryptopp/sha.h>
 #include<cryptopp/filters.h>
@@ -108,7 +107,7 @@ int loadTrainingData(CvMat** pTrainPersonNumMat);
 int findNearestNeighbour(float* projectedTestFace, float* confidence);
 int loadFaceImageArr(char* filename);
 
-void recognizeFromCam();
+void recognizeFromCam(string user);
 void collect();
 
 // Initializes constants and static data
@@ -481,7 +480,7 @@ void storeEigenfaceImages()
 }
 
 
-void recognizeFromCam()
+void recognizeFromCam(string user)
 {
 	IplImage* frame;
 	IplImage *faceImage = 0;
@@ -709,7 +708,7 @@ string create_hash(string source)
 	return hash;
 }
 
-bool verify_pwd()
+string verify_pwd()
 {
 	int timeout = 3;
 	string ipwd, ihash = "", storedHash, prefix;
@@ -745,18 +744,24 @@ bool verify_pwd()
 	cvReleaseFileStorage(&fileStorage);
 
 	// Compare hashes and return
-	return (storedHash == ihash);
+	 if (storedHash == ihash)
+		 return prefix;
+	else
+		return string("NULL");
 }
 
 int main(int argc, char** argv)
 {
 	init();
 	string hash = "";
+	string user;
 
 	switch(argc)
 	{
-		case 1: if(verify_pwd())
-				recognizeFromCam();
+		case 1: user = verify_pwd();
+			if(user != "NULL")
+				recognizeFromCam(user);
+				soft_main();
 			else
 			{
 				cout<<"Password time-out. Now exiting."<<endl;

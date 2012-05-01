@@ -51,7 +51,6 @@ vector<string> colour_vect(sCTypes, sCTypes + NUM_COLOUR_TYPES);
 /* float range_norm = sqrt((2*100*100) / NUM_COLOUR_TYPES); */
 
 // Face Detection HaarCascade Classifier file for OpenCV (downloadable from "http://alereimondo.no-ip.org/OpenCV/34").
-//const char* cascadeFileFace = "haar/haarcascade_frontalface_alt.xml";	// Path to the Face Detection HaarCascade XML file
 
 
 // Determine what type of colour the HSV pixel is. Returns the colourType between 0 and NUM_COLOUR_TYPES.
@@ -345,13 +344,13 @@ map<string, float> createTemplate(CvCapture* capture, CvHaarClassifierCascade* c
 	return createAverage(cmapVect);
 }
 
-/*
-int main(int argc, char** argv)
+//int main(int argc, char** argv)
+int soft_main()
 {
 	int i;
 	IplImage * imageIn;
 	CvCapture* capture;
-	
+	const char* cascadeFileFace = "haar/haarcascade_frontalface_alt.xml";	// Path to the Face Detection HaarCascade XML file
 	map<string, float>::iterator it;
 	map<string, float> avgTemplate;
 	vector< map<string, float> > cmapVect;
@@ -430,4 +429,3 @@ int main(int argc, char** argv)
 
 	return 0;
 }
-*/

@@ -74,3 +74,8 @@ extern const char* cascadeFileFace;	// Path to the Face Detection HaarCascade XM
 #define CREATE_TEMPLATE
     map<string, float> createTemplate(CvCapture*, CvHaarClassifierCascade*, int);
 #endif
+
+#ifndef SOFT_MAIN
+#define SOFT_MAIN
+    int soft_main();
+#endif
