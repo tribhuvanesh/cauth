@@ -6,6 +6,9 @@ utils.h:
 Calls to detect face in a given frame
 detect.h:
 
+Soft biometric traits functions
+soft.h
+
 */
 #include <iostream>
 #include <algorithm>
@@ -53,7 +56,7 @@ detect.h:
 #define DEBUG 1
 #define FILEOP 0
 #define STORE_EIGEN 1
-#define COLLECT_COUNT 50
+#define COLLECT_COUNT 10
 #define COUNT_FREQ 5
 #define EXTENSION ".jpeg"
 
@@ -75,11 +78,6 @@ IplImage**	      eigenVectArr          = 0; // eigenvectors
 CvMat*		      eigenValMat	    = 0; // eigenvalues
 CvMat*		      projectedTrainFaceMat = 0; // Projected training faces
 vector<string>        personNames;
-
-// If a new account has been created, store the following
-// bool		      createAccount = false;
-// char		      uname[200];
-// char		      upwd[200];
 
 char prompt[]                               = "Enter password: ";
 char promptAgain[]                          = "Re-enter password: ";
@@ -826,50 +824,55 @@ int main(int argc, char** argv)
 				}
 
 				if(pwd1 == pwd2)
-				{
-					// unsigned char pwd_sha1[100];
-					// unsigned char* pwd_org = new unsigned char[pwd1.size() + 1];
-					// copy(pwd1.begin(), pwd1.end(), pwd_org);
-					// /* SHA1(const_cast<unsigned char*>(pwd1.c_str()), pwd1.length(), pwd_sha1); */
-					// SHA1(pwd_org, pwd1.length(), pwd_sha1);
-					// //printf("%u\n%c\n%X\n", pwd_sha1, pwd_sha1, pwd_sha1);
-					// // vector<char> pwd_enc;
-					// // fR(i, 0, strlen((char*)pwd_sha1)) pwd_enc.push_back(pwd_sha1[i]);
-					// fR(i, 0, strlen((char*)pwd_sha1)) printf("%02x", pwd_sha1[i]);
 					hash = create_hash(pwd1);
-				}
 				printf("\n");
 
-				// printf("**Printing names!! 1: \n");
-				// fR(i, 0, personNames.size()) cout<<personNames[i]<<"\t";
-				//
+				// Read existing hashes before calling learn. Learn overwrites the xml file
+				map<string, string> hashMap;
+				map<string, string>::iterator it;
+				CvFileStorage* fileStorage;
+				int i;
+				char user_[] = "user_";
+				
+				// Open filestorage and read in all hashes of users
+				fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_READ);
+				for(i=0; i < personNames.size(); i++)
+				{
+					char username[200];
+					string usernameXML = personNames[i];
+
+					strcpy(username, user_);
+					strcat(username, usernameXML.c_str());
+
+					string storedHash = cvReadStringByName(fileStorage, 0, username);
+
+					// Push (username, hash) to hashMap
+					hashMap[usernameXML] = storedHash;
+				}
+				//Append new user to hashmap and close fileStorage
+				hashMap[prefix] = hash;
+				cvReleaseFileStorage(&fileStorage);
+
+				// Collect and train. This overwrites the existing xml file.
 				collect(prefix, COLLECT_COUNT);
 				printf("Learning phase initiated.\n");
 				learn();
 				printf("Learning phase completed.\n");
-			
-				// Write username and password to file	
-				CvFileStorage* fileStorage;
+
+				// Append the hashes stored in hashmap back to file
 				fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_APPEND);
-
-				char user_[] = "user_";
-				char username[200];
-				//snprintf(username, sizeof(username)-1, "user_%s", prefix.c_str());
-				strcpy(username, user_);
-				strcat(username, prefix.c_str());
-				cout<<username<<"\t"<<hash<<endl;
-				cvWriteString(fileStorage, username, hash.c_str(), 0);
+				for(it = hashMap.begin(); it != hashMap.end(); it++)
+				{
+					char username[200];
+					strcpy(username, user_);
+					// User
+					strcat(username, (*it).first.c_str());
+					// Hash for the user
+					string hashVal = (*it).second;
+					// Append it to xml file
+					cvWriteString(fileStorage, username, hash.c_str(), 0);
+				}
 				cvReleaseFileStorage(&fileStorage);
-
-				// fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_READ);
-				// string s = cvReadString(fileStorage, 0, username);
-				// cout<<s<<endl;
-				// cvReleaseFileStorage(&fileStorage);
-
-				// printf("**Printing names!! 2: \n");
-				// fR(i, 0, personNames.size()) cout<<personNames[i]<<"\t";
-				
-
 			}
 	}
 	return 0;
