@@ -769,6 +769,7 @@ string create_hash(string source)
 string verify_pwd()
 {
 	int timeout = 3;
+	bool userExist = false;
 	string ipwd, ihash = "", storedHash, prefix;
 	CvFileStorage* fileStorage;
 	fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_READ);
@@ -782,14 +783,27 @@ string verify_pwd()
 	// Obtain hash of this user stored during account creation
 	char user_[] = "user_";
 	char username[200];
-	//snprintf(username, sizeof(username)-1, "user_%s", prefix.c_str());
+	int i;
 	strcpy(username, user_);
 	strcat(username, prefix.c_str());
 	cout<<username;
-	cout<<"Fetching from db"<<endl;
-	storedHash = cvReadStringByName(fileStorage, 0, username);
+
+	// Verify if user exists
+	loadPersons();
+	for(i = 0; i < personNames.size() && !userExist; i++)
+	{
+		if (personNames[i] == prefix)
+			userExist = true;
+	}
+
+	if (userExist)
+		storedHash = cvReadStringByName(fileStorage, 0, username);
+	else
+	{
+		// Something random. Return NULL.
+		storedHash = "blackdread";
+	}
 	cout<<"Read Hash: "<<storedHash<<endl;
-	//storedHash = "ABC";
 #if DEBUG
 	cout<<storedHash<<endl;
 #endif
@@ -803,10 +817,60 @@ string verify_pwd()
 	cvReleaseFileStorage(&fileStorage);
 
 	// Compare hashes and return
-	 if (storedHash == ihash)
+	 if ((storedHash == ihash) && (userExist))
 		 return prefix;
 	else
 		return string("NULL");
+}
+
+map<string, string> obtainHashMapFromFile()
+{
+	// Read existing hashes before calling learn. Learn overwrites the xml file
+	map<string, string> hashMap;
+	CvFileStorage* fileStorage;
+	int i;
+	char user_[] = "user_";
+	
+	// Open filestorage and read in all hashes of users
+	fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_READ);
+	loadPersons();
+	for(i=0; i < personNames.size(); i++)
+	{
+		char username[200];
+		string usernameXML = personNames[i];
+
+		strcpy(username, user_);
+		strcat(username, usernameXML.c_str());
+
+		string storedHash = cvReadStringByName(fileStorage, 0, username);
+
+		// Push (username, hash) to hashMap
+		hashMap[usernameXML] = storedHash;
+	}
+	cvReleaseFileStorage(&fileStorage);
+	return hashMap;
+}
+
+int appendToFile(map<string, string> hashMap)
+{
+	char user_[] = "user_";
+	CvFileStorage* fileStorage;
+	map<string, string>::iterator it;
+	// Append the hashes stored in hashmap back to file
+	fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_APPEND);
+	for(it = hashMap.begin(); it != hashMap.end(); it++)
+	{
+		char username[200];
+		strcpy(username, user_);
+		// User
+		strcat(username, (*it).first.c_str());
+		// Hash for the user
+		string hashVal = (*it).second;
+		// Append it to xml file
+		cvWriteString(fileStorage, username, hashVal.c_str(), 0);
+	}
+	cvReleaseFileStorage(&fileStorage);
+
 }
 
 int main(int argc, char** argv)
@@ -833,9 +897,13 @@ int main(int argc, char** argv)
 		case 2: string cmd = argv[1];
 			if (cmd == "--learn")
 			{
+				map<string, string> hashMap = obtainHashMapFromFile();
+
 				printf("Learning phase initiated.\n");
 				learn();
 				printf("Learning phase completed.\n");
+
+				appendToFile(hashMap);
 			}
 			else if (cmd == "--collect")
 			{
@@ -857,58 +925,27 @@ int main(int argc, char** argv)
 					hash = create_hash(pwd1);
 				printf("\n");
 
-				// Read existing hashes before calling learn. Learn overwrites the xml file
-				map<string, string> hashMap;
+				// Obtain (user, hash) from file and store it temporarily. learn() overwrites the xml file
+				map<string, string> hashMap = obtainHashMapFromFile();
 				map<string, string>::iterator it;
-				CvFileStorage* fileStorage;
-				int i;
-				char user_[] = "user_";
-				
-				// Open filestorage and read in all hashes of users
-				fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_READ);
-				loadPersons();
-				for(i=0; i < personNames.size(); i++)
-				{
-					char username[200];
-					string usernameXML = personNames[i];
 
-					strcpy(username, user_);
-					strcat(username, usernameXML.c_str());
-
-					string storedHash = cvReadStringByName(fileStorage, 0, username);
-
-					// Push (username, hash) to hashMap
-					hashMap[usernameXML] = storedHash;
-				}
-				//Append new user to hashmap and close fileStorage
+				//Append new user to hashmap
 				hashMap[prefix] = hash;
-				cvReleaseFileStorage(&fileStorage);
 
 				for(it = hashMap.begin(); it != hashMap.end(); it++)
 				{
 					cout<<"Printing hashmap:"<<endl;
 					cout<<(*it).first<<"\t"<<(*it).second<<endl;
 				}
+
 				// Collect and train. This overwrites the existing xml file.
 				collect(prefix, COLLECT_COUNT);
 				printf("Learning phase initiated.\n");
 				learn();
 				printf("Learning phase completed.\n");
-
-				// Append the hashes stored in hashmap back to file
-				fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_APPEND);
-				for(it = hashMap.begin(); it != hashMap.end(); it++)
-				{
-					char username[200];
-					strcpy(username, user_);
-					// User
-					strcat(username, (*it).first.c_str());
-					// Hash for the user
-					string hashVal = (*it).second;
-					// Append it to xml file
-					cvWriteString(fileStorage, username, hashVal.c_str(), 0);
-				}
-				cvReleaseFileStorage(&fileStorage);
+				
+				// Write back the (user, hash) values to xml file
+				appendToFile(hashMap);
 			}
 	}
 	return 0;
