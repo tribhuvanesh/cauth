@@ -53,7 +53,7 @@ detect.h:
 #define DEBUG 1
 #define FILEOP 0
 #define STORE_EIGEN 1
-#define COLLECT_COUNT 51
+#define COLLECT_COUNT 50
 #define COUNT_FREQ 5
 #define EXTENSION ".jpeg"
 
@@ -159,13 +159,11 @@ void learn()
 	// Load training data
 	char trainingFile[] = "train.txt";
 	nTrainFaces = loadFaceImageArr(trainingFile);
-	// TODO Erase each character as it is entered
         printf("Read %d faces..\n", nTrainFaces);
 	assert(nTrainFaces > 2);
 
 	// Do PCA on training images to find a subspace
 	printf("Starting PCAin learn()\n");
-	doPCA();
         printf("Completed PCA\n");
 
 	// Project the training images on to the PCA subspace
@@ -388,7 +386,8 @@ int loadFaceImageArr(char* filename)
 	printf("People: ");
 	if (nPersons > 0)
 		printf("<%s>", personNames[0].c_str());
-	for (i=1; i<nPersons; i++) {
+	for (i=1; i<nPersons; i++)
+	{
 		printf(", <%s>", personNames[i].c_str());
 	}
 	printf(".\n");
@@ -479,6 +478,16 @@ void storeEigenfaceImages()
 	}
 }
 
+int getID(string user)
+{
+	int i;
+	for (i = 0; i < personNames.size(); i++)
+	{
+		if(personNames[i] == user)
+			return i;
+	}
+}
+
 
 void recognizeFromCam(string user)
 {
@@ -504,6 +513,9 @@ void recognizeFromCam(string user)
 	string extension = EXTENSION;
 	string filename;
 	stringstream sstm;
+
+	// Add 1, since indexing in vector starts from 0, and UIDs start from 1
+	int uid = getID(user) + 1;
 
 	// Estimates
 	float mu = 0;
@@ -600,8 +612,12 @@ void recognizeFromCam(string user)
 				mu = ((r_mu * sig) + (mu * r_sig)) / (sig + r_sig);
 				sig = (sig * r_sig) / (sig + r_sig);
 
+				cout<<"UID: "<<uid<<endl;
 				printf("Nearest = %d, Person = %s, Confidence = %f\n", nearest, personNames[nearest-1].c_str(), confidence);
-				printf("Mu = %f\tSigma = %f\n");
+				printf("Mu = %f\tSigma = %f\n", mu, sig);
+
+				double areaUnderCurve = 0.00;
+
 
 			}
 		}
@@ -742,6 +758,7 @@ string verify_pwd()
 	strcpy(username, user_);
 	strcat(username, prefix.c_str());
 	cout<<username;
+	cout<<"Fetching from db"<<endl;
 	storedHash = cvReadStringByName(fileStorage, 0, username);
 	cout<<"Read Hash: "<<storedHash<<endl;
 	//storedHash = "ABC";
