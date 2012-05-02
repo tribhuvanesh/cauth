@@ -53,7 +53,7 @@ detect.h:
 #define DEBUG 1
 #define FILEOP 0
 #define STORE_EIGEN 1
-#define COLLECT_COUNT 5
+#define COLLECT_COUNT 51
 #define COUNT_FREQ 5
 #define EXTENSION ".jpeg"
 
@@ -505,6 +505,13 @@ void recognizeFromCam(string user)
 	string filename;
 	stringstream sstm;
 
+	// Estimates
+	float mu = 0;
+	float sig = 10000;
+	// Error in estimation
+	float r_mu;
+	float r_sig = 2;
+
     // No extra arguments. Load training data and start recognition phase.
     if( loadTrainingData(&trainPersonNumMat) )
     {
@@ -588,7 +595,14 @@ void recognizeFromCam(string user)
 				iNearest = findNearestNeighbour(projectedTestFace, &confidence);
 				nearest = trainPersonNumMat->data.i[iNearest];
 
+				r_mu = nearest;
+
+				mu = ((r_mu * sig) + (mu * r_sig)) / (sig + r_sig);
+				sig = (sig * r_sig) / (sig + r_sig);
+
 				printf("Nearest = %d, Person = %s, Confidence = %f\n", nearest, personNames[nearest-1].c_str(), confidence);
+				printf("Mu = %f\tSigma = %f\n");
+
 			}
 		}
 		else
@@ -760,8 +774,10 @@ int main(int argc, char** argv)
 	{
 		case 1: user = verify_pwd();
 			if(user != "NULL")
+			{
 				recognizeFromCam(user);
-				soft_main();
+				//soft_main();
+			}
 			else
 			{
 				cout<<"Password time-out. Now exiting."<<endl;
