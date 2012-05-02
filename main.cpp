@@ -56,7 +56,7 @@ soft.h
 #define DEBUG 1
 #define FILEOP 0
 #define STORE_EIGEN 1
-#define COLLECT_COUNT 10
+#define COLLECT_COUNT 5
 #define COUNT_FREQ 5
 #define EXTENSION ".jpeg"
 
@@ -161,14 +161,15 @@ void learn()
 	assert(nTrainFaces > 2);
 
 	// Do PCA on training images to find a subspace
-	printf("Starting PCAin learn()\n");
+	printf("Starting PCA in learn()\n");
+	doPCA();
         printf("Completed PCA\n");
 
 	// Project the training images on to the PCA subspace
         projectedTrainFaceMat = cvCreateMat(nTrainFaces, nEigens, CV_32FC1);
+	printf("Eigen Decomposite");
 	for (i = 0; i < nTrainFaces; i++) 
 	{
-                // printf("Projecting face %d\n", i);
 		cvEigenDecomposite( faceImageArr[i], // Input object
 				    nEigens,         // no. of eigenvalues
 				    eigenVectArr,    // Pointer to array of IplImage input objects
@@ -257,6 +258,35 @@ int findNearestNeighbour(float* projectedTestFace, float* confidence)
 	*confidence = 1.0f - sqrt( leastDistSq / (float)(nTrainFaces * nEigens) ) / 255.0f;
 
 	return iNearest;
+}
+
+int loadPersons()
+{
+	CvFileStorage * fileStorage;
+	int i;
+
+	fileStorage = cvOpenFileStorage( "facedata.xml", 0, CV_STORAGE_READ );
+	nPersons = cvReadIntByName(fileStorage, 0, "nPersons", 0);
+	if(nPersons == 0)
+	{
+		printf("Database is empty. \n");
+		return 0;
+	}
+
+	cout<<"nPersons: "<<nPersons<<endl;
+	for (i = 0; i < nPersons; i++)
+	{
+		string sPersonName;
+		char varname[200];
+		snprintf(varname, sizeof(varname)-1, "personName_%d", (i+1));
+		cout<<"Reading string "<<varname<<endl;
+		sPersonName = cvReadStringByName(fileStorage, 0, varname);
+		cout<<"Loaded person: "<<sPersonName<<endl;
+		personNames.push_back(sPersonName);
+	}
+	cvReleaseFileStorage( &fileStorage );
+
+	return nPersons;
 }
 
 int loadTrainingData(CvMat **pTrainPersonNumMat)
@@ -836,6 +866,7 @@ int main(int argc, char** argv)
 				
 				// Open filestorage and read in all hashes of users
 				fileStorage = cvOpenFileStorage("facedata.xml", 0, CV_STORAGE_READ);
+				loadPersons();
 				for(i=0; i < personNames.size(); i++)
 				{
 					char username[200];
@@ -853,6 +884,11 @@ int main(int argc, char** argv)
 				hashMap[prefix] = hash;
 				cvReleaseFileStorage(&fileStorage);
 
+				for(it = hashMap.begin(); it != hashMap.end(); it++)
+				{
+					cout<<"Printing hashmap:"<<endl;
+					cout<<(*it).first<<"\t"<<(*it).second<<endl;
+				}
 				// Collect and train. This overwrites the existing xml file.
 				collect(prefix, COLLECT_COUNT);
 				printf("Learning phase initiated.\n");
@@ -870,7 +906,7 @@ int main(int argc, char** argv)
 					// Hash for the user
 					string hashVal = (*it).second;
 					// Append it to xml file
-					cvWriteString(fileStorage, username, hash.c_str(), 0);
+					cvWriteString(fileStorage, username, hashVal.c_str(), 0);
 				}
 				cvReleaseFileStorage(&fileStorage);
 			}
