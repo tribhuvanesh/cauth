@@ -53,10 +53,10 @@ soft.h
 #define ull unsigned long long int
 #define ll long long int
 
-#define DEBUG 1
+#define DEBUG 0
 #define FILEOP 0
 #define STORE_EIGEN 1
-#define COLLECT_COUNT 5
+#define COLLECT_COUNT 51
 #define COUNT_FREQ 5
 #define EXTENSION ".jpeg"
 
@@ -92,21 +92,24 @@ uchar cCTSat[NUM_COLOUR_TYPES] =    {0,       0,      0,    255,   255,     255,
 uchar cCTVal[NUM_COLOUR_TYPES] =    {0,      255,    120,   255,   255,     255,     255,   255,   255,    255,     255};
 string colour_types[] = {"Black", "White","Grey","Red","Orange","Yellow","Green","Aqua","Blue","Purple","Pink"};
 float range_norm = sqrt((2*100*100) / NUM_COLOUR_TYPES);
-//const char* cascadeFileFace = "haar/haarcascade_frontalface_alt.xml";	// Path to the Face Detection HaarCascade XML file
 
 // Function prototypes
-void      init(void);
-void      storeEigenfaceImages();
-
-void learn();
-void doPCA();
-void storeTrainingData();
-int loadTrainingData(CvMat** pTrainPersonNumMat);
-int findNearestNeighbour(float* projectedTestFace, float* confidence);
-int loadFaceImageArr(char* filename);
-
-void recognizeFromCam(string user);
-void collect();
+void		    init(void);
+void		    storeEigenfaceImages();
+void		    learn();
+void	            doPCA();
+void	            storeTrainingData();
+int		    loadTrainingData(CvMat** pTrainPersonNumMat);
+int		    findNearestNeighbour(float* projectedTestFace, float* confidence);
+int		    loadFaceImageArr(char* filename);
+void		    recognizeFromCam(string user);
+void	            collect();
+int		    loadPersons();
+int		    getID(string user);
+string		    create_hash(string source);
+string		    verify_pwd();
+map<string, string> obtainHashMapFromFile();
+int		    appendToFile(map<string, string> hashMap);
 
 // Initializes constants and static data
 void init()
@@ -279,9 +282,9 @@ int loadPersons()
 		string sPersonName;
 		char varname[200];
 		snprintf(varname, sizeof(varname)-1, "personName_%d", (i+1));
-		cout<<"Reading string "<<varname<<endl;
+		//cout<<"Reading string "<<varname<<endl;
 		sPersonName = cvReadStringByName(fileStorage, 0, varname);
-		cout<<"Loaded person: "<<sPersonName<<endl;
+		//cout<<"Loaded person: "<<sPersonName<<endl;
 		personNames.push_back(sPersonName);
 	}
 	cvReleaseFileStorage( &fileStorage );
@@ -455,9 +458,7 @@ void storeTrainingData()
                 char fname[200];
                 strcpy(fname, varname);
                 strcat(fname, ".jpeg");
-                // cout<<"Storing "<<fname<<endl;
 	        cvWrite(fileStorage, varname, eigenVectArr[i], cvAttrList(0,0));
-                // cvSave(fname, convertFloatImageToUcharImage(eigenVectArr[i]));
 	}
 
 	if(STORE_EIGEN)
@@ -532,7 +533,7 @@ void recognizeFromCam(string user)
 	bool runFlag = true;
 
 	cvNamedWindow("CA", CV_WINDOW_AUTOSIZE);
-	cvNamedWindow("test", CV_WINDOW_AUTOSIZE);
+	/* cvNamedWindow("test", CV_WINDOW_AUTOSIZE); */
 
 	bool collectFlag = false;
 	int count = 0;
@@ -547,10 +548,10 @@ void recognizeFromCam(string user)
 
 	// Estimates
 	float mu = 0;
-	float sig = 10000;
+	float sig = 1000;
 	// Error in estimation
 	float r_mu;
-	float r_sig = 2;
+	float r_sig = 4;
 
     // No extra arguments. Load training data and start recognition phase.
     if( loadTrainingData(&trainPersonNumMat) )
@@ -599,7 +600,7 @@ void recognizeFromCam(string user)
 
 		cvShowImage("CA", frame);
                 
-                printf("Dimentsions of faceRect = %d x %d\n", faceRect.width, faceRect.height);
+                /* printf("Dimensions of faceRect = %d x %d\n", faceRect.width, faceRect.height); */
 
 		if(faceRect.width > 0)
 		{
@@ -611,8 +612,8 @@ void recognizeFromCam(string user)
                         equalizedImage = cvCreateImage(cvGetSize(resizedImage), 8, 1);
 			cvEqualizeHist(convertImageToGrayscale(resizedImage), equalizedImage);
 
-			printf("Recognizing! %d\n", nEigens);
-			cvShowImage("test", equalizedImage);
+			/* printf("Recognizing! %d\n", nEigens); */
+			/* cvShowImage("test", equalizedImage); */
 			processedFaceImage = equalizedImage;
 
 			if (nEigens > 0)
@@ -623,7 +624,7 @@ void recognizeFromCam(string user)
 				cvFree(&projectedTestFace);
 				projectedTestFace = (float *)cvAlloc(nEigens*sizeof(float));
 
-				printf("Projecting! \n");
+				/* printf("Projecting! \n"); */
 				cvEigenDecomposite( processedFaceImage,   // Input object
 						    nEigens,          // no. of eigenvalues
 						    eigenVectArr,     // Pointer to array of IplImage input objects
@@ -631,7 +632,7 @@ void recognizeFromCam(string user)
 						    pAvgTrainImage,   // Averaged object
 						    projectedTestFace // Output - calculated coefficients
 						  );
-				printf("Done projecting! \n");
+				/* printf("Done projecting! \n"); */
 				iNearest = findNearestNeighbour(projectedTestFace, &confidence);
 				nearest = trainPersonNumMat->data.i[iNearest];
 
@@ -640,18 +641,36 @@ void recognizeFromCam(string user)
 				mu = ((r_mu * sig) + (mu * r_sig)) / (sig + r_sig);
 				sig = (sig * r_sig) / (sig + r_sig);
 
-				cout<<"UID: "<<uid<<endl;
-				printf("Nearest = %d, Person = %s, Confidence = %f\n", nearest, personNames[nearest-1].c_str(), confidence);
-				printf("Mu = %f\tSigma = %f\n", mu, sig);
+				/* cout<<"UID: "<<uid<<endl; */
+				//printf("Nearest = %d, Person = %s, Confidence = %f\n", nearest, personNames[nearest-1].c_str(), confidence);
+				//printf("Mu = %f\tSigma = %f\n", mu, sig);
 
-				double areaUnderCurve = 0.00;
+				double a1 = 0.00, a2 = 0.00;
+				// Obtain area under curve in pdf, by calculating psi(a1) - psi(a2) from cdf
+				a1 = 0.5 * erf( (uid - mu + 0.5) / (sqrt(2 * sig)) );
+				a2 = 0.5 * erf( (uid - mu - 0.5) / (sqrt(2 * sig)) );
 
+				double areaUnderCurve = a1 - a2;
+				printf("P(user|uid, eigenvectors) = %f\n", areaUnderCurve);
 
+				CvFont font;
+				cvInitFont(&font,CV_FONT_HERSHEY_PLAIN, 1.0, 1.0, 0,1,CV_AA);
+				CvScalar textColor = CV_RGB(0,255,255);	// light blue text
+				char text[256];
+				snprintf(text, sizeof(text)-1, "Name: '%s'", personNames[nearest-1].c_str());
+				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + 15), &font, textColor);
+				/* snprintf(text, sizeof(text)-1, "Confidence: %f", confidence); */
+				snprintf(text, sizeof(text)-1, "P = %f", areaUnderCurve);
+				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + 30), &font, textColor);
+				snprintf(text, sizeof(text)-1, "Mu = %f  Sig = %f", mu, sig);
+				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + 45), &font, textColor);
 			}
 		}
 		else
 			continue;
 		
+		cvShowImage("CA", frame);
+
 		char c = cvWaitKey(delay);
 		if( c == 27 )
 			break;
@@ -665,7 +684,7 @@ void recognizeFromCam(string user)
 	cvReleaseHaarClassifierCascade(&faceCascade);
 	cvReleaseCapture(&capture);
 	cvDestroyWindow("CA");
-	cvDestroyWindow("test");
+	/* cvDestroyWindow("test"); */
 
 }
 
@@ -683,7 +702,7 @@ void collect(string prefix, int collectCount)
 	CvHaarClassifierCascade* faceCascade;
 
 	cvNamedWindow("CA", CV_WINDOW_AUTOSIZE);
-	cvNamedWindow("test", CV_WINDOW_AUTOSIZE);
+	/* cvNamedWindow("test", CV_WINDOW_AUTOSIZE); */
 
         unsigned int i, run = 0, collected = 0;
 	string extension = ".jpeg";
@@ -694,8 +713,8 @@ void collect(string prefix, int collectCount)
 	faceCascade = (CvHaarClassifierCascade*)cvLoad(cascadeFileMap["default"].c_str(), 0, 0, 0);
 	assert(faceCascade != NULL);
 
-	cvNamedWindow("CA", CV_WINDOW_AUTOSIZE);
-	cvNamedWindow("test", CV_WINDOW_AUTOSIZE);
+	/* cvNamedWindow("CA", CV_WINDOW_AUTOSIZE); */
+	/* cvNamedWindow("test", CV_WINDOW_AUTOSIZE); */
 
 	capture = cvCreateCameraCapture(-1);
 	assert( capture != NULL );
@@ -727,7 +746,7 @@ void collect(string prefix, int collectCount)
 			cout<<"Saving "<<filename<<endl;
 			cvSaveImage(filename.c_str(), equalizedImage);
 
-			cvShowImage("test", equalizedImage);
+			//cvShowImage("test", equalizedImage);
 
 			// Revert run back to 0. Increment count.
 			run = 0;
@@ -753,7 +772,7 @@ void collect(string prefix, int collectCount)
 	cvReleaseImage(&equalizedImage);
 
 	cvDestroyWindow("CA");
-	cvDestroyWindow("test");
+	/* cvDestroyWindow("test"); */
 }
 
 string create_hash(string source)
@@ -803,8 +822,8 @@ string verify_pwd()
 		// Something random. Return NULL.
 		storedHash = "blackdread";
 	}
-	cout<<"Read Hash: "<<storedHash<<endl;
 #if DEBUG
+	cout<<"Read Hash: "<<storedHash<<endl;
 	cout<<storedHash<<endl;
 #endif
 	while((storedHash != ihash) && (timeout--))
@@ -923,6 +942,11 @@ int main(int argc, char** argv)
 
 				if(pwd1 == pwd2)
 					hash = create_hash(pwd1);
+				else
+				{
+					printf("Password time-out. Now exiting\n");
+					return 0;
+				}
 				printf("\n");
 
 				// Obtain (user, hash) from file and store it temporarily. learn() overwrites the xml file
