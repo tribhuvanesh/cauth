@@ -54,6 +54,8 @@ soft.h
 #define ll long long int
 
 #define DEBUG 0
+// Enable this to display extra information in the window
+#define EXDETAILS 0
 #define FILEOP 0
 #define STORE_EIGEN 1
 #define COLLECT_COUNT 51
@@ -530,12 +532,15 @@ void recognizeFromCam(string user)
 	CvCapture* capture;
 
 	int delay = 33;
+	int t = 0;
+	int authDelay = 50;
 	bool runFlag = true;
 
 	cvNamedWindow("CA", CV_WINDOW_AUTOSIZE);
 	/* cvNamedWindow("test", CV_WINDOW_AUTOSIZE); */
 
 	bool collectFlag = false;
+	string loggedIn = "NULL";
 	int count = 0;
         unsigned int i;
 	string prefix;
@@ -657,13 +662,50 @@ void recognizeFromCam(string user)
 				cvInitFont(&font,CV_FONT_HERSHEY_PLAIN, 1.0, 1.0, 0,1,CV_AA);
 				CvScalar textColor = CV_RGB(0,255,255);	// light blue text
 				char text[256];
-				snprintf(text, sizeof(text)-1, "Name: '%s'", personNames[nearest-1].c_str());
+				string rPerson = personNames[nearest-1];
+#if EXDETAILS
+				snprintf(text, sizeof(text)-1, "Name: '%s'", rPerson.c_str());
 				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + 15), &font, textColor);
 				/* snprintf(text, sizeof(text)-1, "Confidence: %f", confidence); */
 				snprintf(text, sizeof(text)-1, "P = %f", areaUnderCurve);
 				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + 30), &font, textColor);
 				snprintf(text, sizeof(text)-1, "Mu = %f  Sig = %f", mu, sig);
 				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + 45), &font, textColor);
+#else
+				snprintf(text, sizeof(text)-1, "Name: '%s'", rPerson.c_str());
+				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + 15), &font, textColor);
+				if(areaUnderCurve < 0.75)
+				{
+					if((t++ > authDelay - 10) && (loggedIn != rPerson) )
+					{
+						if (loggedIn != "NULL")
+							cvPutText(frame, "UNAUTHORIZED ACCESS", 
+								  cvPoint(faceRect.x, faceRect.y + faceRect.height + 30),
+								  &font, colourMap["blue"]);
+						else
+							cvPutText(frame, "TIME OUT. Now exiting...", 
+								  cvPoint(faceRect.x, faceRect.y + faceRect.height + 30),
+								  &font, colourMap["red"]);
+					}
+					else
+					{
+						int j;
+						char dots[10];
+						strcpy(dots, "");
+						for(j=0; j < t % 5; j++) strcat(dots, ".");
+						snprintf(text, sizeof(text)-1, "AUTHENTICATING%s", dots);
+						cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + 30), &font, textColor);
+					}
+				}
+				// TODO if area > 0.95, enter soft biometrics spinl-lock
+				else
+				{
+					t = authDelay + 10;
+					if((loggedIn == "NULL") && (rPerson == user))
+						loggedIn = rPerson;
+					cvPutText(frame, "AUTHORIZED ACCESS", cvPoint(faceRect.x, faceRect.y + faceRect.height + 30), &font, colourMap["green"]);
+				}
+	#endif
 			}
 		}
 		else
