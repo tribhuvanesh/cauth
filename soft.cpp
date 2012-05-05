@@ -87,7 +87,7 @@ int getPixelColorType(int H, int S, int V)
 }
 
 
-map<string, float> getTemplate(IplImage* imageIn, CvHaarClassifierCascade *cascadeFace)
+map<string, float> getTemplate(IplImage* imageIn, CvHaarClassifierCascade *cascadeFace, CvRect faceRect)
 {	
 						
 		assert( imageIn != NULL );			
@@ -130,11 +130,8 @@ map<string, float> getTemplate(IplImage* imageIn, CvHaarClassifierCascade *casca
 				cvShowImage("Colors", imageDisplayHSV_RGB);
 		#endif	// SHOW_DEBUG_IMAGE
 
-		CvRect rectFace;
-		//double timeFaceDetectStart = (double)cvGetTickCount();	// Record the timing.
-		rectFace = detectFace(imageIn, cascadeFace);
-		//double tallyFaceDetectTime = (double)cvGetTickCount() - timeFaceDetectStart;
-		//cout << "Found " << rectFaces.size() << " faces in " << tallyFaceDetectTime/((double)cvGetTickFrequency()*1000.) << "ms\n";	
+		// CvRect faceRect;
+		// faceRect = detectFace(imageIn, cascadeFace);
 #if DEBUG		
 		cout<< "detected face";
 		// Process each detected face
@@ -143,16 +140,16 @@ map<string, float> getTemplate(IplImage* imageIn, CvHaarClassifierCascade *casca
 
 		float initialConfidence = 1.0f;
 		int bottom;
-		drawBox(imageDisplay, rectFace, CV_RGB(255,0,0));
+		drawBox(imageDisplay, faceRect, CV_RGB(255,0,0));
 		// Create the shirt region, to be below the detected face and of similar size.
 		float SHIRT_DY = 1.4f;	// Distance from top of face to top of shirt region, based on detected face height.
 		float SHIRT_SCALE_X = 0.6f;	// Width of shirt region compared to the detected face
 		float SHIRT_SCALE_Y = 0.6f;	// Height of shirt region compared to the detected face
 		CvRect rectShirt;
-		rectShirt.x = rectFace.x + (int)(0.5f * (1.0f-SHIRT_SCALE_X) * (float)rectFace.width);
-		rectShirt.y = rectFace.y + (int)(SHIRT_DY * (float)rectFace.height) + (int)(0.5f * (1.0f-SHIRT_SCALE_Y)* (float)rectFace.height);
-		rectShirt.width = (int)(SHIRT_SCALE_X * rectFace.width);
-		rectShirt.height = (int)(SHIRT_SCALE_Y * rectFace.height);
+		rectShirt.x = faceRect.x + (int)(0.5f * (1.0f-SHIRT_SCALE_X) * (float)faceRect.width);
+		rectShirt.y = faceRect.y + (int)(SHIRT_DY * (float)faceRect.height) + (int)(0.5f * (1.0f-SHIRT_SCALE_Y)* (float)faceRect.height);
+		rectShirt.width = (int)(SHIRT_SCALE_X * faceRect.width);
+		rectShirt.height = (int)(SHIRT_SCALE_Y * faceRect.height);
 #if DEBUG		
 		cout << "Shirt region is from " << rectShirt.x << ", " << rectShirt.y << " to " << rectShirt.x + rectShirt.width - 1 << ", " << rectShirt.y + rectShirt.height - 1 << endl;
 #endif
@@ -164,8 +161,8 @@ map<string, float> getTemplate(IplImage* imageIn, CvHaarClassifierCascade *casca
 			SHIRT_DY = 0.95f;	// Distance from top of face to top of shirt region, based on detected face height.
 			SHIRT_SCALE_Y = 0.3f;	// Height of shirt region compared to the detected face
 			// Use a higher shirt region
-			rectShirt.y = rectFace.y + (int)(SHIRT_DY * (float)rectFace.height) + (int)(0.5f * (1.0f-SHIRT_SCALE_Y) * (float)rectFace.height);
-			rectShirt.height = (int)(SHIRT_SCALE_Y * rectFace.height);
+			rectShirt.y = faceRect.y + (int)(SHIRT_DY * (float)faceRect.height) + (int)(0.5f * (1.0f-SHIRT_SCALE_Y) * (float)faceRect.height);
+			rectShirt.height = (int)(SHIRT_SCALE_Y * faceRect.height);
 			initialConfidence = initialConfidence * 0.5f;	// Since we are using a smaller region, we are less confident about the results now.
 #if DEBUG
 			cout << "Warning: Shirt region goes past the end of the image. Trying to reduce the shirt region position to " ;
@@ -396,7 +393,8 @@ int soft_main()
 	while(true)
 	{
 		imageIn = cvQueryFrame(capture);
-		map<string, float> currentmap = getTemplate(imageIn, cascadeFace);
+		CvRect faceRect = detectFace(imageIn, cascadeFace);
+		map<string, float> currentmap = getTemplate(imageIn, cascadeFace, faceRect);
 
 		if(currentmap.size() != 0)
 		{	
