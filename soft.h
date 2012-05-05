@@ -52,7 +52,7 @@ extern const char* cascadeFileFace;	// Path to the Face Detection HaarCascade XM
 
 #ifndef GET_TEMPLATE
 #define GET_TEMPLATE
-    map<string, float> getTemplate(IplImage*, CvHaarClassifierCascade*);
+    map<string, float> getTemplate(IplImage*, CvHaarClassifierCascade*, CvRect);
 #endif
 
 #ifndef CREATE_AVERAGE

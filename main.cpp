@@ -520,6 +520,102 @@ int getID(string user)
 }
 
 
+void spin()
+{
+	IplImage* frame;
+	IplImage *faceImage = 0;
+	CvMat* trainPersonNumMat;
+	CvHaarClassifierCascade* faceCascade;
+	CvCapture* capture;
+
+	int delay = 33;
+	int t = 0;
+	int authDelay = 100;
+	bool runFlag = true;
+
+	cvNamedWindow("CA", CV_WINDOW_AUTOSIZE);
+	/* cvNamedWindow("test", CV_WINDOW_AUTOSIZE); */
+
+	bool collectFlag = false;
+	int count = 0;
+        unsigned int i;
+	string prefix;
+
+	// Add 1, since indexing in vector starts from 0, and UIDs start from 1
+	int uid = getID(user) + 1;
+
+    // No extra arguments. Load training data and start recognition phase.
+    if( loadTrainingData(&trainPersonNumMat) )
+    {
+	faceWidth = pAvgTrainImage->width;
+	faceHeight = pAvgTrainImage->height;
+	printf("Loaded training data successfully\n");
+    }
+    else
+    {
+	printf("Unable to load training data. Aborting\n");
+	exit(0);
+    }
+
+	capture = cvCreateCameraCapture(-1);
+	assert( capture != NULL );
+
+#if DEBUG
+	cout<<"Cam dimensions: "<<cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH)<<" "<<cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT)<<endl;
+	//cout<<"FPS: "<<cvGetCaptureProperty(capture, CV_CAP_PROP_FPS);
+
+	// cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH, 500);
+	// cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, 500);
+
+	cout<<"Cam dimensions now set to: "<<cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH)<<" "<<cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT)<<endl;
+	//cout<<"FPS: "<<cvGetCaptureProperty(capture, CV_CAP_PROP_FPS);
+#endif
+
+	// Choose from default, alt, alt2 or alt_tree
+	faceCascade = (CvHaarClassifierCascade*)cvLoad(cascadeFileMap["default"].c_str(), 0, 0, 0);
+	assert(faceCascade != NULL);
+
+	while(runFlag)
+	{
+		frame = cvQueryFrame(capture);
+		//frame = convertImageToGrayscale(frame);
+		if( !frame )
+			break;
+
+		CvRect faceRect = detectFace(frame, faceCascade);
+		drawBox(frame, faceRect, colourMap["white"]);
+
+#if DEBUG
+		cout<<"Size of face: "<<faceRect.width<<" x "<<faceRect.height<<endl;
+#endif
+		cvShowImage("CA", frame);
+                
+                /* printf("Dimensions of faceRect = %d x %d\n", faceRect.width, faceRect.height); */
+
+		if(faceRect.width > 0)
+		{
+			// TODO add spinlocks for hard and soft biometric traits
+		}
+		else
+			continue;
+		
+		cvShowImage("CA", frame);
+
+		char c = cvWaitKey(delay);
+		if( c == 27 )
+			break;
+
+		cvReleaseImage(&faceImage);
+		cvReleaseImage(&resizedImage);
+		cvReleaseImage(&equalizedImage);
+	}
+
+	cvReleaseHaarClassifierCascade(&faceCascade);
+	cvReleaseCapture(&capture);
+	cvDestroyWindow("CA");
+	/* cvDestroyWindow("test"); */
+}
+
 void recognizeFromCam(string user)
 {
 	IplImage* frame;
@@ -533,7 +629,7 @@ void recognizeFromCam(string user)
 
 	int delay = 33;
 	int t = 0;
-	int authDelay = 50;
+	int authDelay = 100;
 	bool runFlag = true;
 
 	cvNamedWindow("CA", CV_WINDOW_AUTOSIZE);
@@ -556,7 +652,7 @@ void recognizeFromCam(string user)
 	float sig = 1000;
 	// Error in estimation
 	float r_mu;
-	float r_sig = 4;
+	float r_sig = 16;
 
     // No extra arguments. Load training data and start recognition phase.
     if( loadTrainingData(&trainPersonNumMat) )
