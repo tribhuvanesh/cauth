@@ -1,0 +1,152 @@
+% tutorial.tex  -  a short descriptive example of a LaTeX document
+%
+% For additional information see  Tim Love's ``Text Processing using LaTeX''
+% http://www-h.eng.cam.ac.uk/help/tpl/textprocessing/
+%
+% You may also post questions to the newsgroup <b> comp.text.tex </b> 
+
+\documentclass[12pt]{article}			% For LaTeX 2e
+						% other documentclass options:
+						% draft, fleqn, openbib, 12pt
+
+\usepackage{graphicx}	 			% insert PostScript figures
+%% \usepackage{setspace}   % controllabel line spacing
+%% If an increased spacing different from one-and-a-half or double spacing is
+%% required then the spacing environment can be used.  The spacing environment 
+%% takes one argument which is the baselinestretch to use,
+%%         e.g., \begin{spacing}{2.5}  ...  \end{spacing}
+
+
+% the following produces 1 inch margins all around with no header or footer
+\topmargin	=10.mm		% beyond 25.mm
+\oddsidemargin	=0.mm		% beyond 25.mm
+\evensidemargin	=0.mm		% beyond 25.mm
+\headheight	=0.mm
+\headsep	=0.mm
+\textheight	=220.mm
+\textwidth	=165.mm
+					% SOME USEFUL OPTIONS:
+% \pagestyle{empty}			% no page numbers
+ \parindent  15.mm			% indent paragraph by this much
+ \parskip     2.mm			% space between paragraphs
+% \mathindent 20.mm			% indent math equations by this much
+
+\newcommand{\MyTabs}{ \hspace*{25.mm} \= \hspace*{25.mm} \= \hspace*{25.mm} \= \hspace*{25.mm} \= \hspace*{25.mm} \= \hspace*{25.mm} \kill }
+
+\graphicspath{{../Figures/}{../data/:}}  % post-script figures here or in /.
+
+					% Helps LaTeX put figures where YOU want
+ \renewcommand{\topfraction}{0.9}	% 90% of page top can be a float
+ \renewcommand{\bottomfraction}{0.9}	% 90% of page bottom can be a float
+ \renewcommand{\textfraction}{0.1}	% only 10% of page must to be text
+
+\linespread{1.2}
+\alph{footnote}				% make title footnotes alpha-numeric
+
+\title{Continuous Authentication\\using video-based face recognition}	% the document title
+\author{{\bf Project report - Phase I}{\bf}}
+\date{}				% your own text, a date, or \today
+
+% --------------------- end of the preamble ---------------------------
+
+\begin{document}			% REQUIRED
+
+\pagenumbering{roman}			% Roman numerals from abstract to text
+\maketitle				% you need to define \title{..}
+\thispagestyle{empty}			% no page number on THIS page 
+
+\begin{center}
+
+%A synopsis submitted in partial fulfillment of the requirements of the course \\[3ex]
+{\Large CS812}\\[3ex]
+{\Large}
+
+{\large}
+{\bf Under the guidance of }{\bf}\\[2ex]
+Dr. K. G. Srinivasa\\
+Professor\\
+Department of Computer Science and Engineering\\
+M. S. Ramaiah Institute of Technology\\[3ex]
+
+
+{\bf Submitted by}{\bf}\\[2ex]
+{\bf Soumya Gosukonda }{\bf} 1MS08CS119\\
+{\bf Tribhuvanesh Orekondy }{\bf} 1MS08CS129\\[8ex]
+{\large}
+
+\includegraphics[scale=0.20]{msrit.png}\\
+Department of Computer Science and Engineering\\
+M. S. Ramaiah Institute of Technology\\
+(Autonomous Institute Affiliated to VTU)\\
+Bangalore - 560054
+\end{center}
+
+\newpage
+\begin{abstract}			% beginning of the abstract
+
+% TODO <-----ABSTRACT GOES HERE------>
+
+Password based security is a commonly used measure to enforce valid authentication. Coupled with Iris and/or fingerprint based recognition, these systems, known as biometric authentication systems, strengthen this process of authentication. However, this is a one-time process and fails to provide continuous authentication. To illustrate the idea of Continuous Authentication (CA) consider a situation where the user has to leave her/his workstation unattended for a short period of time and forgets to lock it. In this time interval it is possible for an unauthorized user to gain access to the system and tamper with it. To avoid such a situation, continuous authentication can prove useful. 
+This project aims to deliver a continuous authentication system based on face recognition and soft biometric traits, namely shirt colour. We plan to achieve this goal using the OpenCV library and a suitable mathematical model.
+
+
+\end{abstract}				% end of the abstract
+
+\newpage				% start a new page
+\tableofcontents			% create table of contents automatically
+\newpage				% start a new page
+\pagenumbering{arabic}			% Arabic page numbers from now on
+
+
+% \section{ Applications }  
+
+\section{ Testing }
+
+\subsection{ Unit testing }
+The two primary units that comprise the Continuous Authentication system were individually tested under real-world conditions.
+
+\subsubsection{ Face Recognition }
+\emph{ Requirement: } Faces should be accurately recognized
+\emph{ Test: } A burst of 200 frames were collected with the user posing naturally with head movement
+\emph{ Result: } An accuracy of 94\% was achieved.
+
+\subsubsection{ Soft bio-metrics }
+\emph{ Requirement: } The soft-biometrics captured should not vary by large from the initial captured template
+\emph{ Test: } A burst of 200 frames was used with the user performing extreme movements
+\emph{ Result: } An accuracy of 78\% was achieved
+
+\subsection{ Performance testing } 
+\emph{ Requirement: } The Continuous Authentication system should be able to meet real-time requirements on a system
+\emph{ Test: } The code was tested on two systems - one with a Core 2 Duo processor at 3.0Ghz, and the other with a Core i5 processor at 2.66 Ghz
+\emph{ Result: } The real time requirements was easily met on the Core i5 system, and the Core 2 Duo system, but with a minor lag
+
+\subsection{ Security testing}
+\emph{ Requirement: } One should not be able to log in without the right credentials, or be able to reverse engineer
+\emph{ Test: } The passwords stored in the database should not be readable
+\emph{ Result: } Since the SHA1 hashes of the users were stored in the database, it's harmless even if one tries to retrieve it
+
+\subsection{ Compatibility testing }
+\emph{ Requirement: } The CA system should be compatible with all the latest versions of the libraries used
+\emph{ Test: } The code was compiled and executed on g++ 4.5-2.7, OpenCV versions 2.1-2.3 and 2 distributions of Linux
+\emph{ Result: } The code successfully compiled and executed on all the above versions
+
+\subsection{ Load Testing }
+\emph{ Requirement: } The CA system should be able to lock-on on one sigle person and perform verification 
+\emph{ Test: } The system was tested with multiple people in the frame
+\emph{ Result: } A lock-on was always performed on the largest-detected face in the frame
+
+\subsection{ Integration testing}
+\emph{ Requirement: } By integrating the two main components of Continuous Authentication, the system should successfully switch between them as and when needed
+\emph{ Test: } A 10 minute run was conducted under real-world conditions
+\emph{ Result: } The soft-biometrics mode was successfully able to switch to face recognition mode when confidence dropped below a certain threshold
+
+\subsection{ System testing }
+\emph{ Requirement: } A tail-gating unauthorized user should not be able to gain access for over 3-5 seconds
+\emph{ Test: } A 10 minute run was conducted with the user and an imposter switching a number of times
+\emph{ Result: } The imposter was able to gain access for over 5 seconds 2 times out of the 10 switches performed
+
+\section{ Results }
+The Continuous Authentication system was tested using 12 users in total, with 10 of those users having credentials registered in the database. Each user was logged in for a certain period in time, while the others tail-gated the authorized user. 
+
+\end{document}
+
