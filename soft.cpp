@@ -39,7 +39,7 @@
 
 // Function prototypes
 int		    getPixelColorType(int H, int S, int V);
-map<string, float>  getTemplate( IplImage*, CvHaarClassifierCascade* );
+map<string, float>  getTemplate( IplImage*, CvHaarClassifierCascade*, CvRect);
 map<string, float>  createAverage( vector< map<string, float> > );
 float		    sigmoid( float );
 float		    nrmsd( map<string, float>, map<string, float> );
@@ -126,8 +126,8 @@ map<string, float> getTemplate(IplImage* imageIn, CvHaarClassifierCascade *casca
 				// Display the HSV debugging image
 				IplImage *imageDisplayHSV_RGB = cvCreateImage(cvGetSize(imageDisplayHSV), 8, 3);
 				cvCvtColor(imageDisplayHSV, imageDisplayHSV_RGB, CV_HSV2BGR);	// (note that OpenCV stores RGB images in B,G,R order.
-				cvNamedWindow("Colors", 1);
-				cvShowImage("Colors", imageDisplayHSV_RGB);
+				// cvNamedWindow("Colors", 1);
+				// cvShowImage("Colors", imageDisplayHSV_RGB);
 		#endif	// SHOW_DEBUG_IMAGE
 
 		// CvRect faceRect;
@@ -254,8 +254,8 @@ map<string, float> getTemplate(IplImage* imageIn, CvHaarClassifierCascade *casca
 			cvInitFont(&font,CV_FONT_HERSHEY_PLAIN,0.8,1.0, 0,1, CV_AA);	// For OpenCV 2.0
 			char text[256];
 			snprintf(text, sizeof(text)-1, "%d%%", percentage);		
-			cvPutText(imageDisplay, sCTypes[tallyMaxIndex], cvPoint(rectShirt.x, rectShirt.y + rectShirt.height + 12), &font, CV_RGB(255,0,0));
-			cvPutText(imageDisplay, text, cvPoint(rectShirt.x, rectShirt.y + rectShirt.height + 24), &font, CV_RGB(255,0,0));
+			// cvPutText(imageDisplay, sCTypes[tallyMaxIndex], cvPoint(rectShirt.x, rectShirt.y + rectShirt.height + 12), &font, CV_RGB(255,0,0));
+			// cvPutText(imageDisplay, text, cvPoint(rectShirt.x, rectShirt.y + rectShirt.height + 24), &font, CV_RGB(255,0,0));
 			
 			// Free resources.
 			cvReleaseImage( &imageShirtHSV );
@@ -264,7 +264,7 @@ map<string, float> getTemplate(IplImage* imageIn, CvHaarClassifierCascade *casca
 			
 		// Display the RGB debugging image
 		// cvNamedWindow("Shirt", 1);
-		cvShowImage("Shirt", imageDisplay);
+		cvShowImage("CA", imageDisplay);
 			
 	// Pause
 	//cvWaitKey();
@@ -324,7 +324,8 @@ map<string, float> createTemplate(CvCapture* capture, CvHaarClassifierCascade* c
 	while(true)
 	{
 		imageIn = cvQueryFrame(capture);
-		map<string, float> cmap = getTemplate(imageIn, cascadeFace);
+		CvRect faceRect = detectFace(imageIn, cascadeFace);
+		map<string, float> cmap = getTemplate(imageIn, cascadeFace, faceRect);
 		
 		if(cmapVect.size() == avgIterations)
 			break;

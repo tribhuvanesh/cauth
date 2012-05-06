@@ -56,6 +56,7 @@ soft.h
 #define DEBUG 0
 // Enable this to display extra information in the window
 #define EXDETAILS 0
+#define SOFT_ENABLE 1
 #define FILEOP 0
 #define STORE_EIGEN 1
 #define COLLECT_COUNT 51
@@ -106,7 +107,7 @@ int		    findNearestNeighbour(float* projectedTestFace, float* confidence);
 int		    loadFaceImageArr(char* filename);
 void		    spin(string user);
 int		    recog(IplImage* frame, CvHaarClassifierCascade* faceCascade, CvRect faceRect, CvMat* trainPersonNumMat);
-void		    recognizeFromCam(string user);
+/* void		    recognizeFromCam(string user); */
 void	            collect();
 int		    loadPersons();
 int		    getID(string user);
@@ -571,7 +572,10 @@ int recog(IplImage* frame, CvHaarClassifierCascade* faceCascade, CvRect faceRect
 	return nearest;
 }
 
+void soft_spin(CvHaarClassifierCascade* faceCascade)
+{
 
+}
 
 void spin(string user)
 {
@@ -604,6 +608,11 @@ void spin(string user)
 	// Add 1, since indexing in vector starts from 0, and UIDs start from 1
 	int uid = getID(user) + 1;
 
+	bool hard_spin = true;
+	bool soft_spin = false;
+	bool updateAvg = false;
+	map<string, float> avgTemplate;
+
 	// No extra arguments. Load training data and start recognition phase.
 	if( loadTrainingData(&trainPersonNumMat) )
 	{
@@ -638,220 +647,17 @@ void spin(string user)
 		CvRect faceRect = detectFace(frame, faceCascade);
 		drawBox(frame, faceRect, colourMap["white"]);
 
+		int spacing = 15;
+		int lineNo = 1;
+
 #if DEBUG
 		cout<<"Size of face: "<<faceRect.width<<" x "<<faceRect.height<<endl;
 #endif
 		if(faceRect.width > 0)
 		{
-			// TODO add spinlocks for hard and soft biometric traits
-			int nearest = recog(frame, faceCascade, faceRect, trainPersonNumMat);
-				
-			r_mu = nearest;
-
-			mu = ((r_mu * sig) + (mu * r_sig)) / (sig + r_sig);
-			sig = (sig * r_sig) / (sig + r_sig);
-
-			/* cout<<"UID: "<<uid<<endl; */
-			//printf("Nearest = %d, Person = %s, Confidence = %f\n", nearest, personNames[nearest-1].c_str(), confidence);
-			//printf("Mu = %f\tSigma = %f\n", mu, sig);
-
-			double a1 = 0.00, a2 = 0.00;
-			// Obtain area under curve in pdf, by calculating psi(a1) - psi(a2) from cdf
-			a1 = 0.5 * erf( (uid - mu + 0.5) / (sqrt(2 * sig)) );
-			a2 = 0.5 * erf( (uid - mu - 0.5) / (sqrt(2 * sig)) );
-
-			double areaUnderCurve = a1 - a2;
-			printf("P(user|uid, eigenvectors) = %f\n", areaUnderCurve);
-
-			CvFont font;
-			cvInitFont(&font,CV_FONT_HERSHEY_PLAIN, 1.0, 1.0, 0,1,CV_AA);
-			CvScalar textColor = CV_RGB(0,255,255);	// light blue text
-			char text[256];
-			string rPerson = personNames[nearest-1];
-#if EXDETAILS
-			snprintf(text, sizeof(text)-1, "Name: '%s'", rPerson.c_str());
-			cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + 15), &font, textColor);
-			/* snprintf(text, sizeof(text)-1, "Confidence: %f", confidence); */
-			snprintf(text, sizeof(text)-1, "P = %f", areaUnderCurve);
-			cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + 30), &font, textColor);
-			snprintf(text, sizeof(text)-1, "Mu = %f  Sig = %f", mu, sig);
-			cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + 45), &font, textColor);
-#else
-			snprintf(text, sizeof(text)-1, "Name: '%s'", rPerson.c_str());
-			cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + 15), &font, textColor);
-			if(areaUnderCurve < 0.75)
+			if(hard_spin)
 			{
-				if((t++ > authDelay - 10) && (loggedIn != rPerson) )
-				{
-					if (loggedIn != "NULL")
-						cvPutText(frame, "UNAUTHORIZED ACCESS", 
-							  cvPoint(faceRect.x, faceRect.y + faceRect.height + 30),
-							  &font, colourMap["blue"]);
-					else
-						cvPutText(frame, "TIME OUT. Now exiting...", 
-							  cvPoint(faceRect.x, faceRect.y + faceRect.height + 30),
-							  &font, colourMap["red"]);
-				}
-				else
-				{
-					int j;
-					char dots[10];
-					strcpy(dots, "");
-					for(j=0; j < t % 5; j++) strcat(dots, ".");
-					snprintf(text, sizeof(text)-1, "AUTHENTICATING%s", dots);
-					cvPutText(frame, text,
-						  cvPoint(faceRect.x, faceRect.y + faceRect.height + 30),
-						  &font, textColor);
-				}
-			}
-			// Probability mass > threshold, enter soft-biometrics mode
-			// else if(areaUnderCurve >= 0.99)
-			// {
-
-			// }
-			// Wait for probability mass to reach 0.98
-			else
-			{
-				t = authDelay + 10;
-				if((loggedIn == "NULL") && (rPerson == user))
-					loggedIn = rPerson;
-				cvPutText(frame, "AUTHORIZED ACCESS", 
-					  cvPoint(faceRect.x, faceRect.y + faceRect.height + 30),
-					  &font, colourMap["green"]);
-			}
-#endif
-
-		}
-		
-		cvShowImage("CA", frame);
-
-		char c = cvWaitKey(delay);
-		if( c == 27 )
-			break;
-	}
-
-	cvReleaseHaarClassifierCascade(&faceCascade);
-	cvReleaseCapture(&capture);
-	cvDestroyWindow("CA");
-}
-
-void recognizeFromCam(string user)
-{
-	IplImage* frame;
-	IplImage *faceImage = 0;
-	IplImage *resizedImage;
-	IplImage *equalizedImage;
-	IplImage *processedFaceImage;
-	CvMat* trainPersonNumMat;
-	CvHaarClassifierCascade* faceCascade;
-	CvCapture* capture;
-
-	int delay = 33;
-	int t = 0;
-	int authDelay = 100;
-	bool runFlag = true;
-
-	cvNamedWindow("CA", CV_WINDOW_AUTOSIZE);
-	/* cvNamedWindow("test", CV_WINDOW_AUTOSIZE); */
-
-	bool collectFlag = false;
-	string loggedIn = "NULL";
-	int count = 0;
-        unsigned int i;
-	string prefix;
-	string extension = EXTENSION;
-	string filename;
-	stringstream sstm;
-
-	// Add 1, since indexing in vector starts from 0, and UIDs start from 1
-	int uid = getID(user) + 1;
-
-	// Estimates
-	float mu = nPersons/2;
-	float sig = 1000;
-	// Error in estimation
-	float r_mu;
-	float r_sig = 1;
-
-	// No extra arguments. Load training data and start recognition phase.
-	if( loadTrainingData(&trainPersonNumMat) )
-	{
-		faceWidth = pAvgTrainImage->width;
-		faceHeight = pAvgTrainImage->height;
-		printf("Loaded training data successfully\n");
-	}
-	else
-	{
-		printf("Unable to load training data. Aborting\n");
-		exit(0);
-	}
-
-	capture = cvCreateCameraCapture(-1);
-	assert( capture != NULL );
-
-#if DEBUG
-	cout<<"Cam dimensions: "<<cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH)<<" "<<cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT)<<endl;
-	//cout<<"FPS: "<<cvGetCaptureProperty(capture, CV_CAP_PROP_FPS);
-
-	// cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH, 500);
-	// cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, 500);
-
-	cout<<"Cam dimensions now set to: "<<cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH)<<" "<<cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT)<<endl;
-	//cout<<"FPS: "<<cvGetCaptureProperty(capture, CV_CAP_PROP_FPS);
-#endif
-
-	// Choose from default, alt, alt2 or alt_tree
-	faceCascade = (CvHaarClassifierCascade*)cvLoad(cascadeFileMap["default"].c_str(), 0, 0, 0);
-	assert(faceCascade != NULL);
-
-	while(runFlag)
-	{
-		frame = cvQueryFrame(capture);
-		//frame = convertImageToGrayscale(frame);
-		if( !frame )
-			break;
-
-		CvRect faceRect = detectFace(frame, faceCascade);
-		drawBox(frame, faceRect, colourMap["white"]);
-
-#if DEBUG
-		cout<<"Size of face: "<<faceRect.width<<" x "<<faceRect.height<<endl;
-#endif
-
-		if(faceRect.width > 0)
-		{
-			// 1. Get image content from faceRect
-			faceImage = cropImage(frame, faceRect);
-			// 2. Resize image to 180x180 pixels
-			resizedImage = resizeImage(faceImage, true, faceWidth, faceHeight);
-                        // 3. Convert to grayscale and equalize image
-                        equalizedImage = cvCreateImage(cvGetSize(resizedImage), 8, 1);
-			cvEqualizeHist(convertImageToGrayscale(resizedImage), equalizedImage);
-
-			/* printf("Recognizing! %d\n", nEigens); */
-			/* cvShowImage("test", equalizedImage); */
-			processedFaceImage = equalizedImage;
-
-			if (nEigens > 0)
-			{
-				int iNearest, nearest, truth;
-				float *projectedTestFace = 0, confidence;
-
-				cvFree(&projectedTestFace);
-				projectedTestFace = (float *)cvAlloc(nEigens*sizeof(float));
-
-				/* printf("Projecting! \n"); */
-				cvEigenDecomposite( processedFaceImage,   // Input object
-						    nEigens,          // no. of eigenvalues
-						    eigenVectArr,     // Pointer to array of IplImage input objects
-						    0, 0,             // ioFlags and userData
-						    pAvgTrainImage,   // Averaged object
-						    projectedTestFace // Output - calculated coefficients
-						  );
-				/* printf("Done projecting! \n"); */
-				iNearest = findNearestNeighbour(projectedTestFace, &confidence);
-				nearest = trainPersonNumMat->data.i[iNearest];
-
+				int nearest = recog(frame, faceCascade, faceRect, trainPersonNumMat);
 				r_mu = nearest;
 
 				mu = ((r_mu * sig) + (mu * r_sig)) / (sig + r_sig);
@@ -874,28 +680,29 @@ void recognizeFromCam(string user)
 				CvScalar textColor = CV_RGB(0,255,255);	// light blue text
 				char text[256];
 				string rPerson = personNames[nearest-1];
+				cout<<rPerson<<endl;
 #if EXDETAILS
 				snprintf(text, sizeof(text)-1, "Name: '%s'", rPerson.c_str());
-				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + 15), &font, textColor);
+				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
 				/* snprintf(text, sizeof(text)-1, "Confidence: %f", confidence); */
 				snprintf(text, sizeof(text)-1, "P = %f", areaUnderCurve);
-				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + 30), &font, textColor);
+				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
 				snprintf(text, sizeof(text)-1, "Mu = %f  Sig = %f", mu, sig);
-				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + 45), &font, textColor);
+				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
 #else
 				snprintf(text, sizeof(text)-1, "Name: '%s'", rPerson.c_str());
-				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + 15), &font, textColor);
+				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
 				if(areaUnderCurve < 0.75)
 				{
 					if((t++ > authDelay - 10) && (loggedIn != rPerson) )
 					{
 						if (loggedIn != "NULL")
 							cvPutText(frame, "UNAUTHORIZED ACCESS", 
-								  cvPoint(faceRect.x, faceRect.y + faceRect.height + 30),
+								  cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)),
 								  &font, colourMap["blue"]);
 						else
 							cvPutText(frame, "TIME OUT. Now exiting...", 
-								  cvPoint(faceRect.x, faceRect.y + faceRect.height + 30),
+								  cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)),
 								  &font, colourMap["red"]);
 					}
 					else
@@ -906,25 +713,63 @@ void recognizeFromCam(string user)
 						for(j=0; j < t % 5; j++) strcat(dots, ".");
 						snprintf(text, sizeof(text)-1, "AUTHENTICATING%s", dots);
 						cvPutText(frame, text,
-							  cvPoint(faceRect.x, faceRect.y + faceRect.height + 30),
+							  cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)),
 							  &font, textColor);
 					}
 				}
-				// TODO if area > 0.95, enter soft biometrics spinl-lock
+#if SOFT_ENABLE
+				// Probability mass > threshold, enter soft-biometrics mode
+				else if(areaUnderCurve >= 0.99)
+				{
+					hard_spin = false;
+					soft_spin = true;
+					updateAvg = true;
+				}
+#endif
+				// Wait for probability mass to reach 0.98
 				else
 				{
 					t = authDelay + 10;
 					if((loggedIn == "NULL") && (rPerson == user))
 						loggedIn = rPerson;
 					cvPutText(frame, "AUTHORIZED ACCESS", 
-						  cvPoint(faceRect.x, faceRect.y + faceRect.height + 30),
+						  cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)),
 						  &font, colourMap["green"]);
 				}
-	#endif
+				cvShowImage("CA", frame);
+#endif
 			}
-			cvReleaseImage(&faceImage);
-			cvReleaseImage(&resizedImage);
-			cvReleaseImage(&equalizedImage);
+#if SOFT_ENABLE	
+			if(updateAvg)
+			{
+				printf("Now entering soft-biometrics mode.\n");
+				avgTemplate = createTemplate(capture, faceCascade, AVG_TEMP_COUNT);
+				updateAvg = false;
+			}
+			if(soft_spin)
+			{
+				map<string, float> currentMap = getTemplate(frame, faceCascade, faceRect);
+				if(currentMap.size() != 0)
+				{
+					float confidence = nrmsd(avgTemplate, currentMap);
+					printf("(Soft-biometrics) Confidence = %f\n", confidence);
+					if(confidence <= 0.5)
+					{
+						hard_spin = true;
+						soft_spin = false;
+
+						mu = nPersons/2;
+						sig = 1000;
+						r_mu;
+						r_sig = 1;
+					}
+				}
+
+				char c = cvWaitKey(delay);
+				if( c == 27 )
+					return;
+			}
+#endif			
 		}
 		
 		cvShowImage("CA", frame);
@@ -934,13 +779,11 @@ void recognizeFromCam(string user)
 			break;
 	}
 
-
 	cvReleaseHaarClassifierCascade(&faceCascade);
 	cvReleaseCapture(&capture);
 	cvDestroyWindow("CA");
-	/* cvDestroyWindow("test"); */
-
 }
+
 
 void collect(string prefix, int collectCount)
 {
