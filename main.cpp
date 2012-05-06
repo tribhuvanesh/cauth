@@ -542,6 +542,7 @@ void spin()
 	string prefix;
 
 	// Add 1, since indexing in vector starts from 0, and UIDs start from 1
+	int uid = getID(user) + 1;
 
     // No extra arguments. Load training data and start recognition phase.
     if( loadTrainingData(&trainPersonNumMat) )
@@ -605,6 +606,8 @@ void spin()
 			break;
 
 		cvReleaseImage(&faceImage);
+		cvReleaseImage(&resizedImage);
+		cvReleaseImage(&equalizedImage);
 	}
 
 	cvReleaseHaarClassifierCascade(&faceCascade);
@@ -646,10 +649,10 @@ void recognizeFromCam(string user)
 
 	// Estimates
 	float mu = 0;
-	float sig = 100;
+	float sig = 1000;
 	// Error in estimation
 	float r_mu;
-	float r_sig = 1;
+	float r_sig = 16;
 
     // No extra arguments. Load training data and start recognition phase.
     if( loadTrainingData(&trainPersonNumMat) )
