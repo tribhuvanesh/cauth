@@ -105,12 +105,11 @@ This project aims to deliver a continuous authentication system based on face re
 Static Authentication enables a user to log in to a session through his/her account by providing the required credentials at the beginning. This form of authentication doesn’t consider the possibility of tailgating when the authorized user is not present in front of the authenticated system. On the other hand, Continuous Authentication provides a solution by authenticating the user right from the initial stages of log-in through log-out. This is implemented by checking the facial features of the user during log in, followed by creating a template of the user containing his/her soft biometric traits, which in this case, is the colour of the user’s clothing [Niinuma et al]. 
 
 \subsection{ Problem Definition }
-Soft biometric traits don’t provide as high a level of confidence when compared to hard biometric traits. The problem here is to design a system by which the threshold of confidence in authenticating the user can be increased by intelligently verifying these hard biometric traits by implementing a suitable machine learning algorithm.
+Soft biometric traits don’t provide as high a level of confidence when compared to hard biometric traits. The problem here is to design a system by which the threshold of confidence in authenticating the user can be increased by intelligently verifying these hard biometric traits and then moving over to a soft biometrics verification by implementing a suitable mathematical model.
 
 
 \section{Literature Survey }
 %\subsection{ Continuous Authentication }
-
 
 \subsection{ OpenCV }
 OpenCV (Open Source Computer Vision Library) is a library of programming functions mainly aimed at real time computer vision, developed by Intel and now supported by Willow Garage. It is free for use under the open source BSD license. The library is cross-platform. It focuses mainly on real-time image processing. If the library finds Intel's Integrated Performance Primitives on the system, it will use these proprietary optimized routines to accelerate itself.
@@ -220,14 +219,151 @@ The user interface is provided with functions necessary to take as input the cre
 \end{center}
 
 \section{ Detailed Design }
-\subsection{ Data Description }
-The data of the system can be divided into the following parts:
-\subsubsection{ Account and Face Data }
-  
+\subsection{ Data Persistence }
+The persistent data in this system consists of:
+begin{itemize}
+\item Training data set - Training data set consists of 51 equalized, grayscale images of each user stored in their respective directories. These are collected from a web-cam when a new user creates an account.% TO MENTION - resolution of pics
+\item Eigenfaces data - This training data set is used to compute, using Principal Component Analysis, a set of "EigenFaces" representing the main differences between the training images. An "average face image" is computed and stored as "avg_image.jpeg". 
+\item User-account data - User-account data refers to user-id, username, password stored in the form of a 160-bit hash string (SHA-1 encrypted).
+\end{itemize}
+
+An XML file names "face_data.xml" contains the integrated eigenfaces and user-account data. Its structure is as shown below:
+
+-<opencv_storage>
+	<nPersons> \textit{number of users} </nPersons>
+	<personName_i> \textit{username of ith user} </personName_i>
+	<nEigens>\textit{number of eigenfaces}</nEigens>
+	<nTrainFaces>\textit{number of training images}</nTrainFaces>
+	
+	<trainPersonNumMat type_id="opencv-matrix">
+		<rows>\textit{number of rows}</rows>
+		<cols>\textit{number of columns}</cols>
+		<dt>\textit{data type}</dt>
+		<data>\textit{data}</data>
+	</trainPersonNumMat>
+	<eigenValMat type_id="opencv-matrix">
+		<rows>\textit{number of rows}</rows>
+		<cols>\textit{number of columns}</cols>
+		<dt>\textit{data type}</dt>
+		<data>\textit{data}</data>
+	</eigenValMat>
+	<projectedTrainFaceMat type_id="opencv-matrix">
+		<rows>\textit{number of rows}</rows>
+		<cols>\textit{number of columns}</cols>
+		<dt>\textit{data type}</dt>
+		<data>\textit{data}</data>
+	</projectedTrainFaceMat>
+
+\subsection{ Module Description }
+This section describes the various modules of the system which can be categorized as follows:
+\begin{itemize}
+\item Utilities
+\item Face Detection
+\item Soft Biometrics
+\end{itemize}
+
+\subsubsection { Utilities }
+This module contains all the commonly used image processing functions that perform the following:
+
+\begin{itemize}
+\item Convert image to grayscale: Images captured by the webcam need to be converted to grayscale before being processed for computing Eigenfaces. It takes as input an IplImage pointer and returns pointer to the converted grayscale image. Its prototype is as follows:
+IplImage* convertImageToGrayscale(IplImage* srcImage)
+\item Return image of the face in the frame defined by a CvRect datatype: Once a face is detected, the rectangular coordinates are saved into a CvRect datatype and the cropped image containing the face is returned to the IplImage pointer. Its prototype is as follows:
+IplImage* cropImage(IplImage* srcImage, CvRect faceRect)
+\item Resize Image: The cropped image containing the face needs to be resized to a standard resolution. This function takes as input source image to be resized, a boolean datatype stating whether to preserve aspect ratio, and the new height and width to be resized to. Its prototype is as follows:
+IplImage* resizeImage(IplImage* srcImage, bool preserveAspectRatio = true, int newHeight = _faceHeight, int newWidth = _faceWidth)
+\item Draw a box around the face: This funtion draws a box around the face as indicated by the coordinates it takes as input. This image is later displayed in a window. It also takes a colour value and pointer to the image on which to draw the box. Its prototype is as follows:
+void drawBox(IplImage* image, CvRect rect, CvScalar colour)
+\end{itemize}
+
+\subsubsection { Face Detection }
+This module contains the function that detects a face given an image captured from the webcam. It uses the Viola-Jones Face detection algorithm by making a call to the OpenCV function - cvHaarDetectObjects(). It takes as input the image to detect a face in, and the Haar Classifier Cascade as defined in the respective XML file. This cascade file defines the features of the "object" to look for, in this case, the face. Its prototype is as follows:
+CvRect detectFace(IplImage* image, CvHaarClassifierCascade* cascade)
+
+\subsubsection { Soft Biometrics }
+This module contains all the functions related to Soft Biometric trait recognition, namely, shirt colour of the user.
+
+\begin{itemize}
+\item Obtain the colour type given the Hue (H), saturation(S), and Value(V) values of a pixel. Its prototype is as follows:
+int    getPixelColorType(int H, int S, int V);
+
+\item Create a shirt colour template for the session which contains information about the percentage of each (of 11 specified colour types) colour present in the region detected as shirt region. Its prototype is as follows:
+map<string, float> createTemplate(CvCapture* capture, CvHaarClassifierCascade* cascadeFace, int avgIterations)
+
+\item Obtain a session template for a user by detecting a face in the input image and further detecting the shirt region. If region is found the colour composition of the detected shirt frame is calculated and stored in the template. Its prototype is as follows:
+map<string, float>  getTemplate( IplImage*, CvHaarClassifierCascade*, CvRect);
+
+\item Return the average of 5 shirt colour templates created for ascertaining the user's shirt colour. Its prototype is as follows:
+map<string, float>  createAverage( vector< map<string, float> > );
+
+\item Calculate the corresponding sigmoid function value given afloating point input. Its prototype is as follows:
+float    sigmoid( float );
+
+\item Calculate the normalized root mean square value given the set of 5 templates and the average template as inputs. Its prototype is as follows: 
+float    nrmsd( map<string, float>, map<string, float> );
+
+\item A function that manages the soft biometric traits recogition and is called from the main module. Its prototype is as follows:
+int soft_main()
+\end{itemize}
+
+%\subsection { Main Module }
 
 \section{ Implementation }  
+This project has been implemented in C/C++ along with the OpenCV library for the image processing and face detection and recognition algorithms. A minor script in Python (version 2.x) is also used to reorganize the training data and create a file which stores the pathnames of the image files in the training data set. The implementation of the Continuous Authentication System can be divided into three major modules as per the modes of operation: building the training data set, learning, and the continuous authentication mode.
+\subsection { Building Training Data Set }
+This mode is launched when a new user is creating an account at which point the system collects images of the user's face in an equalized, grayscale format and stores it with the file extension ".jpeg". For this, the system runs the Face detection module, and collects 51 face images, which are stored under the specified username along with the password encrypted into a hash string by the SHA-1 encryption algorithm. It moves into the learning mode as soon as the faces are collected. 
+\subsection { Learning }
+This mode is launched subsequently after the collection mode or can be specifically launched into by passing "--learn" as a command-line argument. In this mode, Eigenface uses the training images to "learn" a face model[6]. the training images of all users are loaded into the array \emph {nTrainFaces}, and Principal Component Analysis (PCA) is carried out to find a PCA subspace, which is a lower dimensionality representation[6]. Then the training images are projected onto the PCA subspace, by calling the built-in library function cvEigenDecomposite(). Following this, the resulting data, namely Eigenvalues, Eigenvectors, The average training face image, Projected faces and Person ID numbers, is stored into the XML file - "facedata.xml".    
+\subsection { Continuous Authentication Mode }
+%TO COMPLETE
 
 \section{ Testing }
+
+\subsection{ Unit testing }
+The two primary units that comprise the Continuous Authentication system were individually tested under real-world conditions.
+
+\subsubsection{ Face Recognition }
+\emph{ Requirement: } Faces should be accurately recognized
+\emph{ Test: } A burst of 200 frames were collected with the user posing naturally with head movement
+\emph{ Result: } An accuracy of 94\% was achieved.
+
+\subsubsection{ Soft bio-metrics }
+\emph{ Requirement: } The soft-biometrics captured should not vary by large from the initial captured template
+\emph{ Test: } A burst of 200 frames was used with the user performing extreme movements
+\emph{ Result: } An accuracy of 78\% was achieved
+
+\subsection{ Performance testing } 
+\emph{ Requirement: } The Continuous Authentication system should be able to meet real-time requirements on a system
+\emph{ Test: } The code was tested on two systems - one with a Core 2 Duo processor at 3.0Ghz, and the other with a Core i5 processor at 2.66 Ghz
+\emph{ Result: } The real time requirements was easily met on the Core i5 system, and the Core 2 Duo system, but with a minor lag
+
+\subsection{ Security testing}
+\emph{ Requirement: } One should not be able to log in without the right credentials, or be able to reverse engineer
+\emph{ Test: } The passwords stored in the database should not be readable
+\emph{ Result: } Since the SHA1 hashes of the users were stored in the database, it's harmless even if one tries to retrieve it
+
+\subsection{ Compatibility testing }
+\emph{ Requirement: } The CA system should be compatible with all the latest versions of the libraries used
+\emph{ Test: } The code was compiled and executed on g++ 4.5-2.7, OpenCV versions 2.1-2.3 and 2 distributions of Linux
+\emph{ Result: } The code successfully compiled and executed on all the above versions
+
+\subsection{ Load Testing }
+\emph{ Requirement: } The CA system should be able to lock-on on one sigle person and perform verification 
+\emph{ Test: } The system was tested with multiple people in the frame
+\emph{ Result: } A lock-on was always performed on the largest-detected face in the frame
+
+\subsection{ Integration testing}
+\emph{ Requirement: } By integrating the two main components of Continuous Authentication, the system should successfully switch between them as and when needed
+\emph{ Test: } A 10 minute run was conducted under real-world conditions
+\emph{ Result: } The soft-biometrics mode was successfully able to switch to face recognition mode when confidence dropped below a certain threshold
+
+\subsection{ System testing }
+\emph{ Requirement: } A tail-gating unauthorized user should not be able to gain access for over 3-5 seconds
+\emph{ Test: } A 10 minute run was conducted with the user and an imposter switching a number of times
+\emph{ Result: } The imposter was able to gain access for over 5 seconds 2 times out of the 10 switches performed
+
+\section{ Results }
+The Continuous Authentication system was tested using 12 users in total, with 10 of those users having credentials registered in the database. Each user was logged in for a certain period in time, while the others tail-gated the authorized user. 
 
 \section{ Conclusion and Future Enhancements }
 
@@ -236,9 +372,13 @@ The data of the system can be divided into the following parts:
 
 [2] Matthew Turk, Alex Pentland. Eigenfaces for Recognition. \textit {Journal of Cognitive Neuroscience} (Massachusetts Institute of Technology), 1991. 
 
-[3] A.K. Jain, S.C. Dass, K. Nandakumar. Soft biometric traits for personal recognition systems. \textit{ International Conference on Biometric Authentication.} 2004.
+[3] A.K. Jain, S.C. Dass, K. Nandakumar. Soft Biometric Traits for Personal Recognition Systems. \textit{ International Conference on Biometric Authentication.} 2004.
  
 [4] Niinuma et al. Soft Biometric Traits for Continuous User Authentication. \textit{Fujitsu Lab}. 2010.
+
+[5] Andrew J. Klosterman, Gregory R. Ganger. Secure Continuous Biometric-Enhanced Authentication. May 2000.
+
+[6] Seeing With OpenCV, Part 5: Implementing Eigenface. by Robin Hewitt : http://www.cognotics.com/opencv/servo_2007_series/part_5/index.html \textit { Article from SERVO Magazine, May 2007. } 
 
 \section{ Appendix }
 \subsection{ Screen Snapshots}
