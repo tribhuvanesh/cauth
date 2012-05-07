@@ -315,7 +315,7 @@ This mode is launched when a new user is creating an account at which point the 
 \subsection { Learning }
 This mode is launched subsequently after the collection mode or can be specifically launched into by passing "--learn" as a command-line argument. In this mode, Eigenface uses the training images to "learn" a face model[6]. the training images of all users are loaded into the array \emph {nTrainFaces}, and Principal Component Analysis (PCA) is carried out to find a PCA subspace, which is a lower dimensionality representation[6]. Then the training images are projected onto the PCA subspace, by calling the built-in library function cvEigenDecomposite(). Following this, the resulting data, namely Eigenvalues, Eigenvectors, The average training face image, Projected faces and Person ID numbers, is stored into the XML file - "facedata.xml".    
 \subsection { Continuous Authentication Mode }
-%TO COMPLETE
+This mode is the de-facto mode of operation. It involves requesting the user to login with his/her username and password. If the user's password matches the stored hash string from the XML file - "facedata.xml" the system proceeds to recognising the user's face from the webcam feed. If the entered password is wrong, then the program exits. If the user is recognized by the system, then he/she is granted access. Otherwise, the system enters a lockdown mode. After the confidence level reaches a peak of 99\% then it enters into the soft biometrics mode. In this mode, the system detects faces in the webcam feed and corresponding to the location of the face detects a shirt region below the face detected. The coordinates are stored in a CvRect type and a template is created for the session which will be used to further authenticate the user continuously. If the shirt detection level falls, then the system restarts the face recognition to verify if the user is still present.  
 
 \section{ Testing }
 
@@ -366,6 +366,17 @@ The two primary units that comprise the Continuous Authentication system were in
 The Continuous Authentication system was tested using 12 users in total, with 10 of those users having credentials registered in the database. Each user was logged in for a certain period in time, while the others tail-gated the authorized user. 
 
 \section{ Conclusion and Future Enhancements }
+\subsection {Conclusion}
+Need for biometric authentication arose from the fact that other security measures such as password and/or a smart ID card are prone to theft or loss. Biometrics depend on utilising features a user already possesses, that can uniquely identify a user atleast for a given session. However, using biometric identification has its downfalls. Since the characteristic of biometric traits is that they are not secretive, unlike a password, they can be gathered anywhere by an imposter and reconstructed for the authentication system to gain access. For example, a fingerprint left behind on some surface, can be picked up by imposters and reconstructed in front of the sensors. Even for face recognition systems, it is possible to fool the system by showing a photograph of the user or manipulating the video feed of the system. Countermeasures exist for such instances, such as, 3d reconstruction of face from more than two cameras or ensuring that the video feed cannot be manipulated. However, these measures make it a costly solution. Therefore, it can be concluded that biometric mode of authentication should be used more as a support system along with password/ smartID systems, to strengthen the authentication process, rather than a standalone mode of authentication.   
+
+\subsection {Future Enhancements}
+The following can be implemented in the future to enhance this system:
+\begin{itemize}
+\item Support for multiple users sharing a certain account; this may require a "biometric handoff" to occur between users.
+\item Improve accuracy of face recognition under varied lighting conditions by implementing recognition using a different approach such as fuzzy logic.
+\item Make provision for recognizing any kind of tampering occuring to the video feed, so as to prevent authenticating imposters. This can be done by restricting access to the webcam feed via parameters that define access to it.
+\end{itemize}
+
 
 \section{ References }
 [1] Paul Viola, Michael Jones. Robust Real-time Object Detection. \textit {Second International Workshop on Statistical and Computational Theories of Vision - Modeling, Learning, Computing, and Sampling} (Vancouver, Canada), July 13, 2001. 
