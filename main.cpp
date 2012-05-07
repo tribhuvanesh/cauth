@@ -56,10 +56,10 @@ soft.h
 #define DEBUG 0
 // Enable this to display extra information in the window
 #define EXDETAILS 0
-#define SOFT_ENABLE 1
+#define SOFT_ENABLE 0
 #define FILEOP 0
 #define STORE_EIGEN 1
-#define COLLECT_COUNT 51
+#define COLLECT_COUNT 25
 #define COUNT_FREQ 5
 #define EXTENSION ".jpeg"
 
@@ -281,7 +281,7 @@ int loadPersons()
 		return 0;
 	}
 
-	cout<<"nPersons: "<<nPersons<<endl;
+	/* cout<<"nPersons: "<<nPersons<<endl; */
 	for (i = 0; i < nPersons; i++)
 	{
 		string sPersonName;
@@ -572,10 +572,6 @@ int recog(IplImage* frame, CvHaarClassifierCascade* faceCascade, CvRect faceRect
 	return nearest;
 }
 
-void soft_spin(CvHaarClassifierCascade* faceCascade)
-{
-
-}
 
 void spin(string user)
 {
@@ -638,6 +634,9 @@ void spin(string user)
 	faceCascade = (CvHaarClassifierCascade*)cvLoad(cascadeFileMap["default"].c_str(), 0, 0, 0);
 	assert(faceCascade != NULL);
 
+	ofstream file;
+	file.open("mu_sig_2.txt");
+
 	while(runFlag)
 	{
 		frame = cvQueryFrame(capture);
@@ -673,14 +672,14 @@ void spin(string user)
 				a2 = 0.5 * erf( (uid - mu - 0.5) / (sqrt(2 * sig)) );
 
 				double areaUnderCurve = a1 - a2;
-				printf("P(user|uid, eigenvectors) = %f\n", areaUnderCurve);
+				/* printf("P(user|uid, eigenvectors) = %f\n", areaUnderCurve); */
 
 				CvFont font;
 				cvInitFont(&font,CV_FONT_HERSHEY_PLAIN, 1.0, 1.0, 0,1,CV_AA);
 				CvScalar textColor = CV_RGB(0,255,255);	// light blue text
 				char text[256];
 				string rPerson = personNames[nearest-1];
-				cout<<rPerson<<endl;
+				/* cout<<rPerson<<endl; */
 #if EXDETAILS
 				snprintf(text, sizeof(text)-1, "Name: '%s'", rPerson.c_str());
 				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
@@ -692,6 +691,10 @@ void spin(string user)
 #else
 				snprintf(text, sizeof(text)-1, "Name: '%s'", rPerson.c_str());
 				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
+				snprintf(text, sizeof(text)-1, "P = %f", areaUnderCurve);
+				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
+				file<<mu<<"\t"<<sig<<"\t"<<areaUnderCurve<<endl;
+				cout<<mu<<"\t"<<sig<<"\t"<<areaUnderCurve<<endl;
 				if(areaUnderCurve < 0.75)
 				{
 					if((t++ > authDelay - 10) && (loggedIn != rPerson) )
@@ -752,7 +755,7 @@ void spin(string user)
 				if(currentMap.size() != 0)
 				{
 					float confidence = nrmsd(avgTemplate, currentMap);
-					printf("(Soft-biometrics) Confidence = %f\n", confidence);
+					/* printf("(Soft-biometrics) Confidence = %f\n", confidence); */
 					if(confidence <= 0.5)
 					{
 						hard_spin = true;
@@ -778,6 +781,8 @@ void spin(string user)
 		if( c == 27 )
 			break;
 	}
+
+	file.close();
 
 	cvReleaseHaarClassifierCascade(&faceCascade);
 	cvReleaseCapture(&capture);
@@ -902,7 +907,7 @@ string verify_pwd()
 	int i;
 	strcpy(username, user_);
 	strcat(username, prefix.c_str());
-	cout<<username;
+	/* cout<<username; */
 
 	// Verify if user exists
 	loadPersons();

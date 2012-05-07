@@ -243,7 +243,6 @@ map<string, float> getTemplate(IplImage* imageIn, CvHaarClassifierCascade *casca
 					tallyMaxIndex = i;
 				}
 			}
-			cout << endl;
 			int percentage = initialConfidence * (tallyMaxCount * 100 / pixels);
 #if DEBUG
 			cout << "Color of shirt: " << sCTypes[tallyMaxIndex] << " (" << percentage << "% confidence)." << endl << endl;

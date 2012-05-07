@@ -43,8 +43,8 @@
 \linespread{1.2}
 \alph{footnote}				% make title footnotes alpha-numeric
 
-\title{Continuous Authentication\\using video-based face recognition}	% the document title
-\author{{\bf Project report - Phase I}{\bf}}
+\title{Continuous Authentication}	% the document title
+\author{{\bf Project report}{\bf}}
 \date{}				% your own text, a date, or \today
 
 % --------------------- end of the preamble ---------------------------
@@ -91,7 +91,14 @@ This project aims to deliver a continuous authentication system based on face re
 
 
 \end{abstract}				% end of the abstract
-
+\newpage
+\begin{center}
+{\LARGE \bf Acknowledgements}
+\\[6ex]
+\end{center}
+We would like to thank our project guide, Dr. K.G.Srinivasa, for his valuable and much-needed guidance and patience during the course of this project. We are grateful for the timely inputs we received from him, right from the start of the project.\\[2ex]
+We are thankful to the Department of Computer Science and Engineering, and our Head of Department, Dr. R. Selvarani, for having provided us an opportunity to work on this project and enhance our skills in this field.\\[2ex]
+We also thank the lab assistants and our friends for their immense help and suggestions that helped us further improve the project. 
 \newpage				% start a new page
 \tableofcontents			% create table of contents automatically
 \newpage				% start a new page
@@ -221,14 +228,14 @@ The user interface is provided with functions necessary to take as input the cre
 \section{ Detailed Design }
 \subsection{ Data Persistence }
 The persistent data in this system consists of:
-begin{itemize}
+\begin{itemize}
 \item Training data set - Training data set consists of 51 equalized, grayscale images of each user stored in their respective directories. These are collected from a web-cam when a new user creates an account.% TO MENTION - resolution of pics
-\item Eigenfaces data - This training data set is used to compute, using Principal Component Analysis, a set of "EigenFaces" representing the main differences between the training images. An "average face image" is computed and stored as "avg_image.jpeg". 
+\item Eigenfaces data - This training data set is used to compute, using Principal Component Analysis, a set of "EigenFaces" representing the main differences between the training images. An "average face image" is computed and stored as \verb+avg_image.jpeg+. 
 \item User-account data - User-account data refers to user-id, username, password stored in the form of a 160-bit hash string (SHA-1 encrypted).
 \end{itemize}
 
-An XML file names "face_data.xml" contains the integrated eigenfaces and user-account data. Its structure is as shown below:
-
+An XML file names \verb+"face_data.xml"+ contains the integrated eigenfaces and user-account data. Its structure is as shown below:
+\begin{verbatim}
 -<opencv_storage>
 	<nPersons> \textit{number of users} </nPersons>
 	<personName_i> \textit{username of ith user} </personName_i>
@@ -253,6 +260,7 @@ An XML file names "face_data.xml" contains the integrated eigenfaces and user-ac
 		<dt>\textit{data type}</dt>
 		<data>\textit{data}</data>
 	</projectedTrainFaceMat>
+\end{verbatim}
 
 \subsection{ Module Description }
 This section describes the various modules of the system which can be categorized as follows:
@@ -267,43 +275,49 @@ This module contains all the commonly used image processing functions that perfo
 
 \begin{itemize}
 \item Convert image to grayscale: Images captured by the webcam need to be converted to grayscale before being processed for computing Eigenfaces. It takes as input an IplImage pointer and returns pointer to the converted grayscale image. Its prototype is as follows:
-IplImage* convertImageToGrayscale(IplImage* srcImage)
+\verb+IplImage* convertImageToGrayscale(IplImage* srcImage)+
 \item Return image of the face in the frame defined by a CvRect datatype: Once a face is detected, the rectangular coordinates are saved into a CvRect datatype and the cropped image containing the face is returned to the IplImage pointer. Its prototype is as follows:
-IplImage* cropImage(IplImage* srcImage, CvRect faceRect)
+\verb+IplImage* cropImage(IplImage* srcImage, CvRect faceRect)+
 \item Resize Image: The cropped image containing the face needs to be resized to a standard resolution. This function takes as input source image to be resized, a boolean datatype stating whether to preserve aspect ratio, and the new height and width to be resized to. Its prototype is as follows:
-IplImage* resizeImage(IplImage* srcImage, bool preserveAspectRatio = true, int newHeight = _faceHeight, int newWidth = _faceWidth)
+\begin{verbatim}
+IplImage* resizeImage(IplImage* srcImage,
+bool preserveAspectRatio = true, int newHeight = _faceHeight,
+int newWidth = _faceWidth)
+\end{verbatim}
 \item Draw a box around the face: This funtion draws a box around the face as indicated by the coordinates it takes as input. This image is later displayed in a window. It also takes a colour value and pointer to the image on which to draw the box. Its prototype is as follows:
-void drawBox(IplImage* image, CvRect rect, CvScalar colour)
+\verb+void drawBox(IplImage* image, CvRect rect, CvScalar colour)+
 \end{itemize}
 
 \subsubsection { Face Detection }
 This module contains the function that detects a face given an image captured from the webcam. It uses the Viola-Jones Face detection algorithm by making a call to the OpenCV function - cvHaarDetectObjects(). It takes as input the image to detect a face in, and the Haar Classifier Cascade as defined in the respective XML file. This cascade file defines the features of the "object" to look for, in this case, the face. Its prototype is as follows:
-CvRect detectFace(IplImage* image, CvHaarClassifierCascade* cascade)
+\verb+CvRect detectFace(IplImage* image, CvHaarClassifierCascade* cascade)+
 
 \subsubsection { Soft Biometrics }
 This module contains all the functions related to Soft Biometric trait recognition, namely, shirt colour of the user.
 
 \begin{itemize}
 \item Obtain the colour type given the Hue (H), saturation(S), and Value(V) values of a pixel. Its prototype is as follows:
-int    getPixelColorType(int H, int S, int V);
+\verb+int getPixelColorType(int H, int S, int V);+
 
 \item Create a shirt colour template for the session which contains information about the percentage of each (of 11 specified colour types) colour present in the region detected as shirt region. Its prototype is as follows:
-map<string, float> createTemplate(CvCapture* capture, CvHaarClassifierCascade* cascadeFace, int avgIterations)
-
+\begin{verbatim}
+map<string, float> createTemplate(CvCapture* capture,
+CvHaarClassifierCascade* cascadeFace, int avgIterations)
+\end{verbatim}
 \item Obtain a session template for a user by detecting a face in the input image and further detecting the shirt region. If region is found the colour composition of the detected shirt frame is calculated and stored in the template. Its prototype is as follows:
-map<string, float>  getTemplate( IplImage*, CvHaarClassifierCascade*, CvRect);
+\verb+map<string, float>  getTemplate( IplImage*, CvHaarClassifierCascade*, CvRect)+
 
-\item Return the average of 5 shirt colour templates created for ascertaining the user's shirt colour. Its prototype is as follows:
-map<string, float>  createAverage( vector< map<string, float> > );
+\item Return the average of 5 shirt colour templates created for ascertaining the user's shirt colour. Its prototype is as follows:\\
+\verb+map<string, float>  createAverage( vector< map<string, float> > )+
 
 \item Calculate the corresponding sigmoid function value given afloating point input. Its prototype is as follows:
-float    sigmoid( float );
+\verb+float sigmoid( float )+
 
-\item Calculate the normalized root mean square value given the set of 5 templates and the average template as inputs. Its prototype is as follows: 
-float    nrmsd( map<string, float>, map<string, float> );
+\item Calculate the normalized root mean square value given the set of 5 templates and the average template as inputs. Its prototype is as follows: \\
+\verb+float nrmsd( map<string, float>, map<string, float> )+
 
 \item A function that manages the soft biometric traits recogition and is called from the main module. Its prototype is as follows:
-int soft_main()
+\verb+int soft_main()+
 \end{itemize}
 
 %\subsection { Main Module }
@@ -323,48 +337,95 @@ This mode is the de-facto mode of operation. It involves requesting the user to 
 The two primary units that comprise the Continuous Authentication system were individually tested under real-world conditions.
 
 \subsubsection{ Face Recognition }
-\emph{ Requirement: } Faces should be accurately recognized
-\emph{ Test: } A burst of 200 frames were collected with the user posing naturally with head movement
-\emph{ Result: } An accuracy of 94\% was achieved.
+\emph{ Requirement: } Faces should be accurately recognized\\
+\emph{ Test: } A burst of 200 frames were collected with the user posing naturally with head movement\\
+\emph{ Result: } An accuracy of 94\% was achieved.\\
 
 \subsubsection{ Soft bio-metrics }
-\emph{ Requirement: } The soft-biometrics captured should not vary by large from the initial captured template
-\emph{ Test: } A burst of 200 frames was used with the user performing extreme movements
-\emph{ Result: } An accuracy of 78\% was achieved
+\emph{ Requirement: } The soft-biometrics captured should not vary by large from the initial captured template\\
+\emph{ Test: } A burst of 200 frames was used with the user performing extreme movements\\
+\emph{ Result: } An accuracy of 78\% was achieved\\
 
 \subsection{ Performance testing } 
-\emph{ Requirement: } The Continuous Authentication system should be able to meet real-time requirements on a system
-\emph{ Test: } The code was tested on two systems - one with a Core 2 Duo processor at 3.0Ghz, and the other with a Core i5 processor at 2.66 Ghz
-\emph{ Result: } The real time requirements was easily met on the Core i5 system, and the Core 2 Duo system, but with a minor lag
+\emph{ Requirement: } The Continuous Authentication system should be able to meet real-time requirements on a system\\
+\emph{ Test: } The code was tested on two systems - one with a Core 2 Duo processor at 3.0Ghz, and the other with a Core i5 processor at 2.66 Ghz\\
+\emph{ Result: } The real time requirements was easily met on the Core i5 system, and the Core 2 Duo system, but with a minor lag\\
 
 \subsection{ Security testing}
-\emph{ Requirement: } One should not be able to log in without the right credentials, or be able to reverse engineer
-\emph{ Test: } The passwords stored in the database should not be readable
-\emph{ Result: } Since the SHA1 hashes of the users were stored in the database, it's harmless even if one tries to retrieve it
+\emph{ Requirement: } One should not be able to log in without the right credentials, or be able to reverse engineer\\
+\emph{ Test: } The passwords stored in the database should not be readable\\
+\emph{ Result: } Since the SHA1 hashes of the users were stored in the database, it's harmless even if one tries to retrieve it\\
 
 \subsection{ Compatibility testing }
-\emph{ Requirement: } The CA system should be compatible with all the latest versions of the libraries used
-\emph{ Test: } The code was compiled and executed on g++ 4.5-2.7, OpenCV versions 2.1-2.3 and 2 distributions of Linux
-\emph{ Result: } The code successfully compiled and executed on all the above versions
+\emph{ Requirement: } The CA system should be compatible with all the latest versions of the libraries used\\
+\emph{ Test: } The code was compiled and executed on g++ 4.5-2.7, OpenCV versions 2.1-2.3 and 2 distributions of Linux\\
+\emph{ Result: } The code successfully compiled and executed on all the above versions\\
 
 \subsection{ Load Testing }
-\emph{ Requirement: } The CA system should be able to lock-on on one sigle person and perform verification 
-\emph{ Test: } The system was tested with multiple people in the frame
-\emph{ Result: } A lock-on was always performed on the largest-detected face in the frame
+\emph{ Requirement: } The CA system should be able to lock-on on one sigle person and perform verification \\
+\emph{ Test: } The system was tested with multiple people in the frame\\
+\emph{ Result: } A lock-on was always performed on the largest-detected face in the frame\\
 
 \subsection{ Integration testing}
-\emph{ Requirement: } By integrating the two main components of Continuous Authentication, the system should successfully switch between them as and when needed
-\emph{ Test: } A 10 minute run was conducted under real-world conditions
-\emph{ Result: } The soft-biometrics mode was successfully able to switch to face recognition mode when confidence dropped below a certain threshold
+\emph{ Requirement: } By integrating the two main components of Continuous Authentication, the system should successfully switch between them as and when needed\\
+\emph{ Test: } A 10 minute run was conducted under real-world conditions\\
+\emph{ Result: } The soft-biometrics mode was successfully able to switch to face recognition mode when confidence dropped below a certain threshold\\
 
 \subsection{ System testing }
-\emph{ Requirement: } A tail-gating unauthorized user should not be able to gain access for over 3-5 seconds
-\emph{ Test: } A 10 minute run was conducted with the user and an imposter switching a number of times
-\emph{ Result: } The imposter was able to gain access for over 5 seconds 2 times out of the 10 switches performed
+\emph{ Requirement: } A tail-gating unauthorized user should not be able to gain access for over 3-5 seconds\\
+\emph{ Test: } A 10 minute run was conducted with the user and an imposter switching a number of times\\
+\emph{ Result: } The imposter was able to gain access for over 5 seconds 2 times out of the 10 switches performed\\
 
 \section{ Results }
 The Continuous Authentication system was tested using 12 users in total, with 10 of those users having credentials registered in the database. Each user was logged in for a certain period in time, while the others tail-gated the authorized user. 
 
+\begin{figure}
+	\caption{Time taken - Face recognition vs. Soft biometrics}
+	\centering
+		\includegraphics[scale=0.6]{img/face_vs_soft.png}
+\end{figure}
+
+\begin{figure}
+	\caption{Face recognition accuracy - 94\%}
+	\centering
+\includegraphics[scale=0.6]{img/face_rec_accuracy.png}
+\end{figure}
+\begin{figure}
+	\caption{Mean vs. Recognized vs. Authorized}
+	\centering
+\includegraphics[scale=0.6]{img/mu_nearest_uid.png}
+\end{figure}
+
+\begin{figure}
+	\caption{Initial uncertainity of user}
+	\centering
+\includegraphics[scale=0.6]{img/mu_sig1.png}
+\end{figure}
+
+\begin{figure}
+	\caption{Variance decreases in the subsequent frames if the authenticated user is present}
+	\centering
+\includegraphics[scale=0.6]{img/mus_sig3.png}
+\end{figure}
+\begin{figure}
+	\caption{Variance continues decreasing. Area under curve increases}
+	\centering
+\includegraphics[scale=0.6]{img/mus_sig4.png}
+\end{figure}
+
+\begin{figure}
+	\caption{Mean shifts as user changes}
+	\centering
+\includegraphics[scale=0.6]{img/mu_sig5.png}
+\end{figure}
+
+\begin{figure}
+	\caption{Magnified version of previous figure}
+	\centering
+\includegraphics[scale=0.6]{img/mus_sig5.png}
+\end{figure}
+
+\newpage
 \section{ Conclusion and Future Enhancements }
 \subsection {Conclusion}
 Need for biometric authentication arose from the fact that other security measures such as password and/or a smart ID card are prone to theft or loss. Biometrics depend on utilising features a user already possesses, that can uniquely identify a user atleast for a given session. However, using biometric identification has its downfalls. Since the characteristic of biometric traits is that they are not secretive, unlike a password, they can be gathered anywhere by an imposter and reconstructed for the authentication system to gain access. For example, a fingerprint left behind on some surface, can be picked up by imposters and reconstructed in front of the sensors. Even for face recognition systems, it is possible to fool the system by showing a photograph of the user or manipulating the video feed of the system. Countermeasures exist for such instances, such as, 3d reconstruction of face from more than two cameras or ensuring that the video feed cannot be manipulated. However, these measures make it a costly solution. Therefore, it can be concluded that biometric mode of authentication should be used more as a support system along with password/ smartID systems, to strengthen the authentication process, rather than a standalone mode of authentication.   
@@ -389,7 +450,7 @@ The following can be implemented in the future to enhance this system:
 
 [5] Andrew J. Klosterman, Gregory R. Ganger. Secure Continuous Biometric-Enhanced Authentication. May 2000.
 
-[6] Seeing With OpenCV, Part 5: Implementing Eigenface. by Robin Hewitt : http://www.cognotics.com/opencv/servo_2007_series/part_5/index.html \textit { Article from SERVO Magazine, May 2007. } 
+[6] Seeing With OpenCV, Part 5: Implementing Eigenface. by Robin Hewitt : \verb+http://www.cognotics.com/opencv/servo_2007_series/part_5/index.html+ \textit { Article from SERVO Magazine, May 2007. } 
 
 \section{ Appendix }
 \subsection{ Screen Snapshots}

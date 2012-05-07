@@ -1,0 +1,54 @@
+\contentsline {section}{\numberline {1} Introduction }{1}
+\contentsline {subsection}{\numberline {1.1} General Introduction }{1}
+\contentsline {subsection}{\numberline {1.2} Problem Definition }{1}
+\contentsline {section}{\numberline {2}Literature Survey }{1}
+\contentsline {subsection}{\numberline {2.1} OpenCV }{1}
+\contentsline {subsection}{\numberline {2.2} Face Detection }{2}
+\contentsline {subsubsection}{\numberline {2.2.1} EigenFace }{2}
+\contentsline {subsection}{\numberline {2.3} Soft Biometric Traits }{2}
+\contentsline {section}{\numberline {3}Software Requirements Specification }{3}
+\contentsline {subsection}{\numberline {3.1} Introduction }{3}
+\contentsline {subsubsection}{\numberline {3.1.1} Purpose }{3}
+\contentsline {subsubsection}{\numberline {3.1.2} Scope of the Project }{3}
+\contentsline {subsubsection}{\numberline {3.1.3} Overview of Document }{3}
+\contentsline {subsection}{\numberline {3.2} General Description }{4}
+\contentsline {subsubsection}{\numberline {3.2.1} Project Perspective }{4}
+\contentsline {subsubsection}{\numberline {3.2.2} Product Functions }{4}
+\contentsline {subsubsection}{\numberline {3.2.3} End users }{4}
+\contentsline {subsubsection}{\numberline {3.2.4} General Constraints }{4}
+\contentsline {subsubsection}{\numberline {3.2.5} Assumptions and Dependencies }{4}
+\contentsline {subsection}{\numberline {3.3} Specific Requirements }{5}
+\contentsline {subsubsection}{\numberline {3.3.1} Functional Requirements }{5}
+\contentsline {subsubsection}{\numberline {3.3.2} Software Requirements }{5}
+\contentsline {subsubsection}{\numberline {3.3.3} Hardware Requirements }{5}
+\contentsline {subsection}{\numberline {3.4} Interface Requirements }{6}
+\contentsline {subsubsection}{\numberline {3.4.1} User Interface }{6}
+\contentsline {section}{\numberline {4} System Architecture and Design }{6}
+\contentsline {subsection}{\numberline {4.1} Block diagram }{6}
+\contentsline {section}{\numberline {5} Detailed Design }{6}
+\contentsline {subsection}{\numberline {5.1} Data Persistence }{6}
+\contentsline {subsection}{\numberline {5.2} Module Description }{7}
+\contentsline {subsubsection}{\numberline {5.2.1} Utilities }{8}
+\contentsline {subsubsection}{\numberline {5.2.2} Face Detection }{8}
+\contentsline {subsubsection}{\numberline {5.2.3} Soft Biometrics }{9}
+\contentsline {section}{\numberline {6} Implementation }{10}
+\contentsline {subsection}{\numberline {6.1} Building Training Data Set }{10}
+\contentsline {subsection}{\numberline {6.2} Learning }{10}
+\contentsline {subsection}{\numberline {6.3} Continuous Authentication Mode }{10}
+\contentsline {section}{\numberline {7} Testing }{11}
+\contentsline {subsection}{\numberline {7.1} Unit testing }{11}
+\contentsline {subsubsection}{\numberline {7.1.1} Face Recognition }{11}
+\contentsline {subsubsection}{\numberline {7.1.2} Soft bio-metrics }{11}
+\contentsline {subsection}{\numberline {7.2} Performance testing }{12}
+\contentsline {subsection}{\numberline {7.3} Security testing}{12}
+\contentsline {subsection}{\numberline {7.4} Compatibility testing }{12}
+\contentsline {subsection}{\numberline {7.5} Load Testing }{12}
+\contentsline {subsection}{\numberline {7.6} Integration testing}{13}
+\contentsline {subsection}{\numberline {7.7} System testing }{13}
+\contentsline {section}{\numberline {8} Results }{13}
+\contentsline {section}{\numberline {9} Conclusion and Future Enhancements }{18}
+\contentsline {subsection}{\numberline {9.1}Conclusion}{18}
+\contentsline {subsection}{\numberline {9.2}Future Enhancements}{18}
+\contentsline {section}{\numberline {10} References }{19}
+\contentsline {section}{\numberline {11} Appendix }{19}
+\contentsline {subsection}{\numberline {11.1} Screen Snapshots}{19}
