@@ -333,33 +333,35 @@ TT^{T}Tu_{i} = \lambda_{i}Tu_{i}
 \subsection{ Introduction }
 
 \subsubsection{ Purpose }
-The purpose of this Software Requirements Specification is to provide a complete description of all the specifications and functions of the Continuous Authentication system as described above.
+The purpose of this Software Requirements Specification is to provide a detailed description of the specifications and functions of the Continuous Authentication system described so far. It is intended as a guide to developers interested in incorporating this model into another system for authentication purpose. This software is intended to be run as a background process for a user session and hence, is not a stand-alone system. 
 
 \subsubsection{ Scope of the Project }
-Continuous authentication prevents the system from compromising the user's authenticity by continuously ensuring that the confidence in the identity of the user doesn't fall below a certain threshold. A video-feed from the web-cam is used to capture the user's traits throughout the session. A session here can be associated with the user logged-in to an e-mail or online banking account, or an account on the operating system itself.
+The Continuous Authentication system aims to ascertain the authenticity of the user's identity throughout the user session. It does so by continuously ensuring that the confidence in the identity of the user doesn't fall below a certain threshold. Throughout the session a video-feed from the web-cam is used to capture the user's traits, which subsequently help in authenticating the user. A session here can be associated with the user logged-in to an e-mail or online banking account, or an account on the operating system itself.
 
 \subsubsection{ Overview of Document }
 The rest of this Software Requirements Specification proceeds with a general description of the project followed by the specific requirements of this software. 
 
 \subsection{ General Description }
 \subsubsection{ Project Perspective }
-The Continuous Authentication system is designed as a stand-alone application which grants the user certain privileges at the time of successful log-in and continuously authenticates the user. The application enters into a lock-down mode in case an unauthorized  user attempts to use the authenticated user's privileges. 
+The Continuous Authentication system is designed to verify the user's identity at the time of log-in via a password and face recognition and also continually authenticate the user for the entire session. It enters into a lock-down mode in case an unauthorized user attempts to use the authenticated user's privileges.
+It acts as the authenticating component when associated with a system which manages a user session. An example of such a system could be an instant messaging application. There is a wide range of systems which could incorporate continuous authentication, hence, the interface requirements of this software are currently not defined in detail. Basically, the authentication system should be able to communicate with the parent system whenever an unauthorized user is detected, and either be allowed to act independently and log such a user out or transfer control to the parent system with an appropriate alert.
 
 \subsubsection{ Product Functions }
 The Continuous Authentication system aims to provide the two primary functions:
 \begin{itemize}
-	\item To check the hard biometric traits of the user during the initial log-in stage and during certain periods after log-in till session ends.
-	\item Continuously monitor the identity of the authenticated user and lock-down when required.
+	\item To authenticate the user by checking the username-password combination as well as the hard biometric traits (facial features) of the user during the initial log-in stage and continually after log-in till session ends.
+	\item Take action (in this case, lock-down) when an unauthorized user is detected.
 \end{itemize}
 
 \subsubsection{ End users }
-This application provides an added layer of security for users who wish to protect access to confidential information. Consequently, the user can rely on the system to ensure the privacy of his/her information.
+This software provides an added layer of security for users who wish to protect access
+to confidential information or protect their user privileges, in general. Since it is intended to run in the background for authenticating a user based on his/her facial features, the user is not expected to have much technical expertise. They need only know how to operate the parent system of which our Continuous Authentication system can be a component of.
 
 \subsubsection{ General Constraints }
 This application is constrained by the following:
 \begin{itemize}
-	\item The end-user's system should be capable of processing the real-time video-feed.
-	\item The lighting conditions during usage to be similar to that captured by the training set.
+	\item The end-user's system should be capable of processing a real-time video-feed.
+	\item The lighting conditions during usage should be similar to that captured by the training set for greater accuracy of face recognition.
 	\item The system is incapable of performing a hard biometric recognition in case of occlusion.
 \end{itemize}
 
@@ -373,14 +375,18 @@ This application is assumes the following:
 \subsection{ Specific Requirements }
 \subsubsection{ Functional Requirements }
 \begin{itemize}
-	\item{\it Provide initial log-in, and verify user's password followed by the user's hard biometric traits. }
-	\item{\it Create an account for a new user in the xml database and collect user's facial features and retrain the model. }
-	\item{\it Create a user template with the user's soft biometric traits (shirt colour) once the user's face has been recognized with a minimum given confidence level.  }
-	\item{\it Use the shirt-colour template to continuously verify the user's identity.  }
-	\item{\it If the soft biometric verification falls below a certain threshold, restart face recognition of the user.  }
-	\item{\it Lock-down in case of a tailgating unauthorized user. }
-	%\item{\it A session time-out occurs in case the user logs in and then leaves the workstation unattended for a specified time limit. }
+	\item The system shall allow for creation of an account for a new user in the xml database and collect user's facial features and retrain the model.
+	\item The system shall provide initial log-in sequence, and verify user's password followed by the user's hard biometric traits.
+	\item If user not a part of database, then the system shall declare user as unauthorized.
+	\item If user is verified at time of log-in, then the system shall continue ascertaining the authenticity of the user's identity via facial recognition.
+	\item The system shall create a user template with the user's soft biometric traits (shirt colour) once the user's face has been recognized with a minimum given confidence level.
+	\item The system shall use the shirt-colour template to verify the user's identity by checking the shirt colour continually till the confidence drops below a specific value.
+	\item If the soft biometric verification falls below a certain threshold, the system shall restart face recognition of the user.
+	\item If the confidence level indicated by the face recognition system falls below a specific value, it shall assume the user is unauthorized and declare so. If associated with a parent system it can act as a trigger to initiate a lock-down phase.
+	\item If the system doesn't detect a face, it shall not run the face recognition module, and consequently, not run even the shirt-colour detection module.
+	\item A session time-out occurs in case the user logs in and then leaves the workstation unattended for a specified time limit.
 \end{itemize}
+
 
 \subsubsection{ Software Requirements }
 \begin{itemize}
@@ -393,13 +399,13 @@ This application is assumes the following:
 \subsubsection{ Hardware Requirements }
 \begin{itemize}
 \item Web-cam with drivers supported by OpenCV, with a minimum resolution of 1.3MP
-\item Memory : 2GB DDR2
+\item Memory : 2GB DDR2 or higher
 \item Processor : A minimum of 3.0GhZ single core processor
 \end{itemize}
 
 \subsection{ Interface Requirements }
 \subsubsection{ User Interface }
-The user interface is provided with functions necessary to take as input the credentials of the user and display the live video-feed from the web-cam.
+The user interface is minimal and consists of functions necessary to take as input the credentials of the user and display the live video-feed from the web-cam with details of the user authenticated and the confidence with which the system believes the user is who he/she claims to be. If the user is ascertained to be unauthorized then he/she is indicated as unauthorized, acting as a trigger for a possible lockdown phase.
 
 \section{ System Architecture and Design }  
 \subsection{ Block diagram }
