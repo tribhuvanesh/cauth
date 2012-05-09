@@ -56,12 +56,13 @@ soft.h
 #define DEBUG 0
 // Enable this to display extra information in the window
 #define EXDETAILS 0
-#define SOFT_ENABLE 0
+#define SOFT_ENABLE 1
 #define FILEOP 0
 #define STORE_EIGEN 1
 #define COLLECT_COUNT 25
 #define COUNT_FREQ 5
 #define EXTENSION ".jpeg"
+#define USE_MAHALANOBIS_DISTANCE 1
 
 using namespace std;
 
@@ -123,6 +124,7 @@ void init()
 	cascadeFileMap["alt"] = "haar/haarcascade_frontalface_alt.xml";
 	cascadeFileMap["alt2"] = "haar/haarcascade_frontalface_alt2.xml";
 	cascadeFileMap["alt_tree"] = "haar/haarcascade_frontalface_alt_tree.xml";
+	cascadeFileMap["body"] = "haar/haarcascade_upperbody.xml";
 
 	colourMap["white"] = cvScalar(255, 255, 255);
 	colourMap["red"]   = cvScalar(255, 0, 0);
@@ -219,7 +221,7 @@ void doPCA()
 	calcLimit = cvTermCriteria(CV_TERMCRIT_ITER, nEigens, 1);
 
 	// printf("Started PCA... %d\n", nTrainFaces);
-	printf("Started PCA...\n");
+	//printf("Started PCA...\n");
 
 	// Compute average image, eigenvalue and eigenvectors
 	cvCalcEigenObjects( nTrainFaces,            // No. of source objects
@@ -248,7 +250,7 @@ int findNearestNeighbour(float* projectedTestFace, float* confidence)
 
 		for (i = 0; i < nEigens; i++) {
 			float d_i = projectedTestFace[i] - projectedTrainFaceMat->data.fl[iTrain*nEigens + i];
-#ifdef USE_MAHALANOBIS_DISTANCE
+#if USE_MAHALANOBIS_DISTANCE
 			distSq += d_i * d_i / eigenValMat->data.fl[i];
 #else
 			distSq += d_i * d_i;
@@ -561,6 +563,7 @@ int recog(IplImage* frame, CvHaarClassifierCascade* faceCascade, CvRect faceRect
 		/* printf("Done projecting! \n"); */
 		iNearest = findNearestNeighbour(projectedTestFace, &confidence);
 		nearest = trainPersonNumMat->data.i[iNearest];
+		printf("Confidence = %f\n", confidence);
 	}
 	else
 		printf("nEigens = 0. Check if data is loaded.\n");
@@ -579,6 +582,7 @@ void spin(string user)
 	IplImage *faceImage = 0;
 	CvMat* trainPersonNumMat;
 	CvHaarClassifierCascade* faceCascade;
+	/* CvHaarClassifierCascade* bodyCascade; */
 	CvCapture* capture;
 
 	int delay = 33;
@@ -632,10 +636,10 @@ void spin(string user)
 
 	// Choose from default, alt, alt2 or alt_tree
 	faceCascade = (CvHaarClassifierCascade*)cvLoad(cascadeFileMap["default"].c_str(), 0, 0, 0);
+	/* bodyCascade = (CvHaarClassifierCascade*)cvLoad(cascadeFileMap["body"].c_str(), 0, 0, 0); */
 	assert(faceCascade != NULL);
 
 	ofstream file;
-	file.open("mu_sig_2.txt");
 
 	while(runFlag)
 	{
@@ -644,7 +648,9 @@ void spin(string user)
 			break;
 
 		CvRect faceRect = detectFace(frame, faceCascade);
+		/* CvRect bodyRect = detectFace(frame, bodyCascade); */
 		drawBox(frame, faceRect, colourMap["white"]);
+		/* drawBox(frame, bodyRect, colourMap["red"]); */
 
 		int spacing = 15;
 		int lineNo = 1;
@@ -693,8 +699,6 @@ void spin(string user)
 				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
 				snprintf(text, sizeof(text)-1, "P = %f", areaUnderCurve);
 				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
-				file<<mu<<"\t"<<sig<<"\t"<<areaUnderCurve<<endl;
-				cout<<mu<<"\t"<<sig<<"\t"<<areaUnderCurve<<endl;
 				if(areaUnderCurve < 0.75)
 				{
 					if((t++ > authDelay - 10) && (loggedIn != rPerson) )
@@ -751,7 +755,7 @@ void spin(string user)
 			}
 			if(soft_spin)
 			{
-				map<string, float> currentMap = getTemplate(frame, faceCascade, faceRect);
+				map<string, float> currentMap = createTemplate(capture, faceCascade, AVG_TEMP_COUNT);
 				if(currentMap.size() != 0)
 				{
 					float confidence = nrmsd(avgTemplate, currentMap);
@@ -782,9 +786,9 @@ void spin(string user)
 			break;
 	}
 
-	file.close();
 
 	cvReleaseHaarClassifierCascade(&faceCascade);
+	/* cvReleaseHaarClassifierCascade(&bodyCascade); */
 	cvReleaseCapture(&capture);
 	cvDestroyWindow("CA");
 }
@@ -1005,7 +1009,6 @@ int main(int argc, char** argv)
 		case 1: user = verify_pwd();
 			if(user != "NULL")
 			{
-				// recognizeFromCam(user);
 				// soft_main();
 				spin(user);
 			}

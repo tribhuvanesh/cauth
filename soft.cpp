@@ -140,7 +140,7 @@ map<string, float> getTemplate(IplImage* imageIn, CvHaarClassifierCascade *casca
 
 		float initialConfidence = 1.0f;
 		int bottom;
-		drawBox(imageDisplay, faceRect, CV_RGB(255,0,0));
+		/* drawBox(imageDisplay, faceRect, CV_RGB(255,0,0)); */
 		// Create the shirt region, to be below the detected face and of similar size.
 		float SHIRT_DY = 1.4f;	// Distance from top of face to top of shirt region, based on detected face height.
 		float SHIRT_SCALE_X = 0.6f;	// Width of shirt region compared to the detected face
