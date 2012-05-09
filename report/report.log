@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.3-1.40.12 (TeX Live 2012/dev/Arch Linux) (format=pdflatex 2012.4.9)  10 MAY 2012 00:24
+This is pdfTeX, Version 3.1415926-2.3-1.40.12 (TeX Live 2012/dev/Arch Linux) (format=pdflatex 2012.4.9)  10 MAY 2012 02:58
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -149,7 +149,17 @@ LaTeX Font Info:    Redeclaring font encoding OMS on input line 568.
 \mathdisplay@stack=\toks20
 LaTeX Info: Redefining \[ on input line 2666.
 LaTeX Info: Redefining \] on input line 2667.
-) (./report.aux)
+) (./report.aux
+
+LaTeX Warning: Label `fig:pwd2' multiply defined.
+
+
+LaTeX Warning: Label `sub@fig:pwd2' multiply defined.
+
+
+LaTeX Warning: Label `fig:pwd' multiply defined.
+
+)
 \openout1 = `report.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 56.
@@ -164,8 +174,7 @@ LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 56.
 LaTeX Font Info:    ... okay on input line 56.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 56.
 LaTeX Font Info:    ... okay on input line 56.
-
-(/usr/share/texmf-dist/tex/context/base/supp-pdf.mkii
+ (/usr/share/texmf-dist/tex/context/base/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count104
 \scratchdimen=\dimen122
@@ -361,105 +370,193 @@ File: block.png Graphic file (type png)
 Package pdftex.def Info: block.png used on input line 407.
 (pdftex.def)             Requested size: 408.56694pt x 213.53404pt.
 
-[15 <./block.png>] [16] [17]
+[15] [16 <./block.png>] [17] [18]
 Overfull \hbox (35.37947pt too wide) in paragraph at lines 498--500
 [][]\OT1/cmtt/m/n/12 map<string, float>  getTemplate( IplImage*, CvHaarClassifi
 erCascade*, CvRect) 
  []
 
-[18] [19]
-Underfull \hbox (badness 10000) in paragraph at lines 535--538
+[19] [20] <img/login.png, id=105, 417.56pt x 98.3675pt>
+File: img/login.png Graphic file (type png)
+ <use img/login.png>
+Package pdftex.def Info: img/login.png used on input line 552.
+(pdftex.def)             Requested size: 167.02103pt x 39.34628pt.
+
+<img/login2.png, id=106, 423.5825pt x 204.765pt>
+File: img/login2.png Graphic file (type png)
+ <use img/login2.png>
+Package pdftex.def Info: img/login2.png used on input line 558.
+(pdftex.def)             Requested size: 148.25609pt x 71.66881pt.
+
+Overfull \hbox (46.9499pt too wide) in paragraph at lines 550--562
+[][][] 
+ []
+
+[21 <./img/login.png> <./img/login2.png>]
+<img/hard1.png, id=110, 642.4pt x 405.515pt>
+File: img/hard1.png Graphic file (type png)
+ <use img/hard1.png>
+Package pdftex.def Info: img/hard1.png used on input line 576.
+(pdftex.def)             Requested size: 224.84337pt x 141.93236pt.
+
+<img/unauth3.png, id=111, 643.40375pt x 400.49625pt>
+File: img/unauth3.png Graphic file (type png)
+ <use img/unauth3.png>
+Package pdftex.def Info: img/unauth3.png used on input line 582.
+(pdftex.def)             Requested size: 225.19469pt x 140.17578pt.
+
+Underfull \hbox (badness 10000) in paragraph at lines 589--590
+
+ []
+
+[22 <./img/hard1.png> <./img/unauth3.png>]
+<img/soft2.png, id=117, 640.3925pt x 398.48875pt>
+File: img/soft2.png Graphic file (type png)
+ <use img/soft2.png>
+Package pdftex.def Info: img/soft2.png used on input line 611.
+(pdftex.def)             Requested size: 224.14073pt x 139.47314pt.
+
+<img/soft2_csv.png, id=118, 647.41875pt x 402.50375pt>
+File: img/soft2_csv.png Graphic file (type png)
+ <use img/soft2_csv.png>
+Package pdftex.def Info: img/soft2_csv.png used on input line 617.
+(pdftex.def)             Requested size: 226.59995pt x 140.87842pt.
+
+<img/soft6.png, id=119, 645.41125pt x 399.4925pt>
+File: img/soft6.png Graphic file (type png)
+ <use img/soft6.png>
+Package pdftex.def Info: img/soft6.png used on input line 629.
+(pdftex.def)             Requested size: 225.89732pt x 139.82446pt.
+
+<img/soft6_csv.png, id=120, 645.41125pt x 406.51875pt>
+File: img/soft6_csv.png Graphic file (type png)
+ <use img/soft6_csv.png>
+Package pdftex.def Info: img/soft6_csv.png used on input line 635.
+(pdftex.def)             Requested size: 225.89732pt x 142.28369pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+<img/soft5.png, id=121, 642.4pt x 401.5pt>
+File: img/soft5.png Graphic file (type png)
+ <use img/soft5.png>
+Package pdftex.def Info: img/soft5.png used on input line 645.
+(pdftex.def)             Requested size: 224.84337pt x 140.5271pt.
+
+<img/soft5_csv.png, id=122, 644.4075pt x 408.52625pt>
+File: img/soft5_csv.png Graphic file (type png)
+ <use img/soft5_csv.png>
+Package pdftex.def Info: img/soft5_csv.png used on input line 651.
+(pdftex.def)             Requested size: 225.546pt x 142.98633pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 657--659
+
+ []
+
+[23 <./img/soft2.png (PNG copy)> <./img/soft2_csv.png (PNG copy)>] [24 <./img/s
+oft6.png> <./img/soft6_csv.png (PNG copy)> <./img/soft5.png (PNG copy)> <./img/
+soft5_csv.png (PNG copy)>]
+Underfull \hbox (badness 10000) in paragraph at lines 666--669
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 540--543
+Underfull \hbox (badness 10000) in paragraph at lines 671--674
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 545--548
-
- []
-
-[20]
-Underfull \hbox (badness 10000) in paragraph at lines 550--553
+Underfull \hbox (badness 10000) in paragraph at lines 676--679
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 555--558
+Underfull \hbox (badness 10000) in paragraph at lines 681--684
+
+ []
+
+[25]
+Underfull \hbox (badness 10000) in paragraph at lines 686--689
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 560--563
+Underfull \hbox (badness 10000) in paragraph at lines 691--694
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 565--568
+Underfull \hbox (badness 10000) in paragraph at lines 696--699
 
  []
 
-[21]
-Underfull \hbox (badness 10000) in paragraph at lines 570--573
+
+Underfull \hbox (badness 10000) in paragraph at lines 701--704
 
  []
 
-<img/face_vs_soft.png, id=108, 578.16pt x 433.62pt>
+[26] [27] <img/face_vs_soft.png, id=140, 578.16pt x 433.62pt>
 File: img/face_vs_soft.png Graphic file (type png)
- <use img/face_vs_soft.png>
-Package pdftex.def Info: img/face_vs_soft.png used on input line 580.
+
+<use img/face_vs_soft.png>
+Package pdftex.def Info: img/face_vs_soft.png used on input line 713.
 (pdftex.def)             Requested size: 346.89867pt x 260.17401pt.
 
-<img/face_rec_accuracy.png, id=109, 578.16pt x 433.62pt>
+<img/face_rec_accuracy.png, id=141, 578.16pt x 433.62pt>
 File: img/face_rec_accuracy.png Graphic file (type png)
 
 <use img/face_rec_accuracy.png>
-Package pdftex.def Info: img/face_rec_accuracy.png used on input line 586.
+Package pdftex.def Info: img/face_rec_accuracy.png used on input line 719.
 (pdftex.def)             Requested size: 346.89867pt x 260.17401pt.
 
-<img/mu_nearest_uid.png, id=110, 578.16pt x 433.62pt>
+<img/mu_nearest_uid.png, id=142, 578.16pt x 433.62pt>
 File: img/mu_nearest_uid.png Graphic file (type png)
 
 <use img/mu_nearest_uid.png>
-Package pdftex.def Info: img/mu_nearest_uid.png used on input line 591.
+Package pdftex.def Info: img/mu_nearest_uid.png used on input line 724.
 (pdftex.def)             Requested size: 346.89867pt x 260.17401pt.
- <img/mu_sig1.png, id=111, 578.16pt x 433.62pt>
+ <img/mu_sig1.png, id=143, 578.16pt x 433.62pt>
 File: img/mu_sig1.png Graphic file (type png)
 
 <use img/mu_sig1.png>
-Package pdftex.def Info: img/mu_sig1.png used on input line 597.
+Package pdftex.def Info: img/mu_sig1.png used on input line 730.
 (pdftex.def)             Requested size: 346.89867pt x 260.17401pt.
- <img/mus_sig3.png, id=112, 578.16pt x 433.62pt>
+ <img/mus_sig3.png, id=144, 578.16pt x 433.62pt>
 File: img/mus_sig3.png Graphic file (type png)
 
 <use img/mus_sig3.png>
-Package pdftex.def Info: img/mus_sig3.png used on input line 603.
+Package pdftex.def Info: img/mus_sig3.png used on input line 736.
 (pdftex.def)             Requested size: 346.89867pt x 260.17401pt.
- <img/mus_sig4.png, id=113, 578.16pt x 433.62pt>
+ <img/mus_sig4.png, id=145, 578.16pt x 433.62pt>
 File: img/mus_sig4.png Graphic file (type png)
 
 <use img/mus_sig4.png>
-Package pdftex.def Info: img/mus_sig4.png used on input line 608.
+Package pdftex.def Info: img/mus_sig4.png used on input line 741.
 (pdftex.def)             Requested size: 346.89867pt x 260.17401pt.
- <img/mu_sig5.png, id=114, 578.16pt x 433.62pt>
+ <img/mu_sig5.png, id=146, 578.16pt x 433.62pt>
 File: img/mu_sig5.png Graphic file (type png)
 
 <use img/mu_sig5.png>
-Package pdftex.def Info: img/mu_sig5.png used on input line 614.
+Package pdftex.def Info: img/mu_sig5.png used on input line 747.
 (pdftex.def)             Requested size: 346.89867pt x 260.17401pt.
- <img/mus_sig5.png, id=115, 578.16pt x 433.62pt>
+ <img/mus_sig5.png, id=147, 578.16pt x 433.62pt>
 File: img/mus_sig5.png Graphic file (type png)
 
 <use img/mus_sig5.png>
-Package pdftex.def Info: img/mus_sig5.png used on input line 620.
+Package pdftex.def Info: img/mus_sig5.png used on input line 753.
 (pdftex.def)             Requested size: 346.89867pt x 260.17401pt.
- [22] [23 <./img/face_vs_soft.png> <./img/face_rec_accuracy.png>] [24 <./img/mu
-_nearest_uid.png> <./img/mu_sig1.png>] [25 <./img/mus_sig3.png> <./img/mus_sig4
-.png>] [26 <./img/mu_sig5.png> <./img/mus_sig5.png>]
-(./tutref.tex [27]
+
+Underfull \hbox (badness 10000) in paragraph at lines 756--760
+
+ []
+
+[28 <./img/face_vs_soft.png>] [29 <./img/face_rec_accuracy.png> <./img/mu_neare
+st_uid.png>] [30 <./img/mu_sig1.png> <./img/mus_sig3.png>] [31 <./img/mus_sig4.
+png> <./img/mu_sig5.png>] [32 <./img/mus_sig5.png>] (./tutref.tex [33]
 Missing character: There is no ‚ in font cmr12!
 Missing character: There is no Ä in font cmr12!
 Missing character: There is no ú in font cmr12!
@@ -484,7 +581,7 @@ Missing character: There is no ù in font cmr12!
 Missing character: There is no ‚ in font cmr12!
 Missing character: There is no Ä in font cmr12!
 Missing character: There is no ì in font cmr12!
- [28]
+ [34]
 Missing character: There is no ‚ in font cmr12!
 Missing character: There is no Ä in font cmr12!
 Missing character: There is no ú in font cmr12!
@@ -539,28 +636,66 @@ Missing character: There is no ù in font cmr12!
 Missing character: There is no ‚ in font cmr12!
 Missing character: There is no Ä in font cmr12!
 Missing character: There is no ô in font cmr12!
-) [29] (./report.aux) ) 
+)
+<img/soft4.png, id=178, 1371.1225pt x 770.88pt>
+File: img/soft4.png Graphic file (type png)
+ <use img/soft4.png>
+Package pdftex.def Info: img/soft4.png used on input line 782.
+(pdftex.def)             Requested size: 411.33992pt x 231.26578pt.
+
+<img/unauth2.png, id=179, 1371.1225pt x 770.88pt>
+File: img/unauth2.png Graphic file (type png)
+ <use img/unauth2.png>
+Package pdftex.def Info: img/unauth2.png used on input line 788.
+(pdftex.def)             Requested size: 411.33992pt x 231.26578pt.
+
+<img/hard2.png, id=180, 1371.1225pt x 770.88pt>
+File: img/hard2.png Graphic file (type png)
+ <use img/hard2.png>
+Package pdftex.def Info: img/hard2.png used on input line 794.
+(pdftex.def)             Requested size: 411.33992pt x 231.26578pt.
+
+<img/avg_image.jpeg, id=181, 180.675pt x 180.675pt>
+File: img/avg_image.jpeg Graphic file (type jpg)
+ <use img/avg_image.jpeg>
+Package pdftex.def Info: img/avg_image.jpeg used on input line 800.
+(pdftex.def)             Requested size: 180.67455pt x 180.67455pt.
+
+<img/eigen.png, id=182, 1445.4pt x 2348.775pt>
+File: img/eigen.png Graphic file (type png)
+ <use img/eigen.png>
+Package pdftex.def Info: img/eigen.png used on input line 806.
+(pdftex.def)             Requested size: 289.07487pt x 469.74669pt.
+ [35]
+[36 <./img/soft4.png> <./img/unauth2.png>] [37 <./img/hard2.png> <./img/avg_ima
+ge.jpeg>] [38 <./img/eigen.png>] (./report.aux)
+
+LaTeX Warning: There were multiply-defined labels.
+
+ ) 
 Here is how much of TeX's memory you used:
- 3290 strings out of 493629
- 48448 string characters out of 3148779
- 108706 words of memory out of 3000000
- 6548 multiletter control sequences out of 15000+200000
- 11364 words of font info for 41 fonts, out of 3000000 for 9000
+ 3398 strings out of 493629
+ 50277 string characters out of 3148779
+ 108952 words of memory out of 3000000
+ 6640 multiletter control sequences out of 15000+200000
+ 12204 words of font info for 44 fonts, out of 3000000 for 9000
  831 hyphenation exceptions out of 8191
- 38i,8n,38p,1287b,297s stack positions out of 5000i,500n,10000p,200000b,50000s
-</usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cm
-bx10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr
-/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texmf-d
-ist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texmf-dist/fonts/type1
-/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfont
-s/cm/cmr12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb>
-</usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/te
-xmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></usr/share/texmf-dist/fonts
-/type1/public/amsfonts/cm/cmtt12.pfb>
-Output written on report.pdf (35 pages, 704067 bytes).
+ 38i,12n,38p,1287b,473s stack positions out of 5000i,500n,10000p,200000b,50000s
+</usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/
+texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texmf-dist/fon
+ts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texmf-dist/fonts/type1/publi
+c/amsfonts/cm/cmmi12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/
+cmmi8.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr
+/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texmf-di
+st/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texmf-dist/fonts/type1/
+public/amsfonts/cm/cmr8.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/
+cm/cmsy10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><
+/usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></usr/share/tex
+mf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb>
+Output written on report.pdf (44 pages, 8149735 bytes).
 PDF statistics:
- 183 PDF objects out of 1000 (max. 8388607)
- 109 compressed objects within 2 object streams
+ 241 PDF objects out of 1000 (max. 8388607)
+ 140 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
- 71 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 146 words of extra memory for PDF output out of 10000 (max. 10000000)
 

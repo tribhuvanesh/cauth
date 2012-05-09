@@ -695,7 +695,9 @@ void spin(string user)
 				snprintf(text, sizeof(text)-1, "Mu = %f  Sig = %f", mu, sig);
 				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
 #else
-				snprintf(text, sizeof(text)-1, "Name: '%s'", rPerson.c_str());
+				snprintf(text, sizeof(text)-1, "Logged in as: '%s'", user.c_str());
+				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
+				snprintf(text, sizeof(text)-1, "Recognized: '%s'", rPerson.c_str());
 				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
 				snprintf(text, sizeof(text)-1, "P = %f", areaUnderCurve);
 				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
