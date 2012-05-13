@@ -15,6 +15,7 @@ soft.h
 #include <vector>
 #include <string>
 #include <map>
+#include <bitset>
 
 #include <cstdio>
 #include <cstdlib>
@@ -57,9 +58,10 @@ soft.h
 #define ll long long int
 
 #define DEBUG 0
+#define COLLECT_TRAIN 0
 // Enable this to display extra information in the window
 #define EXDETAILS 1
-#define SOFT_ENABLE 0
+#define SOFT_ENABLE 1
 #define FILEOP 0
 #define STORE_EIGEN 1
 #define COLLECT_COUNT 25
@@ -68,7 +70,7 @@ soft.h
 #define USE_MAHALANOBIS_DISTANCE 1
 
 // Variables set for run-time CA
-#define DELTA 1
+#define DELTA 0.5
 #define SOFT_THRESHOLD 0.75
 
 using namespace std;
@@ -134,9 +136,9 @@ void init()
 	cascadeFileMap["body"] = "haar/haarcascade_upperbody.xml";
 
 	colourMap["white"] = cvScalar(255, 255, 255);
-	colourMap["red"]   = cvScalar(255, 0, 0);
+	colourMap["red"]   = cvScalar(0, 0, 255);
 	colourMap["green"] = cvScalar(0, 255, 0);
-	colourMap["blue"]  = cvScalar(0, 0, 255);
+	colourMap["blue"]  = cvScalar(255, 0, 0);
 }
 
 // Get an 8-bit equivalent of the 32-bit Float image.
@@ -582,6 +584,10 @@ int recog(IplImage* frame, CvHaarClassifierCascade* faceCascade, CvRect faceRect
 	return nearest;
 }
 
+template <std::size_t N> inline void rotate(std::bitset<N>& b, unsigned m)
+{
+	b = b << m | b >> (N-m);
+}
 
 void spin(string user)
 {
@@ -593,8 +599,8 @@ void spin(string user)
 	CvCapture* capture;
 
 	int delay = 33;
-	int t = 0;
-	int authDelay = 100;
+	int wait = 0;
+	int authDelay = 90;
 	bool runFlag = true;
 
 	string loggedIn = "NULL";
@@ -605,12 +611,6 @@ void spin(string user)
 	int count = 0;
         unsigned int i;
 	string prefix;
-
-	float mu = 0.5;
-	float sig = 1000;
-	// Error in estimation
-	float r_mu;
-	float r_sig = 5;
 
 	// Add 1, since indexing in vector starts from 0, and UIDs start from 1
 	int uid = getID(user) + 1;
@@ -646,8 +646,24 @@ void spin(string user)
 	/* bodyCascade = (CvHaarClassifierCascade*)cvLoad(cascadeFileMap["body"].c_str(), 0, 0, 0); */
 	assert(faceCascade != NULL);
 
+#if COLLECT_TRAIN
 	ofstream file;
+	string filename;
+	int y;
+	int burst = 20;
+	int b = 0;
+
+	cout<<"Enter file name: ";
+	cin>>filename;
+	cout<<endl;
+	file.open(filename.c_str());
+	cout<<"Enter authentication state: ";
+	cin>>y;
+	cout<<endl;
+#endif
 	int64 tpersec = cv::getTickFrequency();
+	int frame_no = 0;
+	string state;
 
 	// SVM model, obtained from previously trained data
 	cout<<"Loading model..."<<endl;
@@ -655,8 +671,18 @@ void spin(string user)
 	cout<<"Loaded model successfully..."<<endl;
 	// svm_node[0] = Mean confidence over 10 frames
 	// svm_node[1] = Mean t_since over 10 frames
-	struct svm_node f_node[3];
-	
+	struct svm_node f_node[4];
+
+	// Features for svm	
+	int64 t0 = -5, tsince = 0;
+	double avg_conf = 0;
+	double avg_tsince = 0;
+	double avg_indc;
+
+	// Create prediction queue, and decide authentication state
+	bitset<5> pqueue (string("00000"));
+	double pconf;
+
 	while(runFlag)
 	{
 		frame = cvQueryFrame(capture);
@@ -678,17 +704,13 @@ void spin(string user)
 		{
 			if(hard_spin)
 			{
-				// Calculate averages over 10 frames
-				int64 t0 = cv::getTickCount(), tsince = 0;
-				double avg_conf = 0;
-				double avg_tsince = 0;
-				for(i=0; i<10; i++)
+				float confidence;
+				int nearest = recog(frame, faceCascade, faceRect, trainPersonNumMat, &confidence);
+				int indc = (int)(nearest == uid);
+
+				// Calculate averages over next 10 frames
+				if(++frame_no <= 10)
 				{
-					float confidence;
-					int nearest = recog(frame, faceCascade, faceRect, trainPersonNumMat, &confidence);
-					int indc = (int)(nearest == uid);
-
-
 					if(indc)
 					{
 						tsince = cv::getTickCount() - t0;
@@ -701,101 +723,106 @@ void spin(string user)
 					
 					avg_conf += confidence;
 					avg_tsince += tsince;
+					avg_indc += indc;
 				}
+				// If this is the 11th frame, predict with knowledge of past 10 frames
+				else
+				{
+					f_node[0].index = 1;
+					f_node[0].value = avg_conf / 10;
+					f_node[1].index = 2;
+					f_node[1].value = avg_tsince / tpersec;
+					f_node[2].index = 3;
+					f_node[2].value = avg_indc / 10; 
+					f_node[3].index = -1;
+					f_node[3].value = -1; 
+					/* cout<<"Predicting"<<"1: "<<avg_conf/10<<"   2: "<<avg_tsince/tpersec<<endl; */
+#if COLLECT_TRAIN
+					if(++b >= burst)
+					{
+						cout<<"Enter authentication state: ";
+						cin>>y;
+						cout<<endl;
+						b = 0;
+						if(y < 0) return;
+					}
+					cout<<y<<" 1:"<<avg_conf/10<<" 2:"<<avg_tsince/tpersec<<" 3:"<<avg_indc/10<<endl;
+					file<<y<<" 1:"<<avg_conf/10<<" 2:"<<avg_tsince/tpersec<<" 3:"<<avg_indc/10<<endl;
+#endif
+					int predicted = svm_predict(model, f_node);
+					state = ((predicted == 1)?"Authorized":"Unauthorized");
 
-				f_node[0].index = 1;
-				f_node[0].value = avg_conf / tpersec;
-				f_node[1].index = 2;
-				f_node[1].value = avg_tsince / tpersec;
-				f_node[2].index = -1;
-				f_node[2].value = -1; 
-				cout<<"Predicting"<<"1: "<<avg_conf/10<<"   2: "<<avg_tsince/tpersec<<endl;
-				double predicted = svm_predict(model, f_node);
-				cout<<"Predicted = "<<predicted<<endl;
-				cout<<((predicted == 1)?"Authorized":"Unauthorized")<<endl;
+					// Update queue
+					rotate(pqueue,1);
+					pqueue[4] = predicted;
 
-				float confidence;
-				int nearest = recog(frame, faceCascade, faceRect, trainPersonNumMat, &confidence);
+					cout<<"Predicted = "<<predicted<<"  "<<state<<" confidence = "<<pqueue.count()<<endl;
+					avg_conf = 0;
+					avg_tsince = 0;
+					avg_indc = 0;
+					frame_no = 0;
 
-				r_mu = predicted;
-				mu = ((r_mu * sig) + (mu * r_sig)) / (sig + r_sig);
-				sig = (sig * r_sig) / (sig + r_sig);
-
-				/* cout<<"UID: "<<uid<<endl; */
-				//printf("Nearest = %d, Person = %s, Confidence = %f\n", nearest, personNames[nearest-1].c_str(), confidence);
-				//printf("Mu = %f\tSigma = %f\n", mu, sig);
-
-				double a1 = 0.00, a2 = 0.00;
-				// Obtain area under curve in pdf, by calculating psi(a1) - psi(a2) from cdf
-				a1 = 0.5 * erf( (1.00 + DELTA) / (sqrt(2 * sig)) );
-				a2 = 0.5 * erf( (1.00 - DELTA) / (sqrt(2 * sig)) );
-
-				double areaUnderCurve = a1 - a2;
-				/* printf("P(user|uid, eigenvectors) = %f\n", areaUnderCurve); */
+				}
 
 				CvFont font;
 				cvInitFont(&font,CV_FONT_HERSHEY_PLAIN, 1.0, 1.0, 0,1,CV_AA);
 				CvScalar textColor = CV_RGB(0,255,255);	// light blue text
 				char text[256];
 				string rPerson = personNames[nearest-1];
-				/* cout<<rPerson<<endl; */
 #if EXDETAILS
 				snprintf(text, sizeof(text)-1, "Name: '%s'", rPerson.c_str());
 				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
-				snprintf(text, sizeof(text)-1, "Mu = %f  Sig = %f", mu, sig);
-				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
-				snprintf(text, sizeof(text)-1, "P = %f", areaUnderCurve);
+				snprintf(text, sizeof(text)-1, "Confidence: '%f'", pqueue.count()*20.0);
 				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
 #endif
 				snprintf(text, sizeof(text)-1, "Logged in as: '%s'", user.c_str());
 				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
-				snprintf(text, sizeof(text)-1, "Recognized: '%s'", rPerson.c_str());
-				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
+				// snprintf(text, sizeof(text)-1, "Recognized: '%s'", rPerson.c_str());
+				// cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
 				// snprintf(text, sizeof(text)-1, "P = %f", areaUnderCurve);
 				// cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
-				if(areaUnderCurve < 0.75)
+				if( wait++ >= authDelay )
 				{
-					if((t++ > authDelay - 10) && (loggedIn != rPerson) )
+					switch(pqueue.count())
 					{
-						if (loggedIn != "NULL")
-							cvPutText(frame, "UNAUTHORIZED ACCESS", 
-								  cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)),
-								  &font, colourMap["blue"]);
-						else
-							cvPutText(frame, "TIME OUT. Now exiting...", 
-								  cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)),
-								  &font, colourMap["red"]);
+						case 0:
+						case 1:
+						case 2:
+						case 3:   cvPutText(frame, "UNAUTHORIZED",
+						          cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)),
+							  &font, colourMap["red"]);
+							  break;
+						case 4:   cvPutText(frame, "AUTHORIZED",
+						          cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)),
+							  &font, colourMap["green"]);
+							  break;
+						case 5:   cvPutText(frame, "AUTHORIZED",
+						          cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)),
+							  &font, colourMap["green"]);
+							  break;
 					}
-					else
-					{
-						int j;
-						char dots[10];
-						strcpy(dots, "");
-						for(j=0; j < t % 5; j++) strcat(dots, ".");
-						snprintf(text, sizeof(text)-1, "AUTHENTICATING%s", dots);
-						cvPutText(frame, text,
-							  cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)),
-							  &font, textColor);
-					}
-				}
 #if SOFT_ENABLE
-				// Probability mass > threshold, enter soft-biometrics mode
-				else if(areaUnderCurve >= 0.99)
-				{
-					hard_spin = false;
-					soft_spin = true;
-					updateAvg = true;
-				}
+					if(pqueue.count() == 5)
+					{
+						hard_spin = false;
+						soft_spin = true;
+						updateAvg = true;
+
+						pqueue.reset();
+						wait = 0;
+					}
 #endif
-				// Wait for probability mass to reach 0.98
+				}
 				else
 				{
-					t = authDelay + 10;
-					if((loggedIn == "NULL") && (rPerson == user))
-						loggedIn = rPerson;
-					cvPutText(frame, "AUTHORIZED ACCESS", 
+					int j;
+					char dots[10];
+					strcpy(dots, "");
+					for(j=0; j < wait % 5; j++) strcat(dots, ".");
+					snprintf(text, sizeof(text)-1, "AUTHENTICATING%s", dots);
+					cvPutText(frame, text,
 						  cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)),
-						  &font, colourMap["green"]);
+						  &font, colourMap["white"]);
 				}
 				cvShowImage("CA", frame);
 			}
@@ -817,11 +844,6 @@ void spin(string user)
 					{
 						hard_spin = true;
 						soft_spin = false;
-
-						float mu = 0;
-						float sig = 1000;
-						float r_mu;
-						float r_sig = 0.25;
 					}
 				}
 
@@ -841,6 +863,9 @@ void spin(string user)
 	
 	svm_free_and_destroy_model(&model);
 
+#if COLLECT_TRAIN
+	file.close();
+#endif
 	cvReleaseHaarClassifierCascade(&faceCascade);
 	/* cvReleaseHaarClassifierCascade(&bodyCascade); */
 	cvReleaseCapture(&capture);
