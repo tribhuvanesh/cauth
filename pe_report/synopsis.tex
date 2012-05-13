@@ -1,0 +1,54 @@
+\documentclass[12pt]{article}			% For LaTeX 2e
+						% other documentclass options:
+						% draft, fleqn, openbib, 12pt
+
+\usepackage{graphicx}	 			% insert PostScript figures
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{wrapfig}
+\usepackage{amsmath}
+%% \usepackage{setspace}   % controllabel line spacing
+%% If an increased spacing different from one-and-a-half or double spacing is
+%% required then the spacing environment can be used.  The spacing environment 
+%% takes one argument which is the baselinestretch to use,
+%%         e.g., \begin{spacing}{2.5}  ...  \end{spacing}
+
+
+% the following produces 1 inch margins all around with no header or footer
+\topmargin	=10.mm		% beyond 25.mm
+\oddsidemargin	=0.mm		% beyond 25.mm
+\evensidemargin	=0.mm		% beyond 25.mm
+\headheight	=0.mm
+\headsep	=0.mm
+\textheight	=220.mm
+\textwidth	=165.mm
+					% SOME USEFUL OPTIONS:
+% \pagestyle{empty}			% no page numbers
+ \parindent  15.mm			% indent paragraph by this much
+ \parskip     2.mm			% space between paragraphs
+% \mathindent 20.mm			% indent math equations by this much
+
+\newcommand{\MyTabs}{ \hspace*{25.mm} \= \hspace*{25.mm} \= \hspace*{25.mm} \= \hspace*{25.mm} \= \hspace*{25.mm} \= \hspace*{25.mm} \kill }
+
+\graphicspath{{../Figures/}{../data/:}}  % post-script figures here or in /.
+
+					% Helps LaTeX put figures where YOU want
+ \renewcommand{\topfraction}{0.9}	% 90% of page top can be a float
+ \renewcommand{\bottomfraction}{0.9}	% 90% of page bottom can be a float
+ \renewcommand{\textfraction}{0.1}	% only 10% of page must to be text
+
+\linespread{1.2}
+\alph{footnote}				% make title footnotes alpha-numeric
+
+\begin{document}			% REQUIRED
+
+\begin{center}
+	{\LARGE \bf Synopsis}
+\end{center}
+Over the years, \emph{static authentication} - the procedure of allowing user access based on one-time authentication, has evolved from using passwords to more modern and technologically advanced methods such as security tokens, RFID chips, face and voice recognition, fingerprints, retinal patterns, etc.
+These methods, although providing a rigid and secure framework to this one-time authentication session, doesn't provide authentication of the user throughout the session. This leaves the possibility of an imposter gaining access in multiple scenarios.\\[2ex]
+The goal of \emph{Continuous Authentication} is to provide a solution, by authenticating the user right from the initial stages of log-in through log-out. This is implemented by re-enforcing the tried-and-tested techniques of the present day static authentication system by extrapolating them throughout the session. But, this introduces new challenges, since these "one-time authentication" techniques are computationally expensive, restricts the user's movement and postures in front of the system, require extra expensive hardware and deviates the user from his work-flow. In these situations, the user no longer remains uninterrupted by the authentication process in the background.\\[2ex]
+In recent years, the biometric traits of the user have been classified into \emph{hard} biometrics traits, which remain unique-per-user and \emph{soft} biometrics, which are unique-per-session. A. K. Jain et al in their paper "Can soft biometric traits assist user recognition?" studied the feasibility of these soft biometrics, and has been proven possible in light of recent reasearch conducted by Niinuma et al.\\[2ex]
+This project proposes Continuous Authentication, using login through conventional passwords followed by authentication using hard and soft biometrics till logout. The hard biometric trait - facial features, is chosen so that the user need not invest in any additional expensive hardware. The noise inherent in the process of face recognition, is managed by using a machine learning algorithm which captures the temporal data and expresses it as confidence. The soft traits are used in phases when this confidence is high to relieve the CPU of comparatively high computation.
+
+\end{document}
