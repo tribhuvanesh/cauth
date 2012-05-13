@@ -41,7 +41,7 @@
 int		    getPixelColorType(int H, int S, int V);
 map<string, float>  getTemplate( IplImage*, CvHaarClassifierCascade*, CvRect);
 map<string, float>  createAverage( vector< map<string, float> > );
-float		    sigmoid( float );
+/* float		    sigmoid( float ); */
 float		    nrmsd( map<string, float>, map<string, float> );
 
 // Initialize vector with colours
@@ -291,11 +291,11 @@ map<string, float> createAverage( vector< map<string, float> > cmapVect )
 	return avgTemplate;
 }
 
-float sigmoid(float x)
-{
-	float exp_val = exp(-x);
-	return 1 / (1 + exp_val);
-}
+// float sigmoid(float x)
+// {
+// 	float exp_val = exp(-x);
+// 	return 1 / (1 + exp_val);
+// }
 
 float nrmsd(map<string, float> avgTemplate, map<string, float> currentTemplate)
 {

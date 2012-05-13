@@ -44,6 +44,9 @@ soft.h
 #include "utils.h"
 #include "soft.h"
 
+// SVM stuff
+#include "libsvm-3.12/svm.h"
+
 #define vi vector<int>
 #define v2di vector< vector<int> >
  
@@ -55,14 +58,18 @@ soft.h
 
 #define DEBUG 0
 // Enable this to display extra information in the window
-#define EXDETAILS 0
-#define SOFT_ENABLE 1
+#define EXDETAILS 1
+#define SOFT_ENABLE 0
 #define FILEOP 0
 #define STORE_EIGEN 1
 #define COLLECT_COUNT 25
 #define COUNT_FREQ 5
 #define EXTENSION ".jpeg"
 #define USE_MAHALANOBIS_DISTANCE 1
+
+// Variables set for run-time CA
+#define DELTA 1
+#define SOFT_THRESHOLD 0.75
 
 using namespace std;
 
@@ -107,7 +114,7 @@ int		    loadTrainingData(CvMat** pTrainPersonNumMat);
 int		    findNearestNeighbour(float* projectedTestFace, float* confidence);
 int		    loadFaceImageArr(char* filename);
 void		    spin(string user);
-int		    recog(IplImage* frame, CvHaarClassifierCascade* faceCascade, CvRect faceRect, CvMat* trainPersonNumMat);
+int		    recog(IplImage* frame, CvHaarClassifierCascade* faceCascade, CvRect faceRect, CvMat* trainPersonNumMat, float* confidence);
 /* void		    recognizeFromCam(string user); */
 void	            collect();
 int		    loadPersons();
@@ -524,7 +531,7 @@ int getID(string user)
 	}
 }
 
-int recog(IplImage* frame, CvHaarClassifierCascade* faceCascade, CvRect faceRect, CvMat* trainPersonNumMat)
+int recog(IplImage* frame, CvHaarClassifierCascade* faceCascade, CvRect faceRect, CvMat* trainPersonNumMat, float* confidence)
 {
 	IplImage *faceImage = 0;
 	IplImage *resizedImage;
@@ -547,7 +554,7 @@ int recog(IplImage* frame, CvHaarClassifierCascade* faceCascade, CvRect faceRect
 
 	if (nEigens > 0)
 	{
-		float *projectedTestFace = 0, confidence;
+		float *projectedTestFace = 0;
 
 		cvFree(&projectedTestFace);
 		projectedTestFace = (float *)cvAlloc(nEigens*sizeof(float));
@@ -561,9 +568,9 @@ int recog(IplImage* frame, CvHaarClassifierCascade* faceCascade, CvRect faceRect
 				    projectedTestFace // Output - calculated coefficients
 				  );
 		/* printf("Done projecting! \n"); */
-		iNearest = findNearestNeighbour(projectedTestFace, &confidence);
+		iNearest = findNearestNeighbour(projectedTestFace, confidence);
 		nearest = trainPersonNumMat->data.i[iNearest];
-		printf("Confidence = %f\n", confidence);
+		/* printf("Confidence = %f\n", *confidence); */
 	}
 	else
 		printf("nEigens = 0. Check if data is loaded.\n");
@@ -599,11 +606,11 @@ void spin(string user)
         unsigned int i;
 	string prefix;
 
-	float mu = nPersons/2;
+	float mu = 0.5;
 	float sig = 1000;
 	// Error in estimation
 	float r_mu;
-	float r_sig = 1;
+	float r_sig = 5;
 
 	// Add 1, since indexing in vector starts from 0, and UIDs start from 1
 	int uid = getID(user) + 1;
@@ -640,7 +647,16 @@ void spin(string user)
 	assert(faceCascade != NULL);
 
 	ofstream file;
+	int64 tpersec = cv::getTickFrequency();
 
+	// SVM model, obtained from previously trained data
+	cout<<"Loading model..."<<endl;
+	struct svm_model* model = svm_load_model("model");
+	cout<<"Loaded model successfully..."<<endl;
+	// svm_node[0] = Mean confidence over 10 frames
+	// svm_node[1] = Mean t_since over 10 frames
+	struct svm_node f_node[3];
+	
 	while(runFlag)
 	{
 		frame = cvQueryFrame(capture);
@@ -662,9 +678,46 @@ void spin(string user)
 		{
 			if(hard_spin)
 			{
-				int nearest = recog(frame, faceCascade, faceRect, trainPersonNumMat);
-				r_mu = nearest;
+				// Calculate averages over 10 frames
+				int64 t0 = cv::getTickCount(), tsince = 0;
+				double avg_conf = 0;
+				double avg_tsince = 0;
+				for(i=0; i<10; i++)
+				{
+					float confidence;
+					int nearest = recog(frame, faceCascade, faceRect, trainPersonNumMat, &confidence);
+					int indc = (int)(nearest == uid);
 
+
+					if(indc)
+					{
+						tsince = cv::getTickCount() - t0;
+						t0 = cv::getTickCount();
+					}
+					else
+					{
+						tsince = cv::getTickCount() - t0;
+					}
+					
+					avg_conf += confidence;
+					avg_tsince += tsince;
+				}
+
+				f_node[0].index = 1;
+				f_node[0].value = avg_conf / tpersec;
+				f_node[1].index = 2;
+				f_node[1].value = avg_tsince / tpersec;
+				f_node[2].index = -1;
+				f_node[2].value = -1; 
+				cout<<"Predicting"<<"1: "<<avg_conf/10<<"   2: "<<avg_tsince/tpersec<<endl;
+				double predicted = svm_predict(model, f_node);
+				cout<<"Predicted = "<<predicted<<endl;
+				cout<<((predicted == 1)?"Authorized":"Unauthorized")<<endl;
+
+				float confidence;
+				int nearest = recog(frame, faceCascade, faceRect, trainPersonNumMat, &confidence);
+
+				r_mu = predicted;
 				mu = ((r_mu * sig) + (mu * r_sig)) / (sig + r_sig);
 				sig = (sig * r_sig) / (sig + r_sig);
 
@@ -674,8 +727,8 @@ void spin(string user)
 
 				double a1 = 0.00, a2 = 0.00;
 				// Obtain area under curve in pdf, by calculating psi(a1) - psi(a2) from cdf
-				a1 = 0.5 * erf( (uid - mu + 0.5) / (sqrt(2 * sig)) );
-				a2 = 0.5 * erf( (uid - mu - 0.5) / (sqrt(2 * sig)) );
+				a1 = 0.5 * erf( (1.00 + DELTA) / (sqrt(2 * sig)) );
+				a2 = 0.5 * erf( (1.00 - DELTA) / (sqrt(2 * sig)) );
 
 				double areaUnderCurve = a1 - a2;
 				/* printf("P(user|uid, eigenvectors) = %f\n", areaUnderCurve); */
@@ -689,18 +742,17 @@ void spin(string user)
 #if EXDETAILS
 				snprintf(text, sizeof(text)-1, "Name: '%s'", rPerson.c_str());
 				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
-				/* snprintf(text, sizeof(text)-1, "Confidence: %f", confidence); */
-				snprintf(text, sizeof(text)-1, "P = %f", areaUnderCurve);
-				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
 				snprintf(text, sizeof(text)-1, "Mu = %f  Sig = %f", mu, sig);
 				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
-#else
+				snprintf(text, sizeof(text)-1, "P = %f", areaUnderCurve);
+				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
+#endif
 				snprintf(text, sizeof(text)-1, "Logged in as: '%s'", user.c_str());
 				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
 				snprintf(text, sizeof(text)-1, "Recognized: '%s'", rPerson.c_str());
 				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
-				snprintf(text, sizeof(text)-1, "P = %f", areaUnderCurve);
-				cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
+				// snprintf(text, sizeof(text)-1, "P = %f", areaUnderCurve);
+				// cvPutText(frame, text, cvPoint(faceRect.x, faceRect.y + faceRect.height + spacing*(lineNo++)), &font, textColor);
 				if(areaUnderCurve < 0.75)
 				{
 					if((t++ > authDelay - 10) && (loggedIn != rPerson) )
@@ -746,7 +798,6 @@ void spin(string user)
 						  &font, colourMap["green"]);
 				}
 				cvShowImage("CA", frame);
-#endif
 			}
 #if SOFT_ENABLE	
 			if(updateAvg)
@@ -762,15 +813,15 @@ void spin(string user)
 				{
 					float confidence = nrmsd(avgTemplate, currentMap);
 					/* printf("(Soft-biometrics) Confidence = %f\n", confidence); */
-					if(confidence <= 0.5)
+					if(confidence <= SOFT_THRESHOLD)
 					{
 						hard_spin = true;
 						soft_spin = false;
 
-						mu = nPersons/2;
-						sig = 1000;
-						r_mu;
-						r_sig = 1;
+						float mu = 0;
+						float sig = 1000;
+						float r_mu;
+						float r_sig = 0.25;
 					}
 				}
 
@@ -787,7 +838,8 @@ void spin(string user)
 		if( c == 27 )
 			break;
 	}
-
+	
+	svm_free_and_destroy_model(&model);
 
 	cvReleaseHaarClassifierCascade(&faceCascade);
 	/* cvReleaseHaarClassifierCascade(&bodyCascade); */

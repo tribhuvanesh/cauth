@@ -60,11 +60,6 @@ extern const char* cascadeFileFace;	// Path to the Face Detection HaarCascade XM
     map<string, float> createAverage(vector< map<string, float> >);
 #endif
 
-#ifndef SIGMOID
-#define SIGMOID
-    float sigmoid(float);
-#endif
-
 #ifndef NRMSD
 #define NRMSD
     float nrmsd(map<string, float>, map<string, float>);
