@@ -24,15 +24,15 @@ Compiling:
 
 Collection:
 
-`$ ./main --collect`
+	$ ./main --collect
 
 Learn from data:
 
-`$ ./main --learn`
+	$ ./main --learn
 
 Continuous authenticate mode:
 
-`$ ./main`
+	$ ./main
 
 ## About
 
@@ -40,8 +40,6 @@ The project is being developed by Tribhuvanesh O and Soumya G, as a part our Und
 
 ## Thanks to
 
-[Shervin Emami](http://www.shervinemami.co.cc/) for thoroughly documenting face recognition
-
-Servo magazine for their articles on eigenfaces
-
-[libsvm](http://www.csie.ntu.edu.tw/~cjlin/libsvm/), the library for Support Vector Machines
+* [Shervin Emami](http://www.shervinemami.co.cc/) for thoroughly documenting face recognition
+* Servo magazine for their articles on eigenfaces
+* [libsvm](http://www.csie.ntu.edu.tw/~cjlin/libsvm/), the library for Support Vector Machines, by Chang, Chih-Chung and Lin, Chih-Jen
