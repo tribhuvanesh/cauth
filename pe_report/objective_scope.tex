@@ -53,9 +53,43 @@ The design also needs to be construed in a way that can provide "pluggable" modu
 
 \section{Scope}
 \subsection{Project scope}
-
+This section aims to provide a "big picture" view of the project. \\
+When a user begins a session using the conventional password-based login, the hard biometric traits which remain unique-per-user, of the user in front of the system is captured and compared to the ones that exist in the database.
+Following a successful attempt, the system enters the soft biometric phase.
+In this phase, the soft biometric traits which remain unique-per-session is captured and constantly verified.
+Suppose the user moves away from the system to take a break without logging off, and an imposter takes his place, the system returns to the hard biometrics phase and the imposter is eventually denied access.
 
 \subsection{Proposed Solution}
+The solution proposed by this project incorporates face recognition using Eigenfaces, an approach formulated by M. Turk and A. Pentland at the MIT Media Lab, as a part of the hard biometric traits.
+For the soft biometric traits, the shirt colour of the user in front if the system is captured. This is chosen so as to allow the user more freedom with his/her posture and also reduce the burden on the CPU of the comparatively more expensive task of face recognition.\\
+Face recognition using Eigenfaces works with a fairly high accuracy of over 80\% given pictures of the user has been trained under similar illumination conditions, expressions and postures. 
+This raises the problem of the the output polluted with noise(False positives and false negatives).
+Since this is a face recognition algorithm, when the database contains few users, or an unevenly balanced proportion of users based on gender, race and ethnicity, the recognition algorithm becomes biased and hence vulnerable.
+Moreover, if the imposter doesn't exist in the database, the chances of a false positive increases.\\
+We plan to solve this problem by training a supervised learning algorithm using the temporal data produced by Eigenfaces to predict if the session has been compromised.
+
 \subsection{In scope}
+An authentication is based on three fundamental techniques, as shown below. We illustrate how we achieve it using our proposed system:
+\begin{itemize}
+	\item \emph{Something you know}: Conventional password based login. Passwords are encrypted and stored in the database.
+	\item \emph{Something you have}: Soft biometrics. These traits are enrolled during login and verified continuously.
+	\item \emph{Something you are}: Hard biometrics. These traits are enrolled during account creation, and is used when the system needs to re-inforce its belief.
+\end{itemize}
+As a part of the proposed Continuous Authentication, the following falls in its scope:
+\begin{itemize}
+	\item An administration module to add and remove users.
+	\item Collect and learn the facial features of the user at the time of account-creation
+	\item SHA1 encrypted passwords stored in the database, an XML file, which can't be reverse-engineered.
+	\item Deny permission to the user unless authentication with strong confidence.
+	\item Use temporal information to dampen noise. A machine learning algorithm, which in our case is a Support Vector Machine, uses the output produced by face recognition over a time period $T$ with each atomic time slice providing information on recognized person and confidence.
+\end{itemize}
+
 \subsection{Not in scope}
+The following features do not fall in the scope of our project:
+\begin{itemize}
+	\item A full-fledged front-end integrated with advanced back-end measures such as PolicyKit or dbus. 
+	\item Certain scenarios that haven't been yet captured in the training data. (But these can be easily trained and included in the next run)
+	\item Ability to deal with contrasting changes in user's facial features or surroundings.
+	\item A relational database to store facial features
+\end{itemize}
 \end{document}
