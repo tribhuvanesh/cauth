@@ -46,4 +46,38 @@
 	{\LARGE \bf Framework}
 
 \end{center}
+This section intends to propose a framework for the Continuous Authentication system that has been described so far. It is an abstract definiton of the subsystems that are a part of this system and the interactions occurring amongst and inside them. A description of the whole system and its working will be followed by a detailed description of the subsystems.
+
+The proposed system operates in two phases, as required, namely - Training and Continuous Authentication. For the system to be able to recognize a user via face recognition, the user's facial features have to be captured, during the account creation period, for training. Hence, the Training phase. Once the face recognition model has been retrained with a new user's facial features, the user can be recognized during and after log-in. Successful recognition implies the user is authenticated and logged-in. This is followed by continual verification of the user's Hard Biometric traits, which upon going beyond a given threshold of confidence level, moves onto the user's Soft Biometric traits. This shift reduces the computational load on the processor and also allows the user a higher degree of freedom in moving his/her face (as opposed to facing the camera). In our system, we take the user's clothing to be his/her Soft Biometric trait, which can be expected to stay constant during a session. As long as the Soft Biometric traits verification maintains a high confidence in the identity of the user, it continues. If it falls, Face Recognition kicks in to verify the user's identity. This continues till the session ends. During the session, if an imposter tries tailgating the authenticated user, the system enters into a lockdown mode. Upon return of the authentic user, the system performs a face recognition and automatically logs the user back in. The working of this system can be illustrated by the block diagram shown below. 
+
+\begin{figure}[h!]{0.5\textwidth}
+        \centering
+        \includegraphics[scale=0.35]{auth_overview.jpg}
+        \caption{Continuous Authentication System - A Block Diagram.}
+        \label{fig:block_diag}
+\end{figure}
+
+This system is composed of the following subsystems:
+\begin{itemize}
+\item Training Subsystem
+\item Authentication Subsystem
+	\begin{itemize}
+	\item Hard Biometric Traits Authentication
+	\item Soft Biometric Traits Authentication
+	\end{itemize} 
+\end{itemize} 
+
+\section {Training Subsystem}
+This subsystem is responsible for capturing a new user's facial data and retraining the facial recognition model to incorporate the features of the new user. It can also simply train the model given the training images of all the users. Hence, it consists of two independent modules, namely, account creating module and the training module.
+The account creating module asks a user to enter his/her log-in details (username and password) and stores them in an xml file, with the password encrypted by the SHA-1 encryption algorithm. This is followed by capturing a specified number of images of the user's face, which are processed and stored in a specified directory. Then the training module is called, which uses this training set of images to train the face recognition model.
+The training module trains the face data so as to implement Eigenfaces, which is the face recognition algorithm employed in our system. In this module, equalized face images of a standard resolution are processed into vector representations. These are combined to form a matrix upon which Principal Component Analysis (PCA) is performed. PCA reduces the dimensionality of the matrix which has a zero empirical mean. This means the that the mean image obtained has been subtracted from each image to obtain the differences. Then a PCA subspace is created with the eachoriginal image being represented as a point in that subspace. This is called "projecting" the training images. Finally, this data is stored as a matrix in an xml file, which can be retrieved later for recognition.
+   
+\section {Authentication Subsystem}
+This subsystem is responsible for authenticating the user, during log-in as well as after that till the session ends. It performs a static authentication when the user is attempting to log-in and if the encrypted password matches, then the Hard Biometric traits authentication starts and performs face recognition of the user. If the user is recognized, then he is successfully logged in. While the user does his work, the face recogniton works continuously in the background to check the facial features of the user. Once a specified level of confidence is achieved, the system transitions to the Soft Biometric traits authentication module. In this mode, the user's shirt colour is stored in a template, and used to continually verify if the shirt is present in the frame. It reverts back to face recognition, if the shirt is not detected in the frame. This system can be further explained by explaining the two phases, namely, Hard Biometric traits authentication and Soft Biometric traits authentication.
+ 
+\subsection{Hard Biometric Traits Authentication}
+Hard Biometric Traits refer to the physiological characteristics of a user that uniquely identify that user. These include facial features, fingerprint, iris and others. In our system, we incorporate facial recognition using Eigenfaces. Eigenfaces consists of two parts - training and recognition. The training has been described in the Training Subsystem section above. The recognition occurs as described here. The new face image, captured from the web-cam and processed for Eigenfaces, is projected onto the PCA subspace mentioned in the previous section, and the Euclidian distance is calculated to the closest training image to recognize the user. To improve the accuracy of recognition, a Machine Learning (ML) algorithm is used which studies the confidence value returned by the face recognition algorithm over time and predicts whether the user is actually him/her or an imposter. This ML approach has been implemented by a Support Vector Machine (SVM).
+   
+\subsection{Soft Biometric Traits Authentication}
+Soft Biometric traits refer to those characteristics of a user that may be behavioural in nature and can identify a user temporarily for a session. In our system, we use the user's colour of clothing as a trait to recognise the user for a session. Once the face recognition achieves a sufficiently high level, the shirt detection module begins. Over a few frames, it collects information about the user's shirt colour. This works by detecting a face in the frame and then checking for the colour in a rectangular region at an appropriate distance below the face. The colour information is stored in a template and is used to match the colour information obtained in the future frames with it. If an anomaly is detected, as in, the user's face is not detected (for the case where a user has moved away from the system temporarily) or a different colour is detected (for the case where an unauthorized user has quickly appeared in the frame in the absence of the actual user), then facial recognition is restarted to check for the authentic user.
 \end{document}
