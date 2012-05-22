@@ -14,10 +14,10 @@
 
 % first, uncomment the desired options:
 \documentclass[%
-        draft,
+        %draft,
         %submission,
         %compressed,
-        %final,
+        final,
         %
         %technote,
         %internal,
@@ -30,7 +30,7 @@
         %anonymous,
         narroweqnarray,
         inline,
-        twoside,
+        %twoside,
         ]{ieee}
 %
 % some standard modes are:
@@ -52,6 +52,7 @@
 
 % In order to use the figure-defining commands in ieeefig.sty...
 \usepackage{ieeefig}
+\usepackage{hyperref}
 
 \begin{document}
 
@@ -62,41 +63,41 @@
        Continuous Multimodal User Authentication}
 
 % format author this way for journal articles.
-\author[TRIBHUVANESH, SOUMYA AND K.G.SRINIVASA]{%
-      Tribhuvanesh Orekondy\member{Student}
-      \authorinfo{%
-      Department of Computer Science and Engineering,
-      M.S.Ramaiah Institute of Technology, Bangalore, India
-      Phone: \mbox{}, email: \mbox{tribhuvanesh@gmail.com}}
-    \and
-      Soumya Gosukonda\member{Student}
-      \authorinfo{%
-      Department of Computer Science and Engineering,
-      M.S.Ramaiah Institute of Technology, Bangalore, India
-      Phone: \mbox{}, email: \mbox{soumya.gk@gmail.com}}
-    \and
-      and Dr.K.G.Srinivasa\member{}
-      \authorinfo{%
-      Department of Computer Science and Engineering,
-      M.S.Ramaiah Institute of Technology, Bangalore, India
-      Phone: \mbox{}, email: \mbox{tribhuvanesh@gmail.com}}
-  }
+% \author[TRIBHUVANESH, SOUMYA AND K.G.SRINIVASA]{%
+%       Tribhuvanesh Orekondy
+%       \authorinfo{%
+%       Department of Computer Science and Engineering,
+%       M.S.Ramaiah Institute of Technology, Bangalore, India
+%       Phone: \mbox{}, email: \mbox{tribhuvanesh@gmail.com}}
+%     \and
+%       Soumya Gosukonda\member{Student}
+%       \authorinfo{%
+%       Department of Computer Science and Engineering,
+%       M.S.Ramaiah Institute of Technology, Bangalore, India
+%       Phone: \mbox{}, email: \mbox{soumya.gk@gmail.com}}
+%     \and
+%       and Dr.K.G.Srinivasa\member{}
+%       \authorinfo{%
+%       Department of Computer Science and Engineering,
+%       M.S.Ramaiah Institute of Technology, Bangalore, India
+%       Phone: \mbox{}, email: \mbox{tribhuvanesh@gmail.com}}
+%   }
 
 % format author this way for conference proceedings
-% \author[SHORT NAMES]{%
-%       First Author\member{Fellow}
-%       \authorinfo{%
-%       Department of Electrical Engineering\\
-%       Some University, Somewhere CA, 90210, USA\\
-%       Phone: (xxx) xxx-xxxx, email: xxx@xxxx.xxx.xxx}
-%     \and
-%       Second Author\member{Senior Member}
-%       \authorinfo{%
-%       Department of Electrical Engineering...}
-%     \and
-%       and Third Author\member{Student Member}
-%       \authorinfo{...}
-%   }
+\author[]{%
+      Tribhuvanesh Orekondy,
+      \authorinfo{%
+      Department of Computer Science and Engineering,\\
+      M.S.Ramaiah Institute of Technology, Bangalore, India.\\
+      email: tribhuvanesh@gmail.com}
+    \and
+      Soumya Gosukonda,
+      \authorinfo{%
+      email: soumya.gk@gmail.com}
+    \and
+      and Dr. K.G.Srinivasa\member{Member}
+      \authorinfo{...}
+  }
 
 % specifiy the journal name
 % \journal{IEEE Transactions on Something, 1997}
@@ -130,7 +131,8 @@ Continuous Authentication, Computer Vision, Face recognition, Machine Learning, 
 % SECTION I: Introduction
 %----------------------------------------------------------------------
 \section{Introduction}
-\PARstart{A}{}uthentication of the user is an important aspect of security that has been implemented over time, in many ways based on the following aspects of a user \cite{Klos00}:
+\PARstart Authentication of the user is an important aspect of security that has been implemented over time, in many ways based on the following aspects of a user \cite{Klos00}:
+
 \begin{itemize}
 	\item Something the user \emph{knows}: This refers to conventional password based login. Passwords are encrypted and stored in the database.
 	\item Something the user \emph{has}: This can refer to tokens that a user possesses which authenticate a user, like an ID card. 
@@ -146,37 +148,168 @@ A lot of research and experimentation has been done in the field of Continuous A
 The issues involved with the integration of biometric-enhanced authentication systems have been well-researched by \emph {Klosterman et al.}\cite{Klos00}. They point out that for unobtrusive continuous monitoring of a user's biometric traits, the trait cannot be something that needs to be in contact with a sensor. Therefore, facial features of a user make for an ideal choice for continuous unobtrusive monitoring. Another important observation in the previously cited paper is the fact that biometrics are expensive to compute. In case of facial features, the image processing and recognition algorithms can be computationally much more expensive as compared to password verification. Therefore, we intend to incorporate Soft Biometric Authentication in our system, which possesses the qualities of being computationally inexpensive and unobtrusive.
 
 The feasibility of using soft biometric traits for user identification was researched by \emph{Jain et al.}\cite{Jain204}, and it was found to reduce computational costs of recognition. A more detailed implementation of authentication incorporating soft biometric traits has been researched into by \emph{Niinuma et al.}\cite{Niin10}. They create a template of the user's shirt and skin colour and generate "similarity scores" for the subsequent frames in which the user is captured. The user is identified based on the comparison of the similarity scores with a certain threshold value. While this model yields fairly good results, according to the results, it leaves scope for improvement of recognition by considering temporal information. By temporal information, we mean, information about the user's identity considered over a certain time period. 
-
 We propose a multimodal continuous system, wherein, a user, upon entering the right username-password combination, will be checked for their facial features (Hard Biometric Authentication). If this is successful then the user is said to be logged in, and then is enrolled for his/her Soft Biometric traits, namely the user's shirt colour. This is continually checked in the subsequent frames, until the user leaves the workstation, or if the shirt colour detected is not the same as that of the user enrolled previously. During Hard Biometric Authentication we intend to recognize the user based on temporal information about the user's identity.
 
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+% Motivation
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 \section{Motivation}
 
 
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+% Related Work
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 \section{Related Work}
 
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+% Contribution
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 \section{Contribution}
 
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+% Architecture of proposed work
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 \section{Architecture of proposed work}
+Our proposed solution can be viewed to exist in one of three following states:
+\begin{enumerate}
+	\item Conventional password login
+	\item Hard biometrics mode
+	\item Soft biometrics mode
+\end{enumerate}
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=0.5]{img/overall_f.png}
+	\caption{Continuous Authentication system overview}
+	\label{fig:ca_overview}
+\end{figure}
+Each of these states is maintained by designing the respective modules as black-boxes, as seen in figure \ref{fig:ca_overview}.
+The control flow moves between these states is based on the confidence of the authenticated user sitting in front of the system.
+The modules which implementing these states are briefly described in the following sections.
+
+\subsection{Conventional password}
+The username-password pair is created during the account creation phase, during which the facial features of the user are also captured.
+The password and the (automatically generated) user-id are encrypted and stored in the database.\\
+At the time of login, the user is asked to enter the username-password pair, in order to satisfy the condition of \emph{something you know}.
+The password entered is encrypted and compared to that stored in the database.
+Hence, this phase can be viewed as a gatekeeper to the session. 
+
+\subsection{Hard biometrics}
+Once past the successful login phase, the control flow progresses into the hard biometrics mode.
+In this phase, the traits unique to the user in front of the system is compared the parameters obtained during training, i.e, during the account creation phase.
+The hard biometric traits captured by our proposed solution is restricted to facial features for two reasons:
+\begin{itemize}
+	\item To keep the cost of the system low.
+	\item In case of more robust biometrics such as iris or fingerprint recognition, the user is required to deviate from the workflow. This hinders the system's ability to capture the required traits without disturbing the user. In contrast, by using facial features, the user can continue working in front of the system oblivious to the authentication process in the background.
+\end{itemize}
+However, the system is designed in such a way that any other hard biometric trait can be later added in form of a black-box. This requires the machine learning algorithm explained in the next section to be trained accordingly.
+The hard biometrics phase hence satisfies the condition - \emph{something the user is}, hence providing a robust method of authenticating the user with high confidence during the session.\\
+The facial recognition is achieved using the concept of Eigenfaces\cite{Turk91} as proposed by Turk and Pentland.
+Although more complex solutions to face recognition such as Fisherface and neural networks are available, we show that Eigenfaces, even with drawbacks of comparatively lower accuracy and higher time required to process each frame can be overcome using the technique described in the next section.
+Once again, the module implementing Eigenfaces can be easily subsituted for a more advanced algorithm, given that it predicts a user from a given image.
+But, for the rest of the discussion, the module implementing face recognition implies Eigenface, in order to study a method to overcome the inherent noise from the hard biometrics module.
+
+\subsection{Noise dampening}
+If the output(confidence) produced by the hard biometrics mode is represented as the indicator function
+$$ 1\{user_{recognized} = user_{authenticated}\} \in \{0,1\}$$,
+the distribution of these outputs against time appears as shown in the the figure \ref{fig:no_svm}.
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=0.4]{img/no_svm.png}
+	\caption{Output of Eigenfaces vs. time as described by the indicator function}
+	\label{fig:no_svm}
+\end{figure}
+The information latent when the false negatives are produced is generally a result of:
+\begin{itemize}
+	\item A high degree of illumination changes in the surroundings
+	\item Extreme movements and postures by the user, which maps to data not captured during training
+\end{itemize}
+Moreover, most face recognition algorithms, including Eigenfaces predicts the closest neighbour in the PCA subspace constructed using the training data.
+This leads to a high probability of an imposter being authenticated when the training data is biased, such as in the case of very few registered users or the ratio of male-to-female is not balanced.\\
+Our proposed technique overcomes these drawbacks, which applies to face recognition algorithms in general, by taking advantage of:
+\begin{itemize}
+	\item Temporal information and decaying old information
+	\item Confidence in prediction of recognized face, which in case of Eigenfaces is the Mahalanobis distance of the projected point from its nearest neighbour
+	\item Patterns inherent in the noise
+\end{itemize}
+The data extracted for these features from historical records is used to learn a classifier $y \in \{1,-1\}$, implemented as a Support Vector Machine. The outcome of this technique is continued in the results section.
+
+\subsection{Soft biometrics}
+Hard biometrics although being more robust and reliable than soft biometrics, falls short in three aspects\cite{Niin10}:
+\begin{itemize}
+	\item Required more time for processing each frame
+	\item Restricts the user's postures and movements
+	\item Falsely rejects user due to occlusion
+\end{itemize}
+These drawbacks are overcome at the expense of decrease in accuracy to satisfy the goal of not deviating the user from his usual work-flow. 
+In our proposed solution, the soft biometric trait used is the shirt colour, but is extendable to other soft biometric forms of authentication such as complexion, gender\cite{Jain204}, etc. 
+
 
 \section{Algorithms and techniques used}
 
+\subsection{Face Detection using Viola-Jones algorithm}
+The face detector proposed by Paul Viola and Micheal Jones\cite{Viola01} combines four key concepts\cite{servo}:
+\begin{itemize}
+	\item Simple rectangular features, called Haar features
+	\item An Integral Image for rapid feature detection
+	\item A variant of the learning algorithm AdaBoost
+	\item Cascaded architecture
+\end{itemize}
+The features that Viola and Jones used are based on Haar wavelets.
+Haar wavelets are single wavelength square waves (one high interval and one low interval).
+In two dimensions, a square wave is a pair of adjacent rectangles - one light and one dark.
+The actual rectangle combinations used for visual object detection are not true Haar wavlets.
+Instead, they contain rectangle combinations better suited to visual recognition tasks.
+Because of that difference, these features are called Haar features, or Haarlike features, rather than Haar wavelets.
+The presence of a Haar feature is determined by subtracting the average dark-region pixel value from the average light-region pixel value.
+If the difference is above a threshold (set during learning), that feature is said to be present.\\
+To determine the presence or absence of hundreds of Haar features at every image location and at several scales efficiently, Viola and Jones used a technique called an Integral Image.
+Using this technique, rectangular features can be evaluated in constant time, which gives them a considerable speed advantage over their more sophisticated relatives.\\
+Viola and Jones combined a series of AdaBoost classifiers as a filter chain, that's especially efficient for classifying image regions.
+Each filter is a separate AdaBoost classifier with a fairly small number of weak classifiers.
+The cascade architecture has interesting implications for the performance of the individual classifiers. Because the activation of each classifier depends entirely on the behavior of its predecessor, the false positive rate for an entire cascade is:
+\begin{equation}
+F = \prod _{i=1}^{K} f_i
+\end{equation}
+Similarly, the detection rate is:
+\begin{equation}
+D = \prod _{i=1}^{K} d_i
+\end{equation}
+Thus, to match the false positive rates typically achieved by other detectors, each classifier can get away with having surprisingly poor performance. At the same time, however, each classifier needs to be exceptionally capable if it is to achieve adequate detection rates.
+
+\subsection{Face Recognition using Eigenfaces}
+
+\subsection{Noise Dampening using Support Vector Machines}
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+% Implementation
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 \section{Implementation}
 
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+% Results
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 \section{Results}
 
-\section{Conclusion}
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+% Conclusion and Future enhancements
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+\section{Conclusion and Future enhancements}
 
 % do the biliography:
 \bibliographystyle{IEEEbib}
-\bibliography{my-bibliography-file}
+\input{tutref}
 
 % where ``my-bibliography-file.bib'' is the name of the file with all the 
 % BibTeX entries.
 
 % do the biographies...
-\begin{biography}{Gregory L. Plett}
-  A bio with no face...
-\end{biography}
+% \begin{biography}{Gregory L. Plett}
+%   A bio with no face...
+% \end{biography}
 
 % If you want a picture with your biography, then specify the name of
 % the postscript file in square brackets. That is, uncomment the
@@ -234,7 +367,7 @@ We propose a multimodal continuous system, wherein, a user, upon entering the ri
 % 
 % in the preamble, and whenever you want a figure,
 % 
-\figdef{filename}
+% \figdef{filename}
 % 
 % where, filename.tex is a LaTeX file which defines what the figure is.
 % It may be as simple as
