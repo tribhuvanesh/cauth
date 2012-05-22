@@ -130,9 +130,27 @@ Continuous Authentication, Computer Vision, Face recognition, Machine Learning, 
 % SECTION I: Introduction
 %----------------------------------------------------------------------
 \section{Introduction}
-\PARstart
+\PARstart{A}{}uthentication of the user is an important aspect of security that has been implemented over time, in many ways based on the following aspects of a user \cite{Klos00}:
+\begin{itemize}
+	\item Something the user \emph{knows}: This refers to conventional password based login. Passwords are encrypted and stored in the database.
+	\item Something the user \emph{has}: This can refer to tokens that a user possesses which authenticate a user, like an ID card. 
+	\item Something the user \emph{is}: This refers to biological or behavioural traits of a user such as fingerprint, facial features or Keystroke Dynamics\cite{mon00}. These traits are enrolled during account creation or during log-in (depending on what type of characteristic feature is being recorded) and are used when the system needs to re-inforce its belief of the user's identity.
+\end{itemize}
+All of the above have been used in various combinations, for static as well as continuous authentication of a user. \emph{Static Authentication} is the method of authenticating a user, at the time of log-in. Password-based authentication are a popular implementation of this concept. However, passwords can be subjected to being stolen or cracked using various techniques. Also, static authentication methods, in general, do not ensure that the user remains authenticated throughout the session. Therefore, there is need for a system that continually verifies the user's identity, while allowing the user to continue his/her work uninterrupted. Such a system is called a \emph{Continuous Authentication system}.
+A lot of research and experimentation has been done in the field of Continuous Authentication \cite{Niin10,Klos00,mon00,turk03,sim07,azz08,azz082}, though it has not been adopted for widespread usage as readily as the Static Authentication systems have been. Continuous Authentication tends to utilize a user's biometric traits for identification, since they can be monitored without distracting the user from his/her work \cite{Klos00}. \emph{Biometric traits} refer to the physiological or behavioural traits of a user that can identify a user, for a session. These traits can be divided into the following two categories:
+\begin{itemize}
+	\item Hard Biometric traits: These are physical traits of a user that are assumed to be present universally and can uniquely identify an individual. For example, fingerprints, facial features, DNA and so on.
+	\item Soft Biometric traits: These are characteristics of a user that "provide some information about the individual, but lack the distinctiveness and permanence to sufficiently differentiate any two individuals"\cite{Jain204}. For example, colour of clothing/skin/eye/hair, gender and other such factors.
+\end{itemize}
+
+The issues involved with the integration of biometric-enhanced authentication systems have been well-researched by \emph {Klosterman et al.}\cite{Klos00}. They point out that for unobtrusive continuous monitoring of a user's biometric traits, the trait cannot be something that needs to be in contact with a sensor. Therefore, facial features of a user make for an ideal choice for continuous unobtrusive monitoring. Another important observation in the previously cited paper is the fact that biometrics are expensive to compute. In case of facial features, the image processing and recognition algorithms can be computationally much more expensive as compared to password verification. Therefore, we intend to incorporate Soft Biometric Authentication in our system, which possesses the qualities of being computationally inexpensive and unobtrusive.
+
+The feasibility of using soft biometric traits for user identification was researched by \emph{Jain et al.}\cite{Jain204}, and it was found to reduce computational costs of recognition. A more detailed implementation of authentication incorporating soft biometric traits has been researched into by \emph{Niinuma et al.}\cite{Niin10}. They create a template of the user's shirt and skin colour and generate "similarity scores" for the subsequent frames in which the user is captured. The user is identified based on the comparison of the similarity scores with a certain threshold value. While this model yields fairly good results, according to the results, it leaves scope for improvement of recognition by considering temporal information. By temporal information, we mean, information about the user's identity considered over a certain time period. 
+
+We propose a multimodal continuous system, wherein, a user, upon entering the right username-password combination, will be checked for their facial features (Hard Biometric Authentication). If this is successful then the user is said to be logged in, and then is enrolled for his/her Soft Biometric traits, namely the user's shirt colour. This is continually checked in the subsequent frames, until the user leaves the workstation, or if the shirt colour detected is not the same as that of the user enrolled previously. During Hard Biometric Authentication we intend to recognize the user based on temporal information about the user's identity.
 
 \section{Motivation}
+
 
 \section{Related Work}
 
