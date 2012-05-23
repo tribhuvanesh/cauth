@@ -154,7 +154,7 @@ We propose a multimodal continuous system, wherein, a user, upon entering the ri
 % Motivation
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 \section{Motivation}
-With a gradual shift of enterprise data and even personal account data towards the cloud, almost every individual has cloud presence that is protected by secure access, mostly password-based. But this kind of security does not negate the possibility of tailgating - a situation where a person forgets to log out allowing unauthorized access to their data. It is also cumbersome to log-in multiple times when a user needs to frequently move away from the data access point, as in the case of a medical practitioner accessing patient records and moving away to treat the patient. There is a constant attempt towards making systems more intelligent and in the field of security there is a dire need for an intelligent system that is able to differentiate an authorized user from an unauthorized one without depending solely on password-based methods but also incorporating the recognition of some unique physiological traits a person possesses, unobtrusively.
+With a gradual shift of enterprise data and even personal account data towards the cloud, almost every individual has cloud presence that is protected by secure access, mostly password-based. But this kind of security does not negate the possibility of tailgating - a situation where a person forgets to log out allowing unauthorized access to their data. It is also cumbersome to log-in multiple times when a user needs to frequently move away from the data access point, as in the case of a medical practitioner accessing patient records and moving away to treat the patient. There is a constant attempt towards making systems more intelligent and in the field of security there is a dire need for an intelligent system that is unobtrusively able to differentiate an authorized user from an unauthorized one without depending solely on password-based methods but also incorporating the recognition of some unique physiological traits a person possesses.
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Related Work
@@ -279,6 +279,39 @@ D = \prod _{i=1}^{K} d_i
 Thus, to match the false positive rates typically achieved by other detectors, each classifier can get away with having surprisingly poor performance. At the same time, however, each classifier needs to be exceptionally capable if it is to achieve adequate detection rates.
 
 \subsection{Face Recognition using Eigenfaces}
+
+\subsubsection{Face recognition using Eigenfaces}
+Eigenfaces is a face recognition algorithm that was first described by Turk and Pentland in their paper published in 1991. It works to capture the variations present among the images of faces, that form the training set. It uses this information to create a face model where each image is represented as an eigenvector in what is called a "PCA subspace". Recognition of a test face is carried out by converting the test image into a similar eigenvector and then comparing its distance from all others in the subspace. The person corresponding to closest image is said to be the person recognized in the test image. It encodes the complete face characteristics, as opposed to capturing features of the face separately.\\
+
+\subsubsection{ Eigenface generation }
+Eigenfaces works in the following manner:
+\begin{enumerate}
+	\item A training set of images {\bf S} containing {\bf M} total faces of the users to be recognized is prepared. These faces are captured during account creation of a user and converted to grayscale and equalized and resized to a standard resolution. Each image is converted to a vector of size {\bf N} by concatenating all the pixels row by row. These vectors are put into a matrix {\bf T} with each row representing an image.
+	\item The average of all vectors \psi is calculated and subtracted from each of the vectors in {\bf T} to obtain \phi_{i}, i = 1,2,..,n.
+	\item The eigenvectors u_{k} and eigenvalues \lambda_{k}, k = 1,..,M of the co-variance matrix  {\bf C} are calculated. The covariance matrix itself is found by: 
+\begin{equation}
+{\bf C} = \frac{1}{M}\sum_{n=1}^{M}\phi_{n}\phi_{n}^{T}
+\end{equation}
+	\item Since the dimension of C is very high (of the order of the number of pixels in the image), another matrix {\bf L} with the dimensions MxM is constructed, 
+\begin{equation}
+{\bf L} = {\bf A}^{T}{\bf A}
+\end{equation}
+where 
+\begin{equation}
+{\bf A} = \{\phi_{1},\phi_{2},..,\phi_{M}\}
+\end{equation}
+	\item The eigenvectors v_{l} of the matrix {\bf L} are determined such that,
+\begin{equation}
+u_{l} = sum_{k=1}^{M}v_{lk}\phi_{k} 
+\end{equation}
+where l = 1,..,M
+\end{enumerate}
+
+To recognize a face, the face image is transformed into its eigenface components. The input image is compared with the mean image and their difference is multiplied with each eigenvector of the {\bf L} matrix. Each value represents a weight and would be saved on a vector \Omega.
+\begin{equation}
+u_{l} = sum_{k=1}^{M}v_{lk}\phi_{k} 
+\end{equation}
+
 
 \subsection{Noise Dampening using Support Vector Machines}
 
