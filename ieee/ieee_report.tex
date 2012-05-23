@@ -374,8 +374,36 @@ subject to the constraints
 % Implementation
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 \section{Implementation}
+This system is implemented on the Linux platform and programmed using C/C++ mainly along with Python scripting for housekeeping tasks. It utilizes the OpenCV (\bf{O}pen Source \bf{C}omputer \bf{V}ision) \cite{opencv} set of libraries for implementing the face detection and recognition algorithms. It is designed as an application which supports account creation of a new user and continuous recognition of an already enrolled user who has successfully logged in. 
 
+The data of the system is composed of two major portions - the \emph{training set} and the \emph{eigenfaces} data stored in the form of an XML file. The training set consists of resized, grayscale, equalized images of users captured during enrollment. This is organized into specific directories according to user's name using a Python script. The eigenface data is stored into  an XML file using the OpenCV functions \emph{cvWrite}, \emph{cvWriteInt}, \emph{cvWriteString}. To load data from the XML file the functions \emph{cvReadIntByName} and \emph{cvReadStringByName} are used mainly.
 
+When a user attempts to log-in to start a session, he/she is expected to enter their username and password. The \emph{getpass()} function from the GNU C library is used to obtain the password from the user, so that the entered password is not echoed back onto the console. The entered password is encrypted into a hash string by the SHA-1 encryption algorithm, which is a part of the \emph{crypto++} set of encryption libraries. This hash string is compared with the stored hash value for verification and the user moves onto the Hard Biometrics Authentication depending on a successful match. 
+
+The Hard Biometrics mode is composed of two components - \emph{Face Detection} and \emph{Face Recognition}. For face detection, the Viola-Jones Algorithm is used for object detection based on classifiers for faces. This is implemented by using the OpenCV function \emph{cvHaarDetectObjects()}. This function takes as input the captured image from the web-cam along with some parameters for face detection. These parameters include:
+\begin{itemize}
+\item scale-factor to determine the scale of jumping while looking for a face in the image. 
+\item various flags for specifying conditions such as whether to detect the biggest face, whether to ignore flat regions in the image and other such considerations. We have used a combination of the following flags:
+\begin{equation} 
+flags = CV_HAAR_FIND_BIGGEST_OBJECT | CV_HAAR_DO_ROUGH_SEARCH
+\end{equation}
+\item a work buffer for the function.
+\item a pointer to the Haar Classifier Cascades.
+\item minimum neighbours value which helps control false positives.
+\item minimum size which indicates the smallest region to look for a face in.
+\end {itemize}
+The function returns a rectangle containing the largest detected face. This rectangle is used as a reference to crop the face image and process the face to convert it to grayscale and equalize it using in-built OpenCV functions.
+
+Eigenfaces is the algorithm used for Face Recognition. It can be split into two phases - learning and recognition. For learning, the training images that were preprocessed and stored by the Face Detection algorithm are loaded. PCA is performed on these training images by calling the \emph{doPCA()} function. The training images are then projected onto the PCA subspace and stored in the form of a matrix of the OpenCV type \emph{CvMat}. The following training information is then stored into the XML file:
+\begin{itemize}
+\item Eigenvalues
+\item Eigenvectors
+\item Projected faces
+\item Person ID numbers
+\item Average training face image
+\end {itemize}
+
+ 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Results
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
