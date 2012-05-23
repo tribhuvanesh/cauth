@@ -53,6 +53,18 @@
 % In order to use the figure-defining commands in ieeefig.sty...
 \usepackage{ieeefig}
 \usepackage{hyperref}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{subfig}
+
+\renewcommand{\thesubfigure}{\thefigure.\arabic{subfigure}}
+\captionsetup[subfigure]{labelformat=simple,labelsep=colon,
+listofformat=subsimple}
+\captionsetup{lofdepth=2}
+\makeatletter
+\renewcommand{\p@subfigure}{}
+\makeatother
 
 \begin{document}
 
@@ -166,6 +178,15 @@ With a gradual shift of enterprise data and even personal account data towards t
 % Contribution
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 \section{Contribution}
+This paper explores the techniques used in various experiments as cited in the previous section.
+Furthermore, we look into the implementation aspects of the solution by developing a system using a framework that can be extended to include additioinal hard and soft biometrics modes. 
+The modifications in our solution can be summarized as follows:
+\begin{itemize}
+	\item Hard and soft biometric modes are implemented as black-boxes. The control flow transitions from hard to soft biometric based on confidence $\theta_{H}$ to save the system from additional resources as well as allow the user flexibility in his/her posture. The flow once again enters hard biometric mode based on confidence $\theta_{S}$, which might occur when the user is tailgated.
+	\item The hard biometrics predominantly used in this project is the facial features captured using Eigenfaces\cite{Turk91}. More advanced algorithms such as Fisherfaces do exist, but we show that our face recognitioin module can be easily substituted for any of these alternatives. This is achieved by only using value of the indicator function $1\{user_{recognized}=user_{authenticated}\}$.
+	\item Most of the face recognition algorithms that have evolved over the years are still striving to achieve an accuracy of 100\%. As show in \cite{fig:no_svm}, Eigenfaces too falls into this category and in our case, this inaccuracy is exhibited in the form of noise. We develop a novel technique to dampen noise using a machine learning algorithm.
+	\item Using face recognition algorithms to authenticate faces poses another challenge that the chances of an imposter being missclassified increases when the training set is biased towards a small group of people. We overcome this, once again using machine learning algorithm.
+\end{itemize}
 
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
@@ -246,6 +267,9 @@ These drawbacks are overcome at the expense of decrease in accuracy to satisfy t
 In our proposed solution, the soft biometric trait used is the shirt colour, but is extendable to other soft biometric forms of authentication such as complexion, gender\cite{Jain204}, etc. 
 
 
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+% Algorithms and techniques 
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 \section{Algorithms and techniques used}
 
 \subsection{Face Detection using Viola-Jones algorithm}
@@ -293,21 +317,22 @@ Eigenfaces works in the following manner:
 {\bf C} = \frac{1}{M}\sum_{n=1}^{M}\phi_{n}\phi_{n}^{T}
 \end{equation}
 	\item Since the dimension of C is very high (of the order of the number of pixels in the image), another matrix {\bf L} with the dimensions $MxM$ is constructed, 
-\begin{equation}
-{\bf L} = {\bf A}^{T}{\bf A}
-\end{equation}
-where 
-\begin{equation}
-{\bf A} = \{\phi_{1},\phi_{2},..,\phi_{M}\}
-\end{equation}
-	\item The eigenvectors v_{l} of the matrix {\bf L} are determined such that,
-\begin{equation}
-u_{l} = sum_{k=1}^{M}v_{lk}\phi_{k} 
-\end{equation}
+	\begin{equation}
+	{\bf L} = {\bf A}^{T}{\bf A}
+	\end{equation}
+	where 
+	\begin{equation}
+	{\bf A} = \{\phi_{1},\phi_{2},..,\phi_{M}\}
+	\end{equation}
+	\item The eigenvectors $v_{l}$ of the matrix {\bf L} are determined such that,
+	\begin{equation}
+	u_{l} = \sum_{k=1}^{M}v_{lk}\phi_{k} 
+	\end{equation}
 where $l = 1,..,M$.
 \end{enumerate}
 
-To recognize a face, the face image is transformed into its eigenface components. The input image $\tau_{new}$ is compared with the mean image and their difference is multiplied with each eigenvector of the {\bf L} matrix. Each value represents a weight and would be saved on a vector \Omega.
+To recognize a face, the face image is transformed into its eigenface components. The input image $\tau_{new}$ is compared with the mean image and their difference is multiplied with each eigenvector of the {\bf L} matrix. Each value represents a weight and would be saved on a vector $\Omega$.
+
 \begin{equation}
 \omega_{k} = u_{k}^{T}(\tau_{new} - \psi)	\Omega^{T} = [\omega_{1},\omega_{2},..,\omega_{k}] 
 \end{equation}
@@ -318,6 +343,7 @@ The Euclidiean distance $\varepsilon$ is minimized to determine which face class
 \end{equation}
 
 If $\varepsilon_{k}$ is below an established threshold $\theta_{\varepsilon}$, then the input face is considered to belong to that respective class.
+
 
 \subsection{Noise Dampening using Support Vector Machines}
 Using the output produced by the face recogntion module, the goal is to dampen the noise, by taking advantage of certain features like
@@ -370,6 +396,8 @@ Putting this together with the constraint $\alpha_i \geq 0$, we obtain the follo
 \max_{\alpha} W(\alpha) = \sum_{i=1}^{m} \alpha_i - \frac{1}{2} \sum_{i,j=1}^{m} y^{(i)}y^{(j)}\alpha_i \alpha_j \langle x^{(i)}, x^{(j)}\rangle
 \end{equation}
 subject to the constraints
+
+
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Implementation
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
@@ -408,6 +436,35 @@ Eigenfaces is the algorithm used for Face Recognition. It can be split into two 
 % Results
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 \section{Results}
+In this section, we study the performance and discuss the design choices made for each module described previously in the section \ref{sec:arch}.
+
+\subsection{Conventional password-based login}
+\begin{figure}
+	\centering
+	\subfloat[Initial prompt]{%
+		\label{fig:pwd0}%
+		\includegraphics[scale=0.25]{img/ss/pwd0.png}}
+	\quad
+	\subfloat[Password time-out]{%
+		\label{fig:pwd1}%
+		\includegraphics[scale=0.25]{img/ss/pwd1.png}}
+\end{figure}
+
+At the time of login, the user is prompted to enter his/her username-password pair as show  in figure \ref{fig:pwd0}.
+If the username-password entered corresponds to a valid entry in the database, the system enters the hard biometrics mode phase.
+A time-out feature as show in figure \ref{fig:pwd1} has been enabled to prevent the user in front of the system resorting to brute force. 
+
+\subsection{Hard Biometrics}
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=0.5]{img/avg.jpeg}
+	\caption{Average image generated by Eigenfaces}
+	\label{fig:avg}
+\end{figure}
+During the Eigenface training phase, for the dataset to be "centered" during PCA, an average image as shown in figure \cite{fig:avg} is computed by calculating the mean of the pixels of all the images in the training data set. 
+The faces are then represented as a composition of the average face and a weighted average of the eigenfaces.
+For example, a person might be characterized as the average plus 20\% from eigenface 1, 12\% from eigenface 2 and so on.
+A subset of these $n$ eigenfaces are depicted in figure \cite{fig:eigen}
 
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
@@ -419,80 +476,5 @@ Eigenfaces is the algorithm used for Face Recognition. It can be split into two 
 \bibliographystyle{IEEEbib}
 \input{tutref}
 
-% where ``my-bibliography-file.bib'' is the name of the file with all the 
-% BibTeX entries.
-
-% do the biographies...
-% \begin{biography}{Gregory L. Plett}
-%   A bio with no face...
-% \end{biography}
-
-% If you want a picture with your biography, then specify the name of
-% the postscript file in square brackets. That is, uncomment the
-% following three lines and change the name of "face.ps" to the name of 
-% your file.
-%\begin{biography}[face.ps]{Gregory L. Plett}
-%  A bio with a face...
-%\end{biography}
-
-%----------------------------------------------------------------------
-% FIGURES
-%----------------------------------------------------------------------
-% There are many ways to include figures in the text. We will assume
-% that the figure is some sort of EPS file.
-%
-% The outdated packages epsfig and psfig allow you to insert figures
-% like: \psfig{filename.eps} These should really be done now using the
-% \includegraphics{filename.eps} command.  
-%
-% i.e.,
-%
-% \includegraphics{file.eps}
-%
-% whenever you want to include the EPS file 'file.eps'. There are many
-% options for the includegraphics command, and are outlined in the
-% on-line documentation for the "graphics bundle". Using the options,
-% you can specify the height, total height (height+depth), width, scale,
-% angle, origin, bounding box "bb",view port, and can trim from around
-% the sides of the figure. You can also force LaTeX to clip the EPS file
-% to the bounding box in the file. I find that I often use the scale,
-% trim and clip commands.
-% 
-% \includegraphics[scale=0.6,trim=0 0 0 0,clip=]{file.eps}
-% 
-% which magnifies the graphics by 0.6 (If I create a graphics for an
-% overhead projector transparency, I find that a magnification of 0.6
-% makes it look much better in a paper), trims 0 points off
-% of the left, bottom, right and top, and clips the graphics. If the
-% trim numbers are negative, space is added around the figure. This can
-% be useful to help center the graphics, if the EPS file bounding box is
-% not quite right.
-% 
-% To center the graphics,
-% 
-% \begin{center}
-% \includegraphics...
-% \end{center}
-% 
-% I have not yet written good documentation for this, but another 
-% package which helps in figure management is the package ieeefig.sty,
-% available at: http://www-isl.stanford.edu/people/glp/ieee.shtml
-% Specify:
-% 
-%\usepackage{ieeefig} 
-% 
-% in the preamble, and whenever you want a figure,
-% 
-% \figdef{filename}
-% 
-% where, filename.tex is a LaTeX file which defines what the figure is.
-% It may be as simple as
-% 
-% \inserteps{filename.eps}
-%
-% or
-% \inserteps[includegraphics options]{filename.eps}
-% 
-% or may be a very complicated LaTeX file. 
 
 \end{document}
