@@ -286,13 +286,13 @@ Eigenfaces is a face recognition algorithm that was first described by Turk and 
 \subsubsection{ Eigenface generation }
 Eigenfaces works in the following manner:
 \begin{enumerate}
-	\item A training set of images {\bf S} containing {\bf M} total faces of the users to be recognized is prepared. These faces are captured during account creation of a user and converted to grayscale and equalized and resized to a standard resolution. Each image is converted to a vector of size {\bf N} by concatenating all the pixels row by row. These vectors are put into a matrix {\bf T} with each row representing an image.
-	\item The average of all vectors \psi is calculated and subtracted from each of the vectors in {\bf T} to obtain \phi_{i}, i = 1,2,..,n.
-	\item The eigenvectors u_{k} and eigenvalues \lambda_{k}, k = 1,..,M of the co-variance matrix  {\bf C} are calculated. The covariance matrix itself is found by: 
+	\item A training set of images {\bf S} containing $\tau_{1},\tau_{2},..\tau_{M}$ total faces of the users to be recognized is prepared. These faces are captured during account creation of a user and converted to grayscale and equalized and resized to a standard resolution. Each image is converted to a vector of size {\bf N} by concatenating all the pixels row by row. These vectors are put into a matrix {\bf T} with each row representing an image.
+	\item The average of all vectors $\psi$ is calculated and subtracted from each of the vectors in {\bf T} to obtain $\phi_{i}, i = 1,2,..,n$.
+	\item The eigenvectors $u_{k}$ and eigenvalues $\lambda_{k}, k = 1,..,M$ of the co-variance matrix {\bf C} are calculated. The covariance matrix itself is found by: 
 \begin{equation}
 {\bf C} = \frac{1}{M}\sum_{n=1}^{M}\phi_{n}\phi_{n}^{T}
 \end{equation}
-	\item Since the dimension of C is very high (of the order of the number of pixels in the image), another matrix {\bf L} with the dimensions MxM is constructed, 
+	\item Since the dimension of C is very high (of the order of the number of pixels in the image), another matrix {\bf L} with the dimensions $MxM$ is constructed, 
 \begin{equation}
 {\bf L} = {\bf A}^{T}{\bf A}
 \end{equation}
@@ -304,14 +304,20 @@ where
 \begin{equation}
 u_{l} = sum_{k=1}^{M}v_{lk}\phi_{k} 
 \end{equation}
-where l = 1,..,M
+where $l = 1,..,M$.
 \end{enumerate}
 
-To recognize a face, the face image is transformed into its eigenface components. The input image is compared with the mean image and their difference is multiplied with each eigenvector of the {\bf L} matrix. Each value represents a weight and would be saved on a vector \Omega.
+To recognize a face, the face image is transformed into its eigenface components. The input image $\tau_{new}$ is compared with the mean image and their difference is multiplied with each eigenvector of the {\bf L} matrix. Each value represents a weight and would be saved on a vector \Omega.
 \begin{equation}
-u_{l} = sum_{k=1}^{M}v_{lk}\phi_{k} 
+\omega_{k} = u_{k}^{T}(\tau_{new} - \psi)	\Omega^{T} = [\omega_{1},\omega_{2},..,\omega_{k}] 
 \end{equation}
 
+The Euclidiean distance $\varepsilon$ is minimized to determine which face class the new face belongs to. It is computed as follows:
+\begin{equation}
+\varepsilon_{k} = \parallel\Omega - \Omega_{k}\parallel 
+\end{equation}
+
+If $\varepsilon_{k}$ is below an established threshold $\theta_{\varepsilon}$, then the input face is considered to belong to that respective class.
 
 \subsection{Noise Dampening using Support Vector Machines}
 Using the output produced by the face recogntion module, the goal is to dampen the noise, by taking advantage of certain features like
