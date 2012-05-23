@@ -166,15 +166,6 @@ With a gradual shift of enterprise data and even personal account data towards t
 % Contribution
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 \section{Contribution}
-This paper explores the techniques used in various experiments as cited in the previous section.
-Furthermore, we look into the implementation aspects of the solution by developing a system using a framework that can be extended to include additioinal hard and soft biometrics modes. 
-The modifications in our solution can be summarized as follows:
-\begin{itemize}
-	\item Hard and soft biometric modes are implemented as black-boxes. The control flow transitions from hard to soft biometric based on confidence $\theta_{H}$ to save the system from additional resources as well as allow the user flexibility in his/her posture. The flow once again enters hard biometric mode based on confidence $\theta_{S}$, which might occur when the user is tailgated.
-	\item The hard biometrics predominantly used in this project is the facial features captured using Eigenfaces\cite{Turk91}. More advanced algorithms such as Fisherfaces do exist, but we show that our face recognitioin module can be easily substituted for any of these alternatives. This is achieved by only using value of the indicator function $1\{user_{recognized}=user_{authenticated}\}$.
-	\item Most of the face recognition algorithms that have evolved over the years are still striving to achieve an accuracy of 100\%. As show in \cite{fig:no_svm}, Eigenfaces too falls into this category and in our case, this inaccuracy is exhibited in the form of noise. We develop a novel technique to dampen noise using a machine learning algorithm.
-	\item Using face recognition algorithms to authenticate faces poses another challenge that the chances of an imposter being missclassified increases when the training set is biased towards a small group of people. We overcome this, once again using machine learning algorithm.
-\end{itemize}
 
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
