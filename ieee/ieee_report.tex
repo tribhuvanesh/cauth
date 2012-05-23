@@ -314,7 +314,56 @@ u_{l} = sum_{k=1}^{M}v_{lk}\phi_{k}
 
 
 \subsection{Noise Dampening using Support Vector Machines}
-
+Using the output produced by the face recogntion module, the goal is to dampen the noise, by taking advantage of certain features like
+\begin{itemize}
+	\item Temporal information and decaying old information
+	\item Confidence in prediction of recognized face, which in case of Eigenfaces is the Mahalanobis distance of the projected point from its nearest neighbour
+	\item Patterns inherent in the noise
+\end{itemize}
+This is achieved by training a classifier on existing data:
+\begin{equation}
+\mathcal {D} = \{(x^{(1)},y^{(1)}),(x^{(2)},y^{(2)}),\ldots,(x^{(m)},y^{(m)})\}
+\end{equation}
+where $(x^{(i)}, y^{(i)})$ represents the $i^{th}$ training example in a set of $m$ training examples and $x \in \mathbb{R}^n, y \in \{+1, -1\}$. We generate a hyperplane represented as:
+\begin{equation}
+h_{w,b}(x) = g(w^Tx + b)
+\end{equation}
+where
+\begin{equation}
+g(z) = \left\{
+\begin{array}{l l}
++1 & \quad \textit{if $z \geq 0$}\\
+-1 & \quad \textit{if $z < 0$}\\
+\end{array} \right.
+\end{equation}
+The (primal)optimization problem for finding the optimal margin classifier can be stated as:
+\begin{equation}
+\min_{\gamma, w, b} \frac{1}{2}\parallel w \parallel ^2\\
+\end{equation}
+subject to the constraint
+\begin{equation}
+y^{(i)}(w^Tx + b) \geq i = 1, ..., m
+\end{equation}
+When we construct the Langrangian for this optimization problem, we have:
+\begin{equation} \label{eq:lang}
+\mathcal {L}(w, b, \alpha) = \frac{1}{2} \parallel w \parallel ^2 - \sum_{i=1}^{m} \alpha_i [y^{(i)}(w^Tx^{(i)} + b) - 1]
+\end{equation}
+where $\alpha_{i}$ is a Langrange multiplier. To minimize $\mathcal{L}$, we differentiate this equation with respect to $w$ and $b$ to obtain:
+\begin{equation} \label{eq:w}
+w = \sum_{i=1}^{m} \alpha_{i} y^{(i)} x^{(i)}
+\end{equation}
+\begin{equation} \label{eq:ay}
+\sum_{i=1}^{m} \alpha_{i} y^{(i)} = 0
+\end{equation}
+Plugging this back into equation \ref{eq:lang}, we get
+\begin{equation}
+\mathcal {L}(w, b, \alpha) = \sum_{i=1}^{m} \alpha_i - \frac{1}{2} \sum_{i,j=1}^{m} y^{(i)}y^{(j)}\alpha_i \alpha_j (x^{(i)})^T x^{(j)}
+\end{equation}
+Putting this together with the constraint $\alpha_i \geq 0$, we obtain the following the dual optimization problem:
+\begin{equation} \label{eq:dual}
+\max_{\alpha} W(\alpha) = \sum_{i=1}^{m} \alpha_i - \frac{1}{2} \sum_{i,j=1}^{m} y^{(i)}y^{(j)}\alpha_i \alpha_j \langle x^{(i)}, x^{(j)}\rangle
+\end{equation}
+subject to the constraints
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Implementation
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
