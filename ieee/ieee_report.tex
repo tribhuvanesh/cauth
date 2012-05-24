@@ -173,7 +173,8 @@ With a gradual shift of enterprise data and even personal account data towards t
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 \section{Related Work}
 Incorporating Soft Biometric traits for improved accuracy of recognition was first implemented by \emph{A.K.Jain et al} \cite{Jain204}. They proposed a framework for integrating the soft biometric information with the output of the primary biometric system while using fingerprint as the primary biometric identifier and gender, ethnicity, and height as the soft biometric variables. Their results showed 95\% Genuine Acceptance Rate as compared to 90\% in case of using fingerprints alone. 
-Using Soft Biometrics for Continuous Authentication has been studied by many researchers where different types of Soft Biometric traits are considered such as keystroke dynamics, electrocardiogram data and colour of clothing and skin.\cite{mon00,ecd,Niin10}. Of these the most relevent is the work by \emph{Niinuma et al.} where they implemented checking the colour of shirt and skin continually to match the template created at the start of the session \cite{Niin10}. They conducted experiments where the user was asked to enact 6 typical scenarios a user may normally exhibit such as turning head in different directions, stretching arms or walking away. They measured the system's performance for soft biometrics evaluation using two main parameters - False Reject and False Accept. Their experimental results indicate an overall False Rejection rate of 4.16\% and a False Accept rate of 0\%.
+Using Soft Biometrics for Continuous Authentication has been studied by many researchers where different types of Soft Biometric traits are considered such as keystroke dynamics, electrocardiogram data and colour of clothing and skin.\cite{mon00,ecd,Niin10}. Of these the most relevent is the work by \emph{Niinuma et al.} where they implemented checking the colour of shirt and skin continually to match the template created at the start of the session \cite{Niin10}. They conducted experiments where the user was asked to enact 6 typical scenarios a user may normally exhibit such as turning head in different directions, stretching arms or walking away. They measured the system's performance for soft biometrics evaluation using two main parameters - False Reject and False Accept. Their experimental results indicate an overall False Rejection rate of 4.16\% and a False Accept rate of 0\% over the considered scenarios.
+
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Contribution
@@ -656,7 +657,13 @@ The predictions made here prove that the authenticated user has been tailgated.
 % Conclusion and Future enhancements
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 \section{Conclusion and Future enhancements}
+\noindent{}Need for biometric authentication arose from the fact that other security measures such as password and/or a smart ID card are prone to theft or loss. Biometrics depend on utilising features a user already possesses, that can uniquely identify a user atleast for a given session. However, using biometric identification has its downfalls. Since the characteristic of biometric traits is that they are not secretive, unlike a password, they can be gathered anywhere by an imposter and reconstructed for the authentication system to gain access. For example, a fingerprint left behind on some surface, can be picked up by imposters and reconstructed in front of the sensors. Even for face recognition systems, it is possible to fool the system by showing a photograph of the user or manipulating the video feed of the system. Countermeasures exist for such instances, such as, 3d reconstruction of face from more than two cameras or ensuring that the video feed cannot be manipulated. However, these measures make it a costly solution. Therefore, it can be concluded that biometric mode of authentication should be used more as a support system along with password/ smartID systems, to strengthen the authentication process, rather than a standalone mode of authentication.   
 
+\noindent{}The following can be implemented in the future to enhance this system:
+\begin{itemize}
+\item Support for multiple users sharing a certain account; this may require a "biometric handoff" to occur between users.
+\item Improve accuracy of face recognition under varied lighting conditions by implementing recognition using a different approach such as fuzzy logic.
+\item Make provision for recognizing any kind of tampering occuring to the video feed, so as to prevent authenticating imposters. This can be done by restricting access to the webcam feed via parameters that define access to it.
 % do the biliography:
 \bibliographystyle{IEEEbib}
 \input{tutref}
