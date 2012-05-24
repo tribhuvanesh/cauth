@@ -15,9 +15,9 @@
 % first, uncomment the desired options:
 \documentclass[%
         %draft,
-        submission,
+        %submission,
         %compressed,
-        %final,
+        final,
         %
         %technote,
         %internal,
@@ -147,45 +147,90 @@ Continuous Authentication, Computer Vision, Face recognition, Machine Learning, 
 %----------------------------------------------------------------------
 \section{Introduction}
 \PARstart
-Authentication in the context of computer security is a measure designed to protect the system from fradulent access.
-Over the years, this has been achieved by verifying the user's identity and upon successful authentication, granting the user his/her privilieges enabled by a higher authority.
-The methods using which a user is authenticated is determined by three \emph{authentication factors}.
+Authentication in the context of computer security is a process which verifies the claimed identity of the user.
+Upon successfule authentication, the user is granted privilieges enabled by a higher authority.
+A number of elements together can decide the authenticity of the user before authorizing him/her.
+These elements is classified based on three factors called \emph{authentication factors}.
 Security research has determined that for a positive identification, atleast two of the three authentication factors needs to be satisfied.
 These factors are:
-\begin{itemize}
-	\item {\bf Knowledge factors}: Something the user \emph{knows} (e.g., Username-password pair)
-	\item {\bf Ownership factors}: Something the user \emph{has} (e.g., ID card, cell phone, security token)
-	\item {\bf Inherence factors}: Something the user \emph{is} (e.g., Fingerprint, retinal patterns, facial features)
-\end{itemize}
-Klosterman and Granger in their study\cite{Klos00} dilineate authentication based on static and continuous methods.
 
+\begin{itemize}
+	\item \textbf{Knowledge factors}: Something the user \emph{knows} (e.g., Username-password pair)
+	\item \textbf{Ownership factors}: Something the user \emph{has} (e.g., ID card, cell phone, security token)
+	\item \textbf{Inherence factors}: Something the user \emph{is} (e.g., Fingerprint, retinal patterns, facial features)
+\end{itemize}
+
+The purpose of this work is to extend the conventional user authentication techniques using these factors in an unobtrusive way.
+
+This leads for the need to delineate the concepts of \emph{static} and \emph{continuous} authentication.
+%Klosterman and Granger in their study\cite{Klos00} dilineate authentication based on static and continuous methods.
 \emph{Static Authentication} refers to the method of authenticating a user, at the time of log-in.
-Password-based authentication are a popular implementation of this concept.
-However, passwords can be subjected to being stolen or cracked using various techniques.
-Also, static authentication methods, in general, do not ensure that the user remains authenticated throughout the session.
-Therefore, there is need for a system that continually verifies the user's identity, while allowing the user to continue his/her work uninterrupted.
-Such a system is called a \emph{Continuous Authentication system}.
-A lot of research and experimentation has been done in the field of Continuous Authentication \cite{Niin10,Klos00,mon00,turk03,sim07,azz08,azz082}, though it has not been adopted for widespread usage as readily as the Static Authentication systems have been. Continuous Authentication tends to utilize a user's biometric traits for identification, since they can be monitored without distracting the user from his/her work \cite{Klos00}. \emph{Biometric traits} refer to the physiological or behavioural traits of a user that can identify a user, for a session. These traits can be divided into the following two categories:
+In most cases, knowledge-based methods such as passwords are used since every user can verify his claim in a very convinient manner.
+But, passwords and knowledge factors lose their credibility when shared, forgotten or stolen.
+Similarly, ownernership-based methods too can duplicated, stolen or lost.
+When dealing with sensitive content one might resort to additional equipment to verify the user based on their unique traits such as fingerprints or retinal patterns.
+However, in this case, the only period during which system is very confident and fully aware of user's identity claim is during the authentication period.
+For example, computer setups nowadays use a 2-factor authentication technique by extracting the password and the user's facial features at the time of login and assumes it is the same authenticated user till logout.
+But when the user moves away from the system to take a break without logging-out, it is susceptible to tailgating when an imposter takes the authenticated user's place.
+This could prove to be a critical security weakness in  high-security systems.
+In order to address this issue, the system needs to continuously verify the user's identity claim in an unobtrusive manner.
+
+The concept of \emph{Continuous Authentication} initally studied by Klosterman et al.\cite{Klos00}, showed an elegant approach of using biometrics to verify the user's identity through-out the session.
+Not all modes of "biometrics" can achieve this goal since methods like finger-prints and retinal scans distracts the user and he/she no longer remains uniterrupted by the authentication process in the background.
+A lot of research and experimentation has been carried out in the field of Continuous Authentication \cite{Niin10,Klos00,mon00,turk03,sim07,azz08,azz082}, though it has not been adopted for widespread usage as readily as the Static Authentication systems have been mainly due to convenience.
+
+Before proceeding to explain the challenges the development of a Continuous Authentication system poses, an overview of \emph{Biometric traits} in the context of Continuous Authentication is necessary.
+\emph{Biometric traits} refer to the physiological or behavioural traits of a user that can identify a user, for a session.
+These traits can be divided into the following two categories:
 \begin{itemize}
-	\item Hard Biometric traits: These are physical traits of a user that are assumed to be present universally and can uniquely identify an individual. For example, fingerprints, facial features, DNA and so on.
-	\item Soft Biometric traits: These are characteristics of a user that "provide some information about the individual, but lack the distinctiveness and permanence to sufficiently differentiate any two individuals"\cite{Jain204}. For example, colour of clothing/skin/eye/hair, gender and other such factors.
+	\item {\bf Hard Biometric traits}: Physical traits of a user that are assumed to be present universally and can uniquely identify an individual. For example, fingerprints, facial features, DNA and so on.
+	\item {\bf Soft Biometric traits}: These are characteristics of a user that "provide some information about the individual, but lack the distinctiveness and permanence to sufficiently differentiate any two individuals"\cite{Jain204}. For example, colour of clothing/skin/eye/hair, gender and other such factors.
+
 \end{itemize}
 
-The issues involved with the integration of biometric-enhanced authentication systems have been well-researched by \emph {Klosterman et al.}\cite{Klos00}. They point out that for unobtrusive continuous monitoring of a user's biometric traits, the trait cannot be something that needs to be in contact with a sensor. Therefore, facial features of a user make for an ideal choice for continuous unobtrusive monitoring. Another important observation in the previously cited paper is the fact that biometrics are expensive to compute. In case of facial features, the image processing and recognition algorithms can be computationally much more expensive as compared to password verification. Therefore, we intend to incorporate Soft Biometric Authentication in our system, which possesses the qualities of being computationally inexpensive and unobtrusive.
+The study conducted by Klosterman et al.\cite{Klos00} in the design of biometric-enhanced authentication system also describes the challenges posed by such a system.
+They point out that for unobtrusive continuous monitoring of a user's biometric traits, the trait cannot be something that needs to be in contact with a sensor.
+Therefore, facial features of a user make for an ideal choice for continuous unobtrusive monitoring.
+Another important observation in the previously cited paper is the fact that biometrics are expensive to compute.
+In case of facial features, the image processing and recognition algorithms can be computationally much more expensive as compared to password verification.
+Therefore, we intend to incorporate Soft Biometric Authentication in our system, which is computationally inexpensive and also allows the user more flexibilty in posture. 
 
-The feasibility of using soft biometric traits for user identification was researched by \emph{Jain et al.}\cite{Jain204}, and it was found to reduce computational costs of recognition. A more detailed implementation of authentication incorporating soft biometric traits has been researched into by \emph{Niinuma et al.}\cite{Niin10}. They create a template of the user's shirt and skin colour and generate "similarity scores" for the subsequent frames in which the user is captured. The user is identified based on the comparison of the similarity scores with a certain threshold value. While this model yields fairly good results, according to the results, it leaves scope for improvement of recognition by considering temporal information. By temporal information, we mean, information about the user's identity considered over a certain time period. 
-We propose a multimodal continuous system, wherein, a user, upon entering the right username-password combination, will be checked for their facial features (Hard Biometric Authentication). If this is successful then the user is said to be logged in, and then is enrolled for his/her Soft Biometric traits, namely the user's shirt colour. This is continually checked in the subsequent frames, until the user leaves the workstation, or if the shirt colour detected is not the same as that of the user enrolled previously. During Hard Biometric Authentication we intend to recognize the user based on temporal information about the user's identity.
+The feasibility of using soft biometric traits for user identification was researched by \emph{Jain et al.}\cite{Jain204}, and it was found to reduce computational costs of recognition.
+A more detailed implementation of authentication incorporating soft biometric traits has been researched by \emph{Niinuma et al.}\cite{Niin10}.
+They create a template of the user's shirt and skin colour and generate "similarity scores" for the subsequent frames in which the user is captured.
+The user is identified based on the comparison of the similarity scores with a certain threshold value.
+While this model yields fairly good results, according to the results, it leaves scope for improvement of recognition by considering temporal information.
+By temporal information, we mean a technique similar to a sliding window which analyzes patterns around the time the authentication state is to be predicted.
+Hence, this implies a decay of data beyond a certain time in the past.
+
+We address this problem by developing a Continuous Authentication system, wherein, a user at the time of login initiates a session by entering the right username-password combination.
+Upon successful login, provided the user's identity is valid, the system proceeds into a hard biometrics mode and subsequently a soft biometrics mode.
+This work incorporates the use of facial features and the colour of the user's clothing in these two modes repectively. 
+Furthermore, a supervised machine learning algorithm has been used to bridge the gap between the two modes.
+This enables the system to use any face recognition algorithm which produces the desired output as explained in the later sections.
+The temporal information suggested earlier is used by this machine learning algorithm to predict the authentication state at any given point in time.
+When the confidence of the system in the hard biometrics mode is beyond the specified threshold, the system enrolls the soft biometric template of the user and transitions into the soft biometrics mode.
+
+The rest of this paper is organized as follows:
+Section \ref{sec:motivation} presents our motivating case to employ a Continuous Authentication system,
+Section \ref{sec:related} describes related work conducted in this field,
+Section \ref{sec:contribution} discusses how we extend the work and the novel contributions developed in the field of continuous authentication,
+Section \ref{sec:arch} introduces the architecture the proposed Continuous Authentication system uses,
+Section \ref{sec:algo} provides an insight to the algorithms used in various modules,
+Section \ref{sec:implementation} looks into the implementation aspect of the work,
+Section \ref{sec:results} presents experimental results and discussion and
+Section \ref{sec:conclusion} provides conclusions and future work
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Motivation
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
-\section{Motivation}
+\section{Motivation} \label{sec:motivation}
 With a gradual shift of enterprise data and even personal account data towards the cloud, almost every individual has cloud presence that is protected by secure access, mostly password-based. But this kind of security does not negate the possibility of tailgating - a situation where a person forgets to log out allowing unauthorized access to their data. It is also cumbersome to log-in multiple times when a user needs to frequently move away from the data access point, as in the case of a medical practitioner accessing patient records and moving away to treat the patient. There is a constant attempt towards making systems more intelligent and in the field of security there is a dire need for an intelligent system that is unobtrusively able to differentiate an authorized user from an unauthorized one without depending solely on password-based methods but also incorporating the recognition of some unique physiological traits a person possesses.
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Related Work
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
-\section{Related Work}
+\section{Related Work} \label{sec:related}
 Incorporating Soft Biometric traits for improved accuracy of recognition was first implemented by \emph{A.K.Jain et al} \cite{Jain204}. They proposed a framework for integrating the soft biometric information with the output of the primary biometric system while using fingerprint as the primary biometric identifier and gender, ethnicity, and height as the soft biometric variables. Their results showed 95\% Genuine Acceptance Rate as compared to 90\% in case of using fingerprints alone. 
 Using Soft Biometrics for Continuous Authentication has been studied by many researchers where different types of Soft Biometric traits are considered such as keystroke dynamics, electrocardiogram data and colour of clothing and skin.\cite{mon00,ecd,Niin10}. Of these the most relevent is the work by \emph{Niinuma et al.} where they implemented checking the colour of shirt and skin continually to match the template created at the start of the session \cite{Niin10}. They conducted experiments where the user was asked to enact 6 typical scenarios a user may normally exhibit such as turning head in different directions, stretching arms or walking away. They measured the system's performance for soft biometrics evaluation using two main parameters - False Reject and False Accept. Their experimental results indicate an overall False Rejection rate of 4.16\% and a False Accept rate of 0\% over the considered scenarios.
 
@@ -193,7 +238,7 @@ Using Soft Biometrics for Continuous Authentication has been studied by many res
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Contribution
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
-\section{Contribution}
+\section{Contribution} \label{sec:contribution}
 This paper explores the techniques used in various experiments as cited in the previous section.
 Furthermore, we look into the implementation aspects of the solution by developing a system using a framework that can be extended to include additioinal hard and soft biometrics modes. 
 The modifications in our solution can be summarized as follows:
@@ -298,7 +343,7 @@ In our proposed solution, the soft biometric trait used is the shirt colour, but
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Algorithms and techniques 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
-\section{Algorithms and techniques used}
+\section{Algorithms and techniques used} \section{sec:algo}
 
 \subsection{Face Detection using Viola-Jones algorithm}
 The face detector proposed by Paul Viola and Micheal Jones\cite{Viola01} combines four key concepts\cite{servo}:
@@ -460,7 +505,7 @@ K(x,z) = exp\left( \frac {\parallel x - z \parallel ^2} {2\sigma^2} \right)
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Implementation
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
-\section{Implementation}
+\section{Implementation} \label{sec:implementation}
 The proposed continuous authentication system is implemented on the Linux platform, with majority of the code written in C++ and house-keeping tasks of creating and reorganizing training data written in Python 2.7.
 Advanced image processing tasks is handled by OpenCV 2.4\cite{opencv} and the machine learning algorithms used is implemented by libSVM\cite{libsvm}.
 The system is designed using a client-server model, where the server broadcasts the authentication status of the user.
@@ -512,25 +557,9 @@ The similarity/confidence is computed using normalized root mean square differen
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Results
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
-\section{Results}
+\section{Results} \label{sec:results}
 In this section, we study the performance and discuss the design choices made for each module described previously in the section \ref{sec:arch}.
 For the rest of the section, the face detection and face recognition algorithm implies Viola-Jones' method and Eigenfaces respectively.
-
-\subsection{Conventional password-based login}
-\begin{figure}
-	\centering
-	\subfloat[Initial prompt]{%
-		\label{fig:pwd0}%
-		\includegraphics[scale=0.25]{img/ss/pwd0.png}}
-	\quad
-	\subfloat[Password time-out]{%
-		\label{fig:pwd1}%
-		\includegraphics[scale=0.25]{img/ss/pwd1.png}}
-\end{figure}
-
-At the time of login, the user is prompted to enter his/her username-password pair as show  in figure \ref{fig:pwd0}.
-If the username-password entered corresponds to a valid entry in the database, the system enters the hard biometrics mode phase.
-A time-out feature as show in figure \ref{fig:pwd1} has been enabled to prevent the user in front of the system resorting to brute force. 
 
 \subsection{Hard Biometrics}
 \begin{figure}[h!]
@@ -670,7 +699,7 @@ The predictions made here prove that the authenticated user has been tailgated.
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Conclusion and Future enhancements
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
-\section{Conclusion and Future enhancements}
+\section{Conclusion and Future enhancements} \label{sec:conclusion}
 \noindent{}Need for biometric authentication arose from the fact that other security measures such as password and/or a smart ID card are prone to theft or loss. Biometrics depend on utilising features a user already possesses, that can uniquely identify a user atleast for a given session. However, using biometric identification has its downfalls. Since the characteristic of biometric traits is that they are not secretive, unlike a password, they can be gathered anywhere by an imposter and reconstructed for the authentication system to gain access. For example, a fingerprint left behind on some surface, can be picked up by imposters and reconstructed in front of the sensors. Even for face recognition systems, it is possible to fool the system by showing a photograph of the user or manipulating the video feed of the system. Countermeasures exist for such instances, such as, 3d reconstruction of face from more than two cameras or ensuring that the video feed cannot be manipulated. However, these measures make it a costly solution. Therefore, it can be concluded that biometric mode of authentication should be used more as a support system along with password/ smartID systems, to strengthen the authentication process, rather than a standalone mode of authentication.   
 
 \noindent{}The following can be implemented in the future to enhance this system:
