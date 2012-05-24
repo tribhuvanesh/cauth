@@ -15,9 +15,9 @@
 % first, uncomment the desired options:
 \documentclass[%
         %draft,
-        %submission,
+        submission,
         %compressed,
-        final,
+        %final,
         %
         %technote,
         %internal,
@@ -125,12 +125,15 @@ listofformat=subsimple}
 
 % do the abstract
 \begin{abstract}
-Static Authentication methods, although providing a rigid and secure framework to this one-time authentication session, do not provide authentication of the user throughout the session. This leaves the possibility of an imposter gaining access in multiple scenarios.\\
-The goal of \emph{Continuous Authentication} is to authenticate the user right from the initial stages of log-in through log-out.
-This can be implemented by extrapolating the tried-and-tested static authentication techniques thoughout the session.
-But, this introduces new challenges, since these "one-time authentication" techniques are computationally expensive, restricts the user's movement and postures in front of the system, require extra expensive hardware and deviates the user from his work-flow.
+Static Authentication provides a rigid and secure framework for a one-time authentication session, but fails to authenticate the user throughout the session.
+This leaves the possibility of an imposter gaining access in multiple scenarios.\\
+The goal of \emph{Continuous Authentication} is to authenticate the user right from the initial stages of log-in through log-out, which can be implemented by extrapolating the tried-and-tested static authentication techniques thoughout the session.
+But, this introduces new challenges, since these "one-time authentication" techniques are computationally expensive, restrict the user's movement and postures in front of the system, require extra expensive hardware and deviate the user from his work-flow.
 In these situations, the user no longer remains uninterrupted by the authentication process in the background.\\
-This project proposes Continuous Authentication, using login through conventional passwords followed by authentication using two modes - hard and soft biometrics till logout. The hard biometric trait - facial features, is chosen so that the user need not invest in any additional expensive hardware. The noise inherent in the process of face recognition, is managed by using a machine learning algorithm which captures the temporal data and expresses it as confidence. The soft traits are used in phases when this confidence is high to relieve the CPU of comparatively high computation.
+This project proposes Continuous Authentication, using login through conventional passwords followed by authentication using two modes - hard and soft biometrics till logout.
+The hard biometric trait - facial features, is chosen so that the user need not invest in any additional expensive hardware.
+The noise inherent in the process of face recognition, is managed by using a supervised machine learning algorithm which uses output from the facial recognition module to predict if the session has been compromised.
+The soft traits are used in phases when this confidence is high to relieve the CPU of comparatively high computation.
 \end{abstract}
 
 % do the keywords
@@ -143,14 +146,25 @@ Continuous Authentication, Computer Vision, Face recognition, Machine Learning, 
 % SECTION I: Introduction
 %----------------------------------------------------------------------
 \section{Introduction}
-\PARstart Authentication of the user is an important aspect of security that has been implemented over time, in many ways based on the following aspects of a user \cite{Klos00}:
-
+\PARstart
+Authentication in the context of computer security is a measure designed to protect the system from fradulent access.
+Over the years, this has been achieved by verifying the user's identity and upon successful authentication, granting the user his/her privilieges enabled by a higher authority.
+The methods using which a user is authenticated is determined by three \emph{authentication factors}.
+Security research has determined that for a positive identification, atleast two of the three authentication factors needs to be satisfied.
+These factors are:
 \begin{itemize}
-	\item Something the user \emph{knows}: This refers to conventional password based login. Passwords are encrypted and stored in the database.
-	\item Something the user \emph{has}: This can refer to tokens that a user possesses which authenticate a user, like an ID card. 
-	\item Something the user \emph{is}: This refers to biological or behavioural traits of a user such as fingerprint, facial features or Keystroke Dynamics\cite{mon00}. These traits are enrolled during account creation or during log-in (depending on what type of characteristic feature is being recorded) and are used when the system needs to re-inforce its belief of the user's identity.
+	\item {\bf Knowledge factors}: Something the user \emph{knows} (e.g., Username-password pair)
+	\item {\bf Ownership factors}: Something the user \emph{has} (e.g., ID card, cell phone, security token)
+	\item {\bf Inherence factors}: Something the user \emph{is} (e.g., Fingerprint, retinal patterns, facial features)
 \end{itemize}
-All of the above have been used in various combinations, for static as well as continuous authentication of a user. \emph{Static Authentication} is the method of authenticating a user, at the time of log-in. Password-based authentication are a popular implementation of this concept. However, passwords can be subjected to being stolen or cracked using various techniques. Also, static authentication methods, in general, do not ensure that the user remains authenticated throughout the session. Therefore, there is need for a system that continually verifies the user's identity, while allowing the user to continue his/her work uninterrupted. Such a system is called a \emph{Continuous Authentication system}.
+Klosterman and Granger in their study\cite{Klos00} dilineate authentication based on static and continuous methods.
+
+\emph{Static Authentication} refers to the method of authenticating a user, at the time of log-in.
+Password-based authentication are a popular implementation of this concept.
+However, passwords can be subjected to being stolen or cracked using various techniques.
+Also, static authentication methods, in general, do not ensure that the user remains authenticated throughout the session.
+Therefore, there is need for a system that continually verifies the user's identity, while allowing the user to continue his/her work uninterrupted.
+Such a system is called a \emph{Continuous Authentication system}.
 A lot of research and experimentation has been done in the field of Continuous Authentication \cite{Niin10,Klos00,mon00,turk03,sim07,azz08,azz082}, though it has not been adopted for widespread usage as readily as the Static Authentication systems have been. Continuous Authentication tends to utilize a user's biometric traits for identification, since they can be monitored without distracting the user from his/her work \cite{Klos00}. \emph{Biometric traits} refer to the physiological or behavioural traits of a user that can identify a user, for a session. These traits can be divided into the following two categories:
 \begin{itemize}
 	\item Hard Biometric traits: These are physical traits of a user that are assumed to be present universally and can uniquely identify an individual. For example, fingerprints, facial features, DNA and so on.
@@ -539,7 +553,7 @@ It can be seen that the average image shows a smooth face structure, the first f
 
 \begin{figure}[h!]
 	\centering
-	\includegraphics[scale=0.40]{img/fdr.png}
+	\includegraphics[scale=0.40]{img/fd_fr_fdfr.png}
 	\caption{Comparison of the facial features processing tasks}
 	\label{fig:fdfr}
 \end{figure}
@@ -623,7 +637,7 @@ This noise exists as a result of false positives and false negatives from the pr
 
 Our solution overcomes this by extracting temporal information and the confidence estimated by the face recognition algorithm.
 Various situations were modeled and the data extracted was used in training to develop a classifier.
-The output produced by this classifier is then represented as confidence, which can be seen in figure \ref{fig:svm}.
+The output produced by this classifier is then represented as confidence, which can be seen in figure \ref{fig:svm2}.
 
 In this work, the temporal information is extracted based on a fixed number of previous frames rather than a time period of fixed length.
 This is not only because the number of frames processed varies among these time periods as seen in figure \ref{fig:ftime}, but is also dependent on the system's resources and other conditions.
@@ -664,6 +678,7 @@ The predictions made here prove that the authenticated user has been tailgated.
 \item Support for multiple users sharing a certain account; this may require a "biometric handoff" to occur between users.
 \item Improve accuracy of face recognition under varied lighting conditions by implementing recognition using a different approach such as fuzzy logic.
 \item Make provision for recognizing any kind of tampering occuring to the video feed, so as to prevent authenticating imposters. This can be done by restricting access to the webcam feed via parameters that define access to it.
+\end{itemize}
 % do the biliography:
 \bibliographystyle{IEEEbib}
 \input{tutref}
