@@ -195,7 +195,29 @@ With the statement of the problem as described earlier, this objectives of this 
 \end{itemize}
 
 \subsection{ Current scope }
-The current scope of this project is to have the multimodal continuous authentication system installed on a local machine, with technical specifications on par with an average system available in the current market. The system proceeds with Face Recognition using Eigenfaces\cite{Turk91} to capture the unique-per-person hard biometric traits and the user's shirt colour for the soft biometric traits.
+As a part of the proposed Continuous Authentication, the following falls in its scope:
+\begin{itemize}
+	\item An administration module to add and remove users.
+	\item Collect and learn the facial features of the user at the time of account-creation
+	\item SHA1 encrypted passwords stored in the database, an XML file, which can't be reverse-engineered.
+	\item Deny permission to the user unless authentication with strong confidence.
+	\item Use temporal information to dampen noise. A machine learning algorithm, which in our case is a Support Vector Machine, uses the output produced by face recognition over a time period $T$ with each atomic time slice providing information on recognized person and confidence.
+\end{itemize}
+
+The following features do not fall in the scope of our project:
+\begin{itemize}
+	\item A full-fledged front-end integrated with advanced back-end measures such as PolicyKit or dbus. 
+	\item Certain scenarios that haven't been yet captured in the training data. (But these can be easily trained and included in the next run)
+	\item Ability to deal with contrasting changes in user's facial features or surroundings.
+	\item A relational database to store facial features
+\end{itemize}
+
+\subsection{ Future scope } 
+This project allows scope for improving both the Hard and Soft Biometric Authentication modules by
+\begin{itemize}
+\item Changing the implementation of the Face Recognition module by replacing it with a different algorithm with better accuracy.
+\item Adding more modules which incorporate more biometric features of the user to predict the authenticity of the user with greater accuracy. The result of this can be used by the SVMs to dampen noise and maintain the Continuous Authentication system's confidence level in the user.  
+\end{itemize}
 
 \newpage
 
@@ -229,7 +251,7 @@ Biometrics is first introduced in the 1970s and early 1980s. This technology gat
 Biometrics can, in our case, be classified into \emph{Hard Biometric traits}, which remain unique-per-user and \emph{Soft Biometric traits}, which remain unique-per-session.
 
 \subsubsection{ Hard Biometrics}
-Hard biometric traits refer to those features of the user that remains unique among all sessions and are assumed to be present universally among users. These can be fingerprints, iris pattern, DNA, or even facial features. Features like fingerprints or iris pattern are considered ideal choices for static authentication using biometrics. Many studies \cite{war02,john03,way97,kang06} show good results with using biometric traits for authentication.  
+Hard biometric traits refer to those features of the user that remains unique among all sessions and are assumed to be present universally among users. These can be fingerprints, iris pattern, DNA, or even facial features. Features like fingerprints or iris pattern are considered ideal choices for static authentication using biometrics. Many studies \cite{war02,john03,way97,kang06} show good results with using biometric traits for authentication. Traits like facial features which can be captured unobtrusively, make for a good choice for Continuous Authentication Systems. Researcher Mario Savvides, an Associate Research Professor in the Carnegie Mellon university has been a part of many projects and published various papers in the field of Face Recognition, Continuous Authentication and Iris Recognition \cite{marsav}. 
 
 \subsubsection{ Soft Biometrics }
 The first personal identification system developed by Alphonse Bertillon\cite{bert96} for identification of criminals was based on three sets of features: (i) body measurements (anthropometry) like height and length of the arm, (ii) morphological description of the appearance and shape of the body like eye color and anomalies of the fingers, and (iii) peculiar marks observed on the body like moles, scars, and tattoos. Although the Bertillon system was very useful in tracking criminals, it had an unacceptably high rate of false identification. This was due to two reasons. Firstly, several individuals can have the same set of values for these measurements. Secondly, for the same individual, these values can change over time. In other words, these characteristics do not have the distinctiveness and permanence to uniquely identify an individual over a period of time and hence we refer them as soft biometric traits. {\bf \it Soft biometric traits are those
@@ -294,43 +316,53 @@ The order of filters in the cascade is based on the importance weighting that Ad
 
 
 \subsection{ Face Recognition using Eigenfaces }
-Eigenfaces are a set of eigenvectors used in the computer vision problem of human face recognition. The approach of using eigenfaces for recognition was developed by Sirovich and Kirby (1987) and used by Matthew Turk and Alex Pentland in face classification\cite{Turk91}. It is considered the first successful example of facial recognition technology. These eigenvectors are derived from the covariance matrix of the probability distribution of the high-dimensional vector space of possible faces of human beings.\\
+Eigenfaces is a face recognition algorithm that was first described by Turk and Pentland in their paper published in 1991. It works to capture the variations present among the images of faces, that form the training set. It uses this information to create a face model where each image is represented as an eigenvector in what is called a "PCA subspace". Recognition of a test face is carried out by converting the test image into a similar eigenvector and then comparing its distance from all others in the subspace. The person corresponding to closest image is said to be the person recognized in the test image. It encodes the complete face characteristics, as opposed to capturing features of the face separately.\\
 
-\subsubsection{ Eigenface generation }
-A set of eigenfaces can be generated by performing a mathematical process called principal component analysis (PCA) on a large set of images depicting different human faces. Informally, eigenfaces can be considered a set of "standardized face ingredients", derived from statistical analysis of many pictures of faces. Any human face can be considered to be a combination of these standard faces. For example, one's face might be composed of the average face plus 10\% from eigenface 1, 55\% from eigenface 2, and even -3\% from eigenface 3. Remarkably, it does not take many eigenfaces combined together to achieve a fair approximation of most faces. Also, because a person's face is not recorded by a digital photograph, but instead as just a list of values (one value for each eigenface in the database used), much less space is taken for each person's face.\\
-
-The eigenfaces that are created will appear as light and dark areas that are arranged in a specific pattern. This pattern is how different features of a face are singled out to be evaluated and scored. There will be a pattern to evaluate symmetry, if there is any style of facial hair, where the hairline is, or evaluate the size of the nose or mouth. Other eigenfaces have patterns that are less simple to identify, and the image of the eigenface may look very little like a face.\\
-
-The technique used in creating eigenfaces and using them for recognition is also used outside of facial recognition. This technique is also used for handwriting analysis, lip reading, voice recognition, sign language/hand gestures interpretation and medical imaging analysis. Therefore, some do not use the term eigenface, but prefer to use 'eigenimage'.\\[2ex]
-{\bf Implementation}\\
-To create a set of eigenfaces, one must:
+\subsubsection{ Algorithm for Eigenfaces }
+The steps for recognizing an face using Eigenfaces are described below in an abstract manner:
 \begin{enumerate}
-\item Prepare a training set of face images. The pictures constituting the training set should have been taken under the same lighting conditions, and must be normalized to have the eyes and mouths aligned across all images. They must also be all resampled to a common pixel resolution $(r \times c)$. Each image is treated as one vector, simply by concatenating the rows of pixels in the original image, resulting in a single row with $r \times c$ elements. For this implementation, it is assumed that all images of the training set are stored in a single matrix T, where each row of the matrix is an image.
-
-\item Subtract the mean. The average image a has to be calculated and then subtracted from each original image in T.
-
-\item Calculate the eigenvectors and eigenvalues of the covariance matrix S. Each eigenvector has the same dimensionality (number of components) as the original images, and thus can itself be seen as an image. The eigenvectors of this covariance matrix are therefore called eigenfaces. They are the directions in which the images differ from the mean image. Usually this will be a computationally expensive step (if at all possible), but the practical applicability of eigenfaces stems from the possibility to compute the eigenvectors of S efficiently, without ever computing S explicitly, as detailed below.
-
-\item Choose the principal components. The $D \times D$ covariance matrix will result in D eigenvectors, each representing a direction in the $r \times c$-dimensional image space. The eigenvectors (eigenfaces) with largest associated eigenvalue are kept.
+\item Acquire the training set of face images and calculate the “eigenfaces”, which define the “face space”. 
+\item When a new image is encountered, calculate the set of weights based on the input image and all the “eigenfaces” by projecting the input image onto each of the “eigenfaces”.
+\item Determine if the image is a face at all (whether known or unknown) by checking if the image is sufficiently close to the “face space”. 
+\item If it is a face, classify the weight pattern as either a known or unknown person. 
 \end{enumerate}
-These eigenfaces can now be used to represent both existing and new faces: we can project a new (mean-subtracted) image on the eigenfaces and thereby record how that new face differs from the mean face. The eigenvalues associated with each eigenface represent how much the images in the training set vary from the mean image in that direction. We lose information by projecting the image on a subset of the eigenvectors, but we minimize this loss by keeping those eigenfaces with the largest eigenvalues. For instance, if we are working with a 100 x 100 image, then we will obtain 10,000 eigenvectors. In practical applications, most faces can typically be identified using a projection on between 100 and 150 eigenfaces, so that most of the 10,000 eigenvectors can be discarded.\\
 
-\noindent{\bf Computing Eigenvectors}
+\subsubsection{ Computing Eigenfaces }
+Eigenfaces can be computed in the following manner:
+\begin{enumerate}
+	\item A training set of images {\bf S} containing $\tau_{1},\tau_{2},..\tau_{M}$ total faces of the users to be recognized is prepared. These faces are captured during account creation of a user and converted to grayscale and equalized and resized to a standard resolution. Each image is converted to a vector of size {\bf N} by concatenating all the pixels row by row. These vectors are put into a matrix {\bf T} with each row representing an image.
+	\item The average of all vectors $\psi$ is calculated and subtracted from each of the vectors in {\bf T} to obtain $\phi_{i}, i = 1,2,..,n$.
+	\item The eigenvectors $u_{k}$ and eigenvalues $\lambda_{k}, k = 1,..,M$ of the co-variance matrix {\bf C} are calculated. The covariance matrix itself is found by: 
+\begin{equation}
+{\bf C} = \frac{1}{M}\sum_{n=1}^{M}\phi_{n}\phi_{n}^{T}
+\end{equation}
+	\item Since the dimension of C is very high (of the order of the number of pixels in the image), another matrix {\bf L} with the dimensions $MxM$ is constructed on basis of analysis given in \cite{Turk91}, 
+	\begin{equation}
+	{\bf L} = {\bf A}^{T}{\bf A}
+	\end{equation}
+	where 
+	\begin{equation}
+	{\bf A} = \{\phi_{1},\phi_{2},..,\phi_{M}\}
+	\end{equation}
+	\item The eigenvectors $v_{l}$ of the matrix {\bf L} are determined such that,
+	\begin{equation}
+	u_{l} = \sum_{k=1}^{M}v_{lk}\phi_{k} 
+	\end{equation}
+where $l = 1,..,M$.
+\end{enumerate}
 
-Performing PCA directly on the covariance matrix of the images is often computationally infeasible. If small, say 100 x 100, greyscale images are used, each image is a point in a 10,000-dimensional space and the covariance matrix S is a matrix of 10,000 x 10,000 = 108 elements. However the rank of the covariance matrix is limited by the number of training examples: if there are N training examples, there will be at most N-1 eigenvectors with non-zero eigenvalues. If the number of training examples is smaller than the dimensionality of the images, the principal components can be computed more easily as follows.
+To recognize a face, the face image is transformed into its eigenface components. The input image $\tau_{new}$ is compared with the mean image and their difference is multiplied with each eigenvector of the {\bf L} matrix. Each value represents a weight and would be saved on a vector $\Omega$.
 
-Let {\bf T} be the matrix of preprocessed training examples, where each column contains one mean-subtracted image. The covariance matrix can then be computed as {\bf S = T$^{T}$T} and the eigenvector decomposition of {\bf S} is given by\\
-\begin{align*}
-Sv_{i} = TT^{T}v_{i} = \lambda_{i}v_{i}
-\end{align*}
-However {\bf T$^{T}$T } is a large matrix, and if instead we take the eigenvalue decomposition of
-\begin{align*}
-T^{T}Tu_{i} = \lambda_{i}u_{i}
-\end{align*}
-then we notice that by pre-multiplying both sides of the equation with {\bf T}, we obtain
-\begin{align*}
-TT^{T}Tu_{i} = \lambda_{i}Tu_{i}
-\end{align*}
+\begin{equation}
+\omega_{k} = u_{k}^{T}(\tau_{new} - \psi)	\Omega^{T} = [\omega_{1},\omega_{2},..,\omega_{k}] 
+\end{equation}
+
+The Euclidiean distance $\varepsilon$ is minimized to determine which face class the new face belongs to. It is computed as follows:
+\begin{equation}
+\varepsilon_{k} = \parallel\Omega - \Omega_{k}\parallel 
+\end{equation}
+
+If $\varepsilon_{k}$ is below an established threshold $\theta_{\varepsilon}$, then the input face is considered to belong to that respective class.
 
 
 \newpage
@@ -410,8 +442,14 @@ This application is assumes the following:
 
 \subsection{ Interface Requirements }
 \subsubsection{ User Interface }
-The user interface is minimal and consists of functions necessary to take as input the credentials of the user and display the live video-feed from the web-cam with details of the user authenticated and the confidence with which the system believes the user is who he/she claims to be. If the user is ascertained to be unauthorized then he/she is indicated as unauthorized, acting as a trigger for a possible lockdown phase.
-
+The user interface is minimal and consists of the following:
+\begin{itemize}
+\item Functions necessary to take as input the credentials of the user and display in a window, the live video-feed from the web-cam with details of the user authentication status and the confidence with which the system believes the user is who he/she claims to be.
+\item A console window which, if the user is authenticated, processes commands typed by the user, else denies permission. 
+\end{itemize}
+  
+\subsection{ Performance Requirements }
+The system is expected to perform without a lag in face detection and recognition on platforms which adhere to the hardware and software requirements mentioned previously.
 
 \section{ System Architecture and Design }  
 Our proposed solution can be viewed to exist in one of three following states:
@@ -445,13 +483,13 @@ Hence, this phase can be viewed as a gatekeeper to the session.
 	\label{fig:cfhb}
 \end{figure}
 Once past the successful login phase, the control flow progresses into the hard biometrics mode.
-In this phase, the traits unique to the user in front of the system is compared the parameters obtained during training, i.e, during the account creation phase.
+In this phase, the traits unique to the user in front of the system is compared to the parameters obtained during training, i.e, during the account creation phase.
 The hard biometric traits captured by our proposed solution is restricted to facial features for two reasons:
 \begin{itemize}
 	\item To keep the cost of the system low.
 	\item In case of more robust biometrics such as iris or fingerprint recognition, the user is required to deviate from the workflow. This hinders the system's ability to capture the required traits without disturbing the user. In contrast, by using facial features, the user can continue working in front of the system oblivious to the authentication process in the background.
 \end{itemize}
-However, the system is designed in such a way that any other hard biometric trait can be later added in form of a black-box. This requires the machine learning algorithm explained in the next section to be trained accordingly.
+However, the system is designed in such a way that any other hard biometric traits can be later added in form of a black-box. This requires the machine learning algorithm explained in the next section to be trained accordingly.
 The hard biometrics phase hence satisfies the condition - \emph{something the user is}, hence providing a robust method of authenticating the user with high confidence during the session.\\
 The facial recognition is achieved using the concept of Eigenfaces\cite{Turk91} as proposed by Turk and Pentland.
 Although more complex solutions to face recognition such as Fisherface and neural networks are available, we show that Eigenfaces, even with drawbacks of comparatively lower accuracy and higher time required to process each frame can be overcome using the technique described in the next section.
@@ -543,6 +581,7 @@ This section describes the various modules of the system which can be categorize
 \item Utilities
 \item Face Detection
 \item Soft Biometrics
+\item Main Module
 \end{itemize}
 
 \subsubsection { Utilities }
@@ -607,6 +646,11 @@ Calculate the normalized root mean square value given the set of 5 templates and
 \verb+int soft_main()+\\
 A function that manages the soft biometric traits recogition and is called from the main module.
 \end{itemize}
+
+\subsubsection { Main Module }
+This module runs in two main phases: Learning and Authentication.
+
+
 
 \newpage
 
