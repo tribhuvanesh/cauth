@@ -20,7 +20,7 @@
         final,
         %
         %technote,
-        %internal,
+        internal,
         %submitted,
         %inpress,
         %reprint,
@@ -71,45 +71,45 @@ listofformat=subsimple}
 %----------------------------------------------------------------------
 % Title Information, Abstract and Keywords
 %----------------------------------------------------------------------
-\title[Continuous Multimodal User Authentication, using soft and hard biometrics]{%
-       Continuous Multimodal User Authentication}
+\title[Continuous Multimodal User Authentication]{%
+       Continuous Multimodal User Authentication, coupling hard and soft biometrics with Support Vector Machines to attenuate Noise}
 
 % format author this way for journal articles.
-% \author[TRIBHUVANESH, SOUMYA AND K.G.SRINIVASA]{%
-%       Tribhuvanesh Orekondy
-%       \authorinfo{%
-%       Department of Computer Science and Engineering,
-%       M.S.Ramaiah Institute of Technology, Bangalore, India
-%       Phone: \mbox{}, email: \mbox{tribhuvanesh@gmail.com}}
-%     \and
-%       Soumya Gosukonda\member{Student}
-%       \authorinfo{%
-%       Department of Computer Science and Engineering,
-%       M.S.Ramaiah Institute of Technology, Bangalore, India
-%       Phone: \mbox{}, email: \mbox{soumya.gk@gmail.com}}
-%     \and
-%       and Dr.K.G.Srinivasa\member{}
-%       \authorinfo{%
-%       Department of Computer Science and Engineering,
-%       M.S.Ramaiah Institute of Technology, Bangalore, India
-%       Phone: \mbox{}, email: \mbox{tribhuvanesh@gmail.com}}
-%   }
+\author[]{%
+      Tribhuvanesh Orekondy
+      \authorinfo{%
+      Department of Computer Science and Engineering,
+      M.S.Ramaiah Institute of Technology, Bangalore, India
+      email: \mbox{tribhuvanesh@gmail.com}}
+    \and
+      Soumya Gosukonda
+      \authorinfo{%
+      Department of Computer Science and Engineering,
+      M.S.Ramaiah Institute of Technology, Bangalore, India
+      email: \mbox{soumya.gk@gmail.com}}
+    \and
+      and  Dr. K.G.Srinivasa\member{Fellow}
+      \authorinfo{%
+      Department of Computer Science and Engineering,
+      M.S.Ramaiah Institute of Technology, Bangalore, India
+      email: \mbox{tribhuvanesh@gmail.com}}
+  }
 
 % format author this way for conference proceedings
-\author[]{%
-      Tribhuvanesh Orekondy,
-      \authorinfo{%
-      Department of Computer Science and Engineering,\\
-      M.S.Ramaiah Institute of Technology, Bangalore, India.\\
-      email: tribhuvanesh@gmail.com}
-    \and
-      Soumya Gosukonda,
-      \authorinfo{%
-      email: soumya.gk@gmail.com}
-    \and
-      and Dr. K.G.Srinivasa\member{Member}
-      \authorinfo{...}
-  }
+% \author[]{%
+%       Tribhuvanesh Orekondy,
+%       \authorinfo{%
+%       Department of Computer Science and Engineering,\\
+%       M.S.Ramaiah Institute of Technology, Bangalore, India.\\
+%       email: tribhuvanesh@gmail.com}
+%     \and
+%       Soumya Gosukonda,
+%       \authorinfo{%
+%       email: soumya.gk@gmail.com}
+%     \and
+%       and Dr. K.G.Srinivasa\member{Member}
+%       \authorinfo{...}
+%   }
 
 % specifiy the journal name
 % \journal{IEEE Transactions on Something, 1997}
@@ -225,14 +225,33 @@ Section \ref{sec:conclusion} provides conclusions and future work
 % Motivation
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 \section{Motivation} \label{sec:motivation}
-With a gradual shift of enterprise data and even personal account data towards the cloud, almost every individual has cloud presence that is protected by secure access, mostly password-based. But this kind of security does not negate the possibility of tailgating - a situation where a person forgets to log out allowing unauthorized access to their data. It is also cumbersome to log-in multiple times when a user needs to frequently move away from the data access point, as in the case of a medical practitioner accessing patient records and moving away to treat the patient. There is a constant attempt towards making systems more intelligent and in the field of security there is a dire need for an intelligent system that is unobtrusively able to differentiate an authorized user from an unauthorized one without depending solely on password-based methods but also incorporating the recognition of some unique physiological traits a person possesses.
+With a gradual shift of enterprise data and even personal account data towards the cloud, almost every individual has cloud presence that is protected by secure access, mostly password-based.
+As suggested in the 2-factor static authentication example, this kind of security does not address the possibility of tailgating - a situation where a person forgets to log out allowing unauthorized access to their data.
+Moreover, the online marketplaces on mobile devices as well as desktops today come enabled with a pre-authorized account where the user is not prompted for any credententials before making purchases.
+Hence, the convenience for the user is achieved at the cost of a possibility of an unauthorized person making fradulent purchases.
+
+A possible solution to this is using the biometrics characterizing the user thoughout the session.
+But, these conventional "biometrics" techniques have low availability. 
+Advanced methods such as fingerprint and retinal pattern recognition proves very inconvenient to user since the posture would be restricted.
+Facial features too restrict the user to face the camera and features not captures in the training data surfaces as noise during practise.
+
+It is also cumbersome to log-in multiple times when a user needs to frequently move away from the data access point, as in the case of a medical practitioner accessing patient records and moving away to treat the patient.
+There is a constant attempt towards making systems more intelligent and in the field of security there is a dire need for an intelligent system that is unobtrusively able to differentiate an authorized user from an unauthorized one without depending solely on password-based methods but also incorporating the recognition of some unique physiological traits a person possesses.
+
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Related Work
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 \section{Related Work} \label{sec:related}
-Incorporating Soft Biometric traits for improved accuracy of recognition was first implemented by \emph{A.K.Jain et al} \cite{Jain204}. They proposed a framework for integrating the soft biometric information with the output of the primary biometric system while using fingerprint as the primary biometric identifier and gender, ethnicity, and height as the soft biometric variables. Their results showed 95\% Genuine Acceptance Rate as compared to 90\% in case of using fingerprints alone. 
-Using Soft Biometrics for Continuous Authentication has been studied by many researchers where different types of Soft Biometric traits are considered such as keystroke dynamics, electrocardiogram data and colour of clothing and skin.\cite{mon00,ecd,Niin10}. Of these the most relevent is the work by \emph{Niinuma et al.} where they implemented checking the colour of shirt and skin continually to match the template created at the start of the session \cite{Niin10}. They conducted experiments where the user was asked to enact 6 typical scenarios a user may normally exhibit such as turning head in different directions, stretching arms or walking away. They measured the system's performance for soft biometrics evaluation using two main parameters - False Reject and False Accept. Their experimental results indicate an overall False Rejection rate of 4.16\% and a False Accept rate of 0\% over the considered scenarios.
+Incorporating Soft Biometric traits for improved accuracy of recognition was first implemented by \emph{A.K.Jain et al} \cite{Jain204}.
+They proposed a framework for integrating the soft biometric information with the output of the primary biometric system while using fingerprint as the primary biometric identifier and gender, ethnicity, and height as the soft biometric variables.
+Their results showed 95\% Genuine Acceptance Rate as compared to 90\% in case of using fingerprints alone. 
+
+Using Soft Biometrics for Continuous Authentication has been studied by many researchers where different types of Soft Biometric traits are considered such as keystroke dynamics, electrocardiogram data and colour of clothing and skin.\cite{mon00,ecd,Niin10}.
+Of these the most relevent is the work by \emph{Niinuma et al.} where they implemented checking the colour of shirt and skin continually to match the template created at the start of the session \cite{Niin10}.
+They conducted experiments where the user was asked to enact 6 typical scenarios a user may normally exhibit such as turning head in different directions, stretching arms or walking away.
+A measure on the system's performance for soft biometrics was made by evaluating two main parameters - False Reject and False Accept.
+Their experimental results indicate an overall False Rejection rate of 4.16\% and a False Accept rate of 0\% over the considered scenarios.
 
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
@@ -241,11 +260,11 @@ Using Soft Biometrics for Continuous Authentication has been studied by many res
 \section{Contribution} \label{sec:contribution}
 This paper explores the techniques used in various experiments as cited in the previous section.
 Furthermore, we look into the implementation aspects of the solution by developing a system using a framework that can be extended to include additioinal hard and soft biometrics modes. 
-The modifications in our solution can be summarized as follows:
+Our approach to advance the field of Continuous Authentication can summarized as being made in the following fields:
 \begin{itemize}
 	\item Hard and soft biometric modes are implemented as black-boxes. The control flow transitions from hard to soft biometric based on confidence $\theta_{H}$ to save the system from additional resources as well as allow the user flexibility in his/her posture. The flow once again enters hard biometric mode based on confidence $\theta_{S}$, which might occur when the user is tailgated.
-	\item The hard biometrics predominantly used in this project is the facial features captured using Eigenfaces\cite{Turk91}. More advanced algorithms such as Fisherfaces do exist, but we show that our face recognitioin module can be easily substituted for any of these alternatives. This is achieved by only using value of the indicator function $1\{user_{recognized}=user_{authenticated}\}$.
-	\item Most of the face recognition algorithms that have evolved over the years are still striving to achieve an accuracy of 100\%. As show in \cite{fig:no_svm}, Eigenfaces too falls into this category and in our case, this inaccuracy is exhibited in the form of noise. We develop a novel technique to dampen noise using a machine learning algorithm.
+	\item The hard biometrics predominantly used in this project is the facial features captured using Eigenfaces\cite{Turk91}. More advanced algorithms such as Fisherfaces do exist, but we show that our face recognition module can be easily substituted for any of these alternatives. This is achieved by using the features common among face recognition algorithms - the value of indicator function $1\{user_{recognized}=user_{authenticated}\}$ and a confidence measure.
+	\item Most of the face recognition algorithms that have evolved over the years are still striving to achieve a perfect accuracy. As show in \cite{fig:no_svm}, Eigenfaces too falls into this category and in our case, this inaccuracy is exhibited in the form of noise. We develop a novel technique to dampen noise using a machine learning algorithm.
 	\item Using face recognition algorithms to authenticate faces poses another challenge that the chances of an imposter being missclassified increases when the training set is biased towards a small group of people. We overcome this, once again using machine learning algorithm.
 \end{itemize}
 
@@ -254,7 +273,7 @@ The modifications in our solution can be summarized as follows:
 % Architecture of proposed work
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 \section{Architecture of proposed work} \label{sec:arch}
-Our proposed solution can be viewed to exist in one of three following states:
+The control flow in our proposed solution can be viewed to exist in one of three following states:
 \begin{enumerate}
 	\item Conventional password login
 	\item Hard biometrics mode
@@ -271,7 +290,7 @@ The control flow moves between these states is based on the confidence of the au
 The modules which implementing these states are briefly described in the following sections.
 
 \subsection{Conventional password}
-The username-password pair is created during the account creation phase, during which the facial features of the user are also captured.
+The username-password pair is created in the account creation mode, during which the facial features of the user are also captured.
 The password and the (automatically generated) user-id are encrypted and stored in the database.\\
 At the time of login, the user is asked to enter the username-password pair, in order to satisfy the condition of \emph{something you know}.
 The password entered is encrypted and compared to that stored in the database.
@@ -293,14 +312,16 @@ The hard biometric traits captured by our proposed solution is restricted to fac
 \end{itemize}
 However, the system is designed in such a way that any other hard biometric trait can be later added in form of a black-box. This requires the machine learning algorithm explained in the next section to be trained accordingly.
 The hard biometrics phase hence satisfies the condition - \emph{something the user is}, hence providing a robust method of authenticating the user with high confidence during the session.\\
-The facial recognition is achieved using the concept of Eigenfaces\cite{Turk91} as proposed by Turk and Pentland.
+The facial recognition used is Eigenfaces\cite{Turk91} as proposed by Turk and Pentland.
 Although more complex solutions to face recognition such as Fisherface and neural networks are available, we show that Eigenfaces, even with drawbacks of comparatively lower accuracy and higher time required to process each frame can be overcome using the technique described in the next section.
-Once again, the module implementing Eigenfaces can be easily subsituted for a more advanced algorithm, given that it predicts a user from a given image.
+This module implementing Eigenfaces can be easily subsituted for a more advanced algorithm, given that it predicts a user from a given image.
 But, for the rest of the discussion, the module implementing face recognition implies Eigenface, in order to study a method to overcome the inherent noise from the hard biometrics module.
 
 \subsection{Noise dampening}
 If the output(confidence) produced by the hard biometrics mode is represented as the indicator function
-$$ 1\{user_{recognized} = user_{authenticated}\} \in \{0,1\}$$,
+\begin{equation}
+1\{user_{recognized} = user_{authenticated}\} \in \{0,1\}
+\end{equation}
 the distribution of these outputs against time appears as shown in the the figure \ref{fig:no_svm}.
 \begin{figure}[h!]
 	\centering
@@ -308,16 +329,19 @@ the distribution of these outputs against time appears as shown in the the figur
 	\caption{Output of Eigenfaces vs. time as described by the indicator function}
 	\label{fig:no_svm}
 \end{figure}
-The information latent when the false negatives are produced is generally a result of:
+The information latent in the noise - the false positives and negatives, is produced as a result of:
 \begin{itemize}
 	\item A high degree of illumination changes in the surroundings
 	\item Extreme movements and postures by the user, which maps to data not captured during training
 \end{itemize}
-Moreover, most face recognition algorithms, including Eigenfaces predicts the closest neighbour in the PCA subspace constructed using the training data.
-This leads to a high probability of an imposter being authenticated when the training data is biased, such as in the case of very few registered users or the ratio of male-to-female is not balanced.\\
+Moreover, most face recognition algorithms, including Eigenfaces predicts the closest neighbour to the projected point in the PCA subspace, which was constructed during training.
+This leads to a high probability of an imposter being authenticated under conditions when the training data is biased, such as in the case of very few registered users or the ratio of male-to-female is not balanced.\\
+For example, this might occur when the database is new and consists of a single user. 
+In this case, Eigenfaces recognizes every face as this user 
+(In section \ref{sec:results} we show that our noise dampening technique can overcome this flaw.)
 Our proposed technique overcomes these drawbacks, which applies to face recognition algorithms in general, by taking advantage of:
 \begin{itemize}
-	\item Temporal information and decaying old information
+	\item Temporal information. We use a sliding-window technique which uses data from past $T$ frames.
 	\item Confidence in prediction of recognized face, which in case of Eigenfaces is the Mahalanobis distance of the projected point from its nearest neighbour
 	\item Patterns inherent in the noise
 \end{itemize}
@@ -332,18 +356,18 @@ The data extracted for these features from historical records is used to learn a
 \end{figure}
 Hard biometrics although being more robust and reliable than soft biometrics, falls short in three aspects\cite{Niin10}:
 \begin{itemize}
-	\item Required more time for processing each frame
+	\item Requires more time for processing each frame
 	\item Restricts the user's postures and movements
-	\item Falsely rejects user due to occlusion
+	\item Falsely rejects user due to occlusion and contrasting changes in facial expression.
 \end{itemize}
 These drawbacks are overcome at the expense of decrease in accuracy to satisfy the goal of not deviating the user from his usual work-flow. 
-In our proposed solution, the soft biometric trait used is the shirt colour, but is extendable to other soft biometric forms of authentication such as complexion, gender\cite{Jain204}, etc. 
+In our proposed solution, the soft biometric trait used is by enrolling a HSV template of the colour of user's clothing, but can be extended to include other soft biometric forms of authentication such as complexion, gender\cite{Jain204}, etc. 
 
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Algorithms and techniques 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
-\section{Algorithms and techniques used} \section{sec:algo}
+\section{Algorithms and techniques used} \label{sec:algo}
 
 \subsection{Face Detection using Viola-Jones algorithm}
 The face detector proposed by Paul Viola and Micheal Jones\cite{Viola01} combines four key concepts\cite{servo}:
@@ -358,12 +382,12 @@ Haar wavelets are single wavelength square waves (one high interval and one low 
 In two dimensions, a square wave is a pair of adjacent rectangles - one light and one dark.
 The actual rectangle combinations used for visual object detection are not true Haar wavlets.
 Instead, they contain rectangle combinations better suited to visual recognition tasks.
-Because of that difference, these features are called Haar features, or Haarlike features, rather than Haar wavelets.
+Because of that difference, these features are called Haar features, or \emph{Haarlike features}, rather than Haar wavelets.
 The presence of a Haar feature is determined by subtracting the average dark-region pixel value from the average light-region pixel value.
 If the difference is above a threshold (set during learning), that feature is said to be present.\\
-To determine the presence or absence of hundreds of Haar features at every image location and at several scales efficiently, Viola and Jones used a technique called an Integral Image.
+To determine the presence or absence of hundreds of Haar features at every image location and at several scales efficiently, Viola and Jones used a technique called an \emph{Integral Image}.
 Using this technique, rectangular features can be evaluated in constant time, which gives them a considerable speed advantage over their more sophisticated relatives.\\
-Viola and Jones combined a series of AdaBoost classifiers as a filter chain, that's especially efficient for classifying image regions.
+Viola and Jones combined a series of \emph{AdaBoost classifiers} as a filter chain, that's especially efficient for classifying image regions.
 Each filter is a separate AdaBoost classifier with a fairly small number of weak classifiers.
 The cascade architecture has interesting implications for the performance of the individual classifiers. Because the activation of each classifier depends entirely on the behavior of its predecessor, the false positive rate for an entire cascade is:
 \begin{equation}
@@ -378,12 +402,12 @@ Thus, to match the false positive rates typically achieved by other detectors, e
 \subsection{Face Recognition using Eigenfaces}
 
 \subsubsection{Face recognition using Eigenfaces}
-Eigenfaces is a face recognition algorithm that was first described by Turk and Pentland in their paper published in 1991. It works to capture the variations present among the images of faces, that form the training set. It uses this information to create a face model where each image is represented as an eigenvector in what is called a "PCA subspace". Recognition of a test face is carried out by converting the test image into a similar eigenvector and then comparing its distance from all others in the subspace. The person corresponding to closest image is said to be the person recognized in the test image. It encodes the complete face characteristics, as opposed to capturing features of the face separately.\\
+Eigenfaces is a face recognition algorithm that was first described by Turk and Pentland\cite{Turk91}. It works to capture the variations present among the images of faces, that form the training set. It uses this information to create a face model where each image is represented as an eigenvector in what is called a "PCA subspace". Recognition of a test face is carried out by converting the test image into a similar eigenvector and then comparing its distance from all others in the subspace. The person corresponding to closest image is said to be the person recognized in the test image. It encodes the complete face characteristics, as opposed to capturing features of the face separately.\\
 
 \subsubsection{ Eigenface generation }
-Eigenfaces works in the following manner:
+Eigenfaces are created in the following manner:
 \begin{enumerate}
-	\item A training set of images {\bf S} containing $\tau_{1},\tau_{2},..\tau_{M}$ total faces of the users to be recognized is prepared. These faces are captured during account creation of a user and converted to grayscale and equalized and resized to a standard resolution. Each image is converted to a vector of size {\bf N} by concatenating all the pixels row by row. These vectors are put into a matrix {\bf T} with each row representing an image.
+	\item During the account creation phase, a series of face images are captured and preprocessed. Hence a training dataset {\bf S} of preprocessed face images containing $\tau_{1},\tau_{2},..\tau_{M}$ is prepared. Each image is then converted to a vector of size {\bf N} by concatenating all the pixels row by row. These vectors are put into a matrix {\bf T} with each row representing an image.
 	\item The average of all vectors $\psi$ is calculated and subtracted from each of the vectors in {\bf T} to obtain $\phi_{i}, i = 1,2,..,n$.
 	\item The eigenvectors $u_{k}$ and eigenvalues $\lambda_{k}, k = 1,..,M$ of the co-variance matrix {\bf C} are calculated. The covariance matrix itself is found by: 
 \begin{equation}
@@ -421,7 +445,7 @@ If $\varepsilon_{k}$ is below an established threshold $\theta_{\varepsilon}$, t
 \subsection{Noise Dampening using Support Vector Machines}
 Using the output produced by the face recogntion module, the goal is to dampen the noise, by taking advantage of certain features like
 \begin{itemize}
-	\item Temporal information and decaying old information
+	\item Temporal information
 	\item Confidence in prediction of recognized face, which in case of Eigenfaces is the Mahalanobis distance of the projected point from its nearest neighbour
 	\item Patterns inherent in the noise
 \end{itemize}
@@ -441,7 +465,7 @@ g(z) = \left\{
 -1 & \quad \textit{if $z < 0$}\\
 \end{array} \right.
 \end{equation}
-The (primal)optimization problem for finding the optimal margin classifier can be stated as:
+The \textbf{primal optimization problem} for finding the optimal margin classifier can be stated as:
 \begin{equation}
 \min_{\gamma, w, b} \frac{1}{2}\parallel w \parallel ^2\\
 \end{equation}
@@ -453,13 +477,24 @@ When we construct the Langrangian for this optimization problem, we have:
 \begin{equation} \label{eq:lang}
 \mathcal {L}(w, b, \alpha) = \frac{1}{2} \parallel w \parallel ^2 - \sum_{i=1}^{m} \alpha_i [y^{(i)}(w^Tx^{(i)} + b) - 1]
 \end{equation}
-where $\alpha_{i}$ is a Langrange multiplier. To minimize $\mathcal{L}$, we differentiate this equation with respect to $w$ and $b$ to obtain:
+where $\alpha_{i}$ is a Langrange multiplier. To find the \textbf{dual form}, we need to minimize $\mathcal{L}$ which is obtained by differentiating this equation with respect to $w$ and $b$.
+Therefore, by taking the derivative with respect to $w$ and setting it to zero:
+\begin{equation}
+\nabla_{w} \mathcal{L}(w,b,\alpha) = w - \sum_{i=1}^{m} \alpha_{i} y^{(i)} x^{(i)} = 0\\
+\end{equation}
 \begin{equation} \label{eq:w}
-w = \sum_{i=1}^{m} \alpha_{i} y^{(i)} x^{(i)}
+\Rightarrow w = \sum_{i=1}^{m} \alpha_{i} y^{(i)} x^{(i)}\\
 \end{equation}
+Similarly, the derivative with respect to $b$:
 \begin{equation} \label{eq:ay}
-\sum_{i=1}^{m} \alpha_{i} y^{(i)} = 0
+\dfrac{\partial}{\partial b} \mathcal{L}(w,b,\alpha) = \sum_{i=1}^{m} \alpha_{i} y^{(i)} = 0
 \end{equation}
+% \begin{equation} \label{eq:w}
+% w = \sum_{i=1}^{m} \alpha_{i} y^{(i)} x^{(i)}
+% \end{equation}
+% \begin{equation} \label{eq:ay}
+% \sum_{i=1}^{m} \alpha_{i} y^{(i)} = 0
+% \end{equation}
 Plugging this back into equation \ref{eq:lang}, we get
 \begin{equation}
 \mathcal {L}(w, b, \alpha) = \sum_{i=1}^{m} \alpha_i - \frac{1}{2} \sum_{i,j=1}^{m} y^{(i)}y^{(j)}\alpha_i \alpha_j (x^{(i)})^T x^{(j)}
@@ -476,6 +511,7 @@ and
 \begin{equation}
 \sum_{i=1}^{m} \alpha_{i}y^{(i)} = 0
 \end{equation}
+It can be verified that the conditions required for $p^*=d^*$ and the KKT conditions to hold are satisfied in this optimization problem.
 By finding the $\alpha$'s given in equation \ref{eq:dual}, which maximizes $W(\alpha)$, the optimal $w$'s can be represented as a function of $\alpha$'s.
 Having found $w^{*}$, by considering the primal problem, we obtain the orientation of the hyperplane.
 The optimal value of intercept term $b$ can be calculated as:
@@ -483,15 +519,15 @@ The optimal value of intercept term $b$ can be calculated as:
 b^{*} = - \frac {max_{i:y^{(i)}=-1}w^{*T}x^{(i)} + min_{i:y^{(i)}=1}w^{*T}x^{(i)}} {2}
 \end{equation}
 
-Suppose the model's parameters are fit to the training set, a prediction would require calculate $w^Tx+b$ for a new point $x$. 
+Suppose the model's parameters $w$ and $b$ are fit to the training set, a prediction would require calculate $w^Tx+b$ for a new point $x$. 
 This quantity can be written as:
 \begin{eqnarray}
 w^Tx + b & = & \left( \sum_{i=1}^{m}\alpha_{i} y^{(i)} x^{(i)} \right)^Tx + b \\
          & = & \sum_{i=1}^{m} \alpha_{i}y^{(i)}\langle x^{(i)},x\rangle + b
 \end{eqnarray}
-Thus, if the value of $\alpha$'s have been calculated, in order to make a prediction a quantity that only depends on the inner product of the new point and training data needs to be calculated.
+Thus, if the value of $\alpha$'s have been calculated, in order to make a prediction, a quantity that only depends on the inner product of the new point and training data needs to be calculated.
 Let this quantity be represented as $\langle x, z\rangle$.
-Given a feature mapping $\phi$, this inner product can be entire replace by $\phi(x),\phi(z)$.
+Given a feature mapping $\phi$, this inner product can be entire replace by $\langle \phi(x),\phi(z) \rangle$.
 A Kernel can now be defined as:
 \begin{equation}
 K(x,z) = \phi(x)^T\phi(z)
@@ -500,6 +536,7 @@ In our proposed solution, we use radial basis function as the kernel:
 \begin{equation}
 K(x,z) = exp\left( \frac {\parallel x - z \parallel ^2} {2\sigma^2} \right)
 \end{equation}
+In the next section we show how the model obtained is used to solve the learning problem.
 
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
@@ -507,14 +544,14 @@ K(x,z) = exp\left( \frac {\parallel x - z \parallel ^2} {2\sigma^2} \right)
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 \section{Implementation} \label{sec:implementation}
 The proposed continuous authentication system is implemented on the Linux platform, with majority of the code written in C++ and house-keeping tasks of creating and reorganizing training data written in Python 2.7.
-Advanced image processing tasks is handled by OpenCV 2.4\cite{opencv} and the machine learning algorithms used is implemented by libSVM\cite{libsvm}.
+Advanced image processing tasks is handled by OpenCV 2.4\cite{opencv} and the machine learning algorithms is implemented using libSVM\cite{libsvm}.
 The system is designed using a client-server model, where the server broadcasts the authentication status of the user.
-For the purpose of experimenting and debugging, the information on confidence, logged-in user and the recognized user is displayed on the video feed in a separate window.
+For the purpose of experimentation and debugging, the information on confidence, logged-in user and the recognized user is displayed on the video feed in a separate window.
 Using functions integrated within OpenCV, we are able to implement Viola-Jones face detection algorithm and the Eigenface algorithm.
 
-Few tasks common to both training and testing of hard biometrics traits are the load-store operations, which transfers data to and from the XML file.
-These calls are in the form of \verb+cvRead*(..)+ and \verb+cvWrite*(..)+ which either store or retrieve data in the form of tag-value pairs.
-THe proposed system stores a variety of data including encrypted username-password pairs, eigenvectors, average face image, etc. 
+Few tasks common to both training and testing of hard biometrics traits are the load-store operations, which transfers data to and from our database - an XML file.
+These calls are in the form of \verb+cvRead*(..)+ and \verb+cvWrite*(..)+ which either stores or retrieves data in the form of key-value pairs.
+The proposed system stores a variety of data including encrypted username-password pairs, eigenvectors, average face image, etc. 
 
 The other task predominantly used is the face detection algorithm.
 All the processing done in both the hard and soft biometrics mode is with respect to the face image obtained from face detection.
@@ -523,15 +560,15 @@ But, in the case of soft biometrics, the shirt region is calculated based on the
 In OpenCV, face detection is implemented as \verb+cvHaarDetectObjects(..)+, which can recognize any object defined by the trained Haar-like features.
 The trained Haar-like features for facial recognition tasks are provided by default through OpenCV.
 
-Face recognition in OpenCV is implemented by using \verb+cvCalcEigenObjects(..)+ and \verb+cvEigenDecomposite(..)+. 
-\verb+cvCalcEigenObjects(..)+ is to called prepare to compute the PCA for the face images in the training dataset.
-This is to represent the PCA subspace using an array of eigenvectors.
+Face recognition in OpenCV is implemented using \verb+cvCalcEigenObjects(..)+ and \verb+cvEigenDecomposite(..)+. 
+\verb+cvCalcEigenObjects(..)+ is used to implement PCA on the set of face images in the training dataset.
+This PCA subspace is represented as an array of eigenvectors.
 With the PCA subspace created, the training images needs to be converted to points in this subspace.
 OpenCV provides \verb+cvEigenDecomposite(..)+, which projects the given face image to a point in the PCA subspace.
 
-During training, the PCA subspace is created and each face image in the training data is projected into this subspace.
-The parameters defining this space and the points are stored in the XML file.
-During testing, the PCA subspace is recreated by loading the values and the test image is projected using \verb+cvEigenDecomposite(..)+.
+During \emph{training}, the PCA subspace is created and each face image in the training data is projected into this subspace.
+The parameters defining this space and the points are stored in the XML file.\\
+During \emph{testing}, the PCA subspace is recreated by loading the trained parameters from the XML file and the test image is projected using \verb+cvEigenDecomposite(..)+.
 The nearest neighbour to this projected point is then returned as the recognized user.
 
 As discussed earlier, the noise generated by any face recognition algorithm makes the system incapable of handling a continuous stream of bits, each represented by a authenticated/unauthenticated state.
@@ -543,12 +580,14 @@ The features that the model was trained on were:
 	\item Mean time since authentication over $X_{t-T}$ to $X_{t}$ frames
 	\item $\sum_{i=t-T}^{t}\{Recognized\ user = Logged\-in\ user\}$
 \end{itemize}
-The predicted authentication states are then logged into a bit-vector of size $N$.
+The reason for using information gathered from the fixed number of frames instead of a time period of fixed length is explained in section \ref{sec:results-svm}.
+The predicted authentication states are then logged into a bit-vector $\langle b_0 b_1 b_2 \ldots b_N \rangle$.
 The number of bits enabled in this bit-vector dictates the confidence of the system in the hard biometrics mode.
 Hence,
-\begin{equation}
-\theta_{H} = \frac {\textit{No. of bits enabled}} {Length of bit-vector}
-\end{equation}
+\begin{eqnarray}
+\theta_{H} & = & \frac {\textit{No. of bits enabled}} {\textit{Length of bit-vector}}\\
+           & = & \frac{\sum_{i=0}^{N} 1\{b_i=1\}}{N}
+\end{eqnarray}
 
 The soft biometrics represented by $\theta_{S}$ is calculated based on the similarity between the current template and the enrolled template.
 The template here refers to a vector calculated over a fixed number of frames, whose histogram values have been averaged.
@@ -574,11 +613,11 @@ For example, a person might be characterized as the average plus 20\% from eigen
 \begin{figure}[h!]
 	\centering
 	\includegraphics[scale=0.15]{img/eigen.png}
-	\caption{Average image generated by Eigenfaces}
+	\caption{The first few dominant Eigenfaces}
 	\label{fig:eigen}
 \end{figure}
 Figure \ref{fig:avg} and \ref{fig:eigen} were generated using 250 images, with each of the 10 users contributing 25 images.
-It can be seen that the average image shows a smooth face structure, the first few eigenfaces shows some of the domninant traits and later on it captures mostly noise.
+It can be seen that the average image shows a smooth face structure, the first few eigenfaces shows some of the domninant traits and later on it captures mostly noise and hence the contributions from these are negligible.
 
 \begin{figure}[h!]
 	\centering
@@ -586,7 +625,7 @@ It can be seen that the average image shows a smooth face structure, the first f
 	\caption{Comparison of the facial features processing tasks}
 	\label{fig:fdfr}
 \end{figure}
-Figure \ref{fig:fdfr} was obtained by running the continuous authentication system in a hard biometrics only mode under normal conditions. The average time taken to process each frame for the task of face detection and face recognition are shown in \ref{tab:fdr}
+Figure \ref{fig:fdfr} was obtained by running the continuous authentication system in a hard biometrics only mode under normal conditions. The average time taken to process each frame for the task of face detection on an entire frame and face recognition for a face image are shown in \ref{tab:fdr}
 
 \begin{table}[htp]
 	\centering
@@ -610,7 +649,7 @@ This can be seen in figure \ref{fig:fracc} where the y-axis represents the funct
 \end{figure}
 
 \subsection{Soft biometrics}
-Figure \ref{fig:fsoft} justifies the reason to transition soft biometrics when necessary.
+Figure \ref{fig:fsoft} empirically justifies our reason to transition into soft biometrics mode when necessary.
 We observed that after retrieving the face image of the person in front of the system, the soft biometrics consumes half as much time as face recognition.
 Note that the time represented for both the observations in figure \ref{fig:fsoft} includes the time taken to pre-process the frame and retrieve the face image.
 \begin{figure}[h!]
@@ -648,7 +687,7 @@ This can be seen in both the figures where the peaks are dampened out as a resul
 		\includegraphics[scale=0.40]{img/soft_conf_away.png}}
 \end{figure}
 
-\subsection{Noise dampening using SVM}
+\subsection{Noise dampening using SVM} \label{sec:results-svm}
 Figure \ref{fig:svm1} captures the output of indicator function as described earlier.
 As seen from this figure, the immense noise in the data cannot solely be the basis for predicting if the user in front of the system is the authenticated user.
 This noise exists as a result of false positives and false negatives from the prediction. 
