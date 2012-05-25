@@ -740,6 +740,75 @@ A function that manages the soft biometric traits recogition and is called from 
 \subsubsection { Main Module }
 This module runs in two main phases: Learning and Authentication.
 
+The Learning phase consists of the following major modules:
+\begin{itemize}
+\item 
+\verb+void learn()+\\
+This function launches and oversees the learning phase.
+
+\item 
+\verb+void doPCA()+\\
+This function performs PCA on the loaded training set.
+
+\item 
+\verb+void collect()+\\
+This function collects the user's face images required for training the face model for recognition. All collected images are processed to give face images in grayscale, equalized format of a standard resized resolution. 
+
+\item 
+\verb+int loadFaceImageArr(char* filename)+\\
+This function loads the training set in the form of an array for PCA to be performed on it.
+
+\item 
+\verb+void storeTrainingData()+\\
+This function stores all relevent training data obtained after PCA and Eigenfaces is performed into an XML file.
+
+\item 
+\verb+void storeEigenfaceImages()+\\
+This function stores all Eigenfaces obtained as an images so they can be checked.
+
+\item 
+\verb+string create_hash(string source)+\\
+This function creates and returns the hash string using the SHA-1 algorithm taking as input the actual password entered by the user.
+
+\item 
+\verb+map<string, string> obtainHashMapFromFile()+\\
+This function obtains the hash map of the users and their corresponding hashed password values from the XML file.
+
+\item 
+\verb+int appendToFile(map<string, string> hashMap)+\\
+This function appends the hash map of usernames and corresponding hashed passwords to the XML file.
+
+\end{itemize}
+
+The Authentication phase consists of the following major modules:
+\begin{itemize}
+
+\item 
+\verb+string verify_pwd()+\\
+This function verifies the password entered by the user by checking its encrypted hash value against the already existing hashed password in the XML file.
+
+\item 
+\verb+void spin(string user)+\\
+This function launches and oversees the Biometric Authentication phase.
+%provide more desc.
+
+\item 
+\verb+int loadTrainingData(CvMat** pTrainPersonNumMat)+\\
+This function loads the training data, that was stored during learning, for the recognition of the new user attempting to log-in.
+
+\item 
+\verb+int recog(IplImage* frame, CvHaarClassifierCascade* faceCascade, CvRect faceRect, CvMat* trainPersonNumMat, float* confidence)+\\
+This function carries out the recognition of the new user via the Eigenfaces algorithm.
+
+\item 
+\verb+int findNearestNeighbour(float* projectedTestFace, float* confidence)+\\
+This function finds the closest face match obtained from Eigenfaces for the given user's face.
+
+\item 
+\verb+int loadPersons();+\\
+This function loads the data of all persons in the XML database, which includes their username, and user-id.
+
+\end{itemize}
 
 
 \newpage

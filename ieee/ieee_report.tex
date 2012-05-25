@@ -72,7 +72,7 @@ listofformat=subsimple}
 % Title Information, Abstract and Keywords
 %----------------------------------------------------------------------
 \title[Continuous Multimodal User Authentication]{%
-       Continuous Multimodal User Authentication, coupling hard and soft biometrics with Support Vector Machines to attenuate Noise}
+       Continuous Multimodal User Authentication: coupling hard and soft biometrics with Support Vector Machines to attenuate Noise}
 
 % format author this way for journal articles.
 \author[]{%
@@ -88,7 +88,7 @@ listofformat=subsimple}
       M.S.Ramaiah Institute of Technology, Bangalore, India
       email: \mbox{soumya.gk@gmail.com}}
     \and
-      and  Dr. K.G.Srinivasa\member{Fellow}
+      and  K.G.Srinivasa\member{Member}
       \authorinfo{%
       Department of Computer Science and Engineering,
       M.S.Ramaiah Institute of Technology, Bangalore, India
@@ -402,18 +402,18 @@ Thus, to match the false positive rates typically achieved by other detectors, e
 \subsection{Face Recognition using Eigenfaces}
 
 \subsubsection{Face recognition using Eigenfaces}
-Eigenfaces is a face recognition algorithm that was first described by Turk and Pentland\cite{Turk91}. It works to capture the variations present among the images of faces, that form the training set. It uses this information to create a face model where each image is represented as an eigenvector in what is called a "PCA subspace". Recognition of a test face is carried out by converting the test image into a similar eigenvector and then comparing its distance from all others in the subspace. The person corresponding to closest image is said to be the person recognized in the test image. It encodes the complete face characteristics, as opposed to capturing features of the face separately.\\
+Eigenfaces is a face recognition algorithm that was first described by Turk and Pentland\cite{Turk91}. It works to capture the variations present among the images of faces, that form the training set. It uses this information to create a face model where each image is represented as an eigenvector in what is called a PCA subspace. Recognition of a test face is carried out by converting the test image into a similar eigenvector and then comparing its distance from all others in the subspace. The person corresponding to closest image is said to be the person recognized in the test image. It encodes the complete face characteristics, as opposed to capturing features of the face separately.\\
 
 \subsubsection{ Eigenface generation }
-Eigenfaces are created in the following manner:
+Eigenfaces are generated in the following manner, as described in \cite{Turk91}:
 \begin{enumerate}
 	\item During the account creation phase, a series of face images are captured and preprocessed. Hence a training dataset {\bf S} of preprocessed face images containing $\tau_{1},\tau_{2},..\tau_{M}$ is prepared. Each image is then converted to a vector of size {\bf N} by concatenating all the pixels row by row. These vectors are put into a matrix {\bf T} with each row representing an image.
-	\item The average of all vectors $\psi$ is calculated and subtracted from each of the vectors in {\bf T} to obtain $\phi_{i}, i = 1,2,..,n$.
+	\item The average of all vectors $\psi$ is calculated and subtracted from each of the vectors in {\bf T} to obtain vectors $\phi_{i}, i = 1,2,..,n$.
 	\item The eigenvectors $u_{k}$ and eigenvalues $\lambda_{k}, k = 1,..,M$ of the co-variance matrix {\bf C} are calculated. The covariance matrix itself is found by: 
 \begin{equation}
 {\bf C} = \frac{1}{M}\sum_{n=1}^{M}\phi_{n}\phi_{n}^{T}
 \end{equation}
-	\item Since the dimension of C is very high (of the order of the number of pixels in the image), another matrix {\bf L} with the dimensions $MxM$ is constructed, 
+	\item Since the dimension of C is very high (of the order of the number of pixels in the image), another matrix {\bf L} as analyzed in \cite{Turk91} with the dimensions $M\timesM$ is constructed, 
 	\begin{equation}
 	{\bf L} = {\bf A}^{T}{\bf A}
 	\end{equation}
@@ -434,7 +434,7 @@ To recognize a face, the face image is transformed into its eigenface components
 \omega_{k} = u_{k}^{T}(\tau_{new} - \psi)	\Omega^{T} = [\omega_{1},\omega_{2},..,\omega_{k}] 
 \end{equation}
 
-The Euclidiean distance $\varepsilon$ is minimized to determine which face class the new face belongs to. It is computed as follows:
+The Euclidiean distance $\varepsilon$ is minimized to determine which face class the new face belongs to. It is computed as follows \cite{eigtut}:
 \begin{equation}
 \varepsilon_{k} = \parallel\Omega - \Omega_{k}\parallel 
 \end{equation}
@@ -735,16 +735,21 @@ Figure \ref{fig:trans2} models real-world condition where in the authenticated u
 Thus, the soft biometrics mode confidence drops which activates the hard biometrics module.
 The predictions made here prove that the authenticated user has been tailgated.
 
+Another notable result as published in \cite{fdetGPU,cudafrec} is the performance of the Viola-Jones face detection and Eigenfaces face recognition algorithms when ported on to a GPU. As per \cite{fdetGPU}, a CPU-GPU cooperative implementation of the Viola-Jones face detection algorithm on GTX280 graphics card achieved speed-ups of over 20\times as compared to its implementation on the Intel Core 2 Duo CPU alone. As for Eigenfaces, it was shown by \cite{cudafrec} that a highly parallelised implementation of Eigenfaces achieved highest speedups on GeForce GTX 480 for database of 15,000 images. A speedup of 207\times was achieved for extraction of feature vectors in training process while the same for the recognition pipeline was shown to be 330\times. Overall testing process yielded a speedup of 165\times (testing over 40 images). The OpenCV implementations of both these algorithms can be modified to run on a GPGPU architecture to achieve a boost in their performance, thereby improving the performance of the proposed Multimodal Continuous Authentication System, if the parallelized implementations are considered. 
+
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Conclusion and Future enhancements
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 \section{Conclusion and Future enhancements} \label{sec:conclusion}
-\noindent{}Need for biometric authentication arose from the fact that other security measures such as password and/or a smart ID card are prone to theft or loss. Biometrics depend on utilising features a user already possesses, that can uniquely identify a user atleast for a given session. However, using biometric identification has its downfalls. Since the characteristic of biometric traits is that they are not secretive, unlike a password, they can be gathered anywhere by an imposter and reconstructed for the authentication system to gain access. For example, a fingerprint left behind on some surface, can be picked up by imposters and reconstructed in front of the sensors. Even for face recognition systems, it is possible to fool the system by showing a photograph of the user or manipulating the video feed of the system. Countermeasures exist for such instances, such as, 3d reconstruction of face from more than two cameras or ensuring that the video feed cannot be manipulated. However, these measures make it a costly solution. Therefore, it can be concluded that biometric mode of authentication should be used more as a support system along with password/ smartID systems, to strengthen the authentication process, rather than a standalone mode of authentication.   
+\noindent{}
 
-\noindent{}The following can be implemented in the future to enhance this system:
+\noindent{}The Multimodal Continuous Authentication System provides scope for future enhancements such as the following:
 \begin{itemize}
-\item Support for multiple users sharing a certain account; this may require a "biometric handoff" to occur between users.
-\item Improve accuracy of face recognition under varied lighting conditions by implementing recognition using a different approach such as fuzzy logic.
+\item Online Learning: The training of the user's face model can be improved by introducing Online Training where each time the user is authenticated with a high level of confidence, a few face images are captured and the face model is retrained.
+\item The whole system can be implemented on a distributed architecture, with the face database in a central repository and the users logging in via different nodes associated with this central repository. The Client - Server architecture may be implemented for this.
+\item The Soft Biometric Traits may be expanded to include more features such as the complexion of the user, eye colour or other facial features like facial hair. 
+\item Support for multiple users sharing a certain account; this may require a biometric handoff\cite{Klos00} to occur between users.
+\item Improve accuracy of face recognition under varied lighting conditions by implementing recognition using a different algorithm or approach since face recognition has been implemented as a separate module.
 \item Make provision for recognizing any kind of tampering occuring to the video feed, so as to prevent authenticating imposters. This can be done by restricting access to the webcam feed via parameters that define access to it.
 \end{itemize}
 % do the biliography:
