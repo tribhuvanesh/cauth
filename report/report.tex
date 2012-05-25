@@ -10,10 +10,12 @@
 						% draft, fleqn, openbib, 12pt
 
 \usepackage{graphicx}	 			% insert PostScript figures
-\usepackage{caption}
-\usepackage{subcaption}
-\usepackage{wrapfig}
 \usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{subfig}
+\usepackage{setspace}
+\usepackage{fancybox}
+\usepackage{hyperref}
 %% \usepackage{setspace}   % controllabel line spacing
 %% If an increased spacing different from one-and-a-half or double spacing is
 %% required then the spacing environment can be used.  The spacing environment 
@@ -43,11 +45,18 @@
  \renewcommand{\topfraction}{0.9}	% 90% of page top can be a float
  \renewcommand{\bottomfraction}{0.9}	% 90% of page bottom can be a float
  \renewcommand{\textfraction}{0.1}	% only 10% of page must to be text
+\renewcommand{\thesubfigure}{\thefigure.\arabic{subfigure}}
+\captionsetup[subfigure]{labelformat=simple,labelsep=colon,
+listofformat=subsimple}
+\captionsetup{lofdepth=2}
+\makeatletter
+\renewcommand{\p@subfigure}{}
+\makeatother
 
-\linespread{1.2}
+\linespread{1.5}
 \alph{footnote}				% make title footnotes alpha-numeric
 
-\title{Continuous Multimodal User Authentication, using hard and soft biometric traits}	% the document title
+\title{Continuous Multimodal User Authentication}	% the document title
 \author{{\bf Project report}{\bf}}
 \date{}				% your own text, a date, or \today
 
@@ -55,17 +64,37 @@
 
 \begin{document}			% REQUIRED
 
+\begin{singlespacing}
 \pagenumbering{roman}			% Roman numerals from abstract to text
-\maketitle				% you need to define \title{..}
+% \maketitle				% you need to define \title{..}
 \thispagestyle{empty}			% no page number on THIS page 
 
 \begin{center}
 
+% \begin{doublespacing}
 %A synopsis submitted in partial fulfillment of the requirements of the course \\[3ex]
-{\Large CS812}\\[3ex]
-{\Large}
+% \thisfancyput(3.25in,-4.5in){%
+%   \setlength{\unitlength}{1in}\fancyoval(7.5,9.5)}%
+\thisfancypage{%
+\setlength{\fboxsep}{9pt}%
+\setlength{\shadowsize}{8pt}%
+\doublebox}{}
+\textbf{\Large Continuous Multimodal User Authentication}\\[4ex]
+\textit{\large A project report submitted to}\\[2ex]
+\textbf{\Large M S Ramaiah Institute of Technology}\\[2ex]
+An Autonomous Institute, Affiliated to\\[2ex]
+\textbf{Visvesvaraya Technological University, Belgaum}\\[2ex]
+\textit{in partial fulfillment for the award of the degree of}\\[2ex]
+\textbf{\textit{\large Bachelor of Engineering in Computer Science \& Engineering}}\\[4ex]
+Submitted by\\[2ex]
+\begin{table}[htp]
+	\centering
+	\begin{tabular}{lcc}
+	Soumya G       &  \hspace{20 mm} & 1MS08CS119             \\
+	Tribhuvanesh O &  \hspace{20 mm} & 1MS08CS129             \\ 
+	\end{tabular}
+\end{table}
 
-{\large}
 {\bf Under the guidance of }{\bf}\\[2ex]
 Dr. K. G. Srinivasa\\
 Professor\\
@@ -73,24 +102,72 @@ Department of Computer Science and Engineering\\
 M. S. Ramaiah Institute of Technology\\[3ex]
 
 
-{\bf Submitted by}{\bf}\\[2ex]
-{\bf Soumya Gosukonda }{\bf} 1MS08CS119\\
-{\bf Tribhuvanesh Orekondy }{\bf} 1MS08CS129\\[8ex]
-{\large}
+\includegraphics[scale=0.06]{img/msrit.jpg}\\
+\uppercase{\textbf{Department of Computer Science \& Engineering}}\\[2ex]
+\uppercase{\textbf{M. S. Ramaiah Institute of Technology}}\\
+\textbf{(Autonomous Institute Affiliated to VTU)}\\
+\textbf{Bangalore - 560054}\\
+\url{www.msrit.edu}\\
+{May 2012}
+\end{center}
+\end{singlespacing}
+\newpage
 
-\includegraphics[scale=0.20]{msrit.png}\\
-Department of Computer Science and Engineering\\
-M. S. Ramaiah Institute of Technology\\
-(Autonomous Institute Affiliated to VTU)\\
-Bangalore - 560054
+%
+% Certificate 
+%
+\begin{center}
+\uppercase{\textbf{Department of Computer Science \& Engineering}}\\[2ex]
+\uppercase{\textbf{M. S. Ramaiah Institute of Technology}}\\
+\textbf{(Autonomous Institute Affiliated to VTU)}\\
+\textbf{Bangalore - 560054}\\[30ex]
+\textbf{CERTIFICATE}\\[4ex]
+\end{center}
+This is to certify that the project work titled
+\textbf{Continuous Multimodal User Authentication}
+is carried out by
+\textbf{Soumya G} (1MS08CS119) and
+\textbf{Tribhuvanesh O} (1MS08CS129)
+in partial fulfillment for the award of degree of Bachelor of
+Engineering in Computer Science and Engineering during the year 2012. The Project
+report has been approved as it satisfies the academic requirements with respect to
+the project work prescribed for Bachelor of Engineering Degree. To the best of our
+understanding the work submitted in this report has not been submitted, in part or full, for
+the award of any diploma or degree of this or any other University.\\[5ex]
+\begin{center}
+\begin{table}[htp]
+	\centering
+	\begin{tabular}{lcc}
+	(Dr. K.G.Srinivasa)       &  \hspace{90 mm} & (Dr. R.Selvarani)             \\
+	Guide                     &  \hspace{90 mm} & Head, Dept. of CSE             \\ 
+	\end{tabular}
+\end{table}
+
+\vspace{6 mm}
+(External Examiner)
 \end{center}
 
 \newpage
-\begin{abstract}			% beginning of the abstract
+\begin{center}
+\uppercase{\textbf{\large Declaration}}
+\end{center}
+We hereby declare that the entire work embodied in this report has been carried out by
+us at M. S. Ramaiah Institute of Technology under the supervision of
+Dr.K.G.Srinivasa.
+This report has not been submitted in part or full for the award of any
+diploma or degree of this or any other University.
 
+\vspace{5 mm}
+\noindent{}1MS08CS119 - Soumya G\\
+1MS08CS129 - Tribhuvanesh O
+
+\newpage
 %\addcontentsline{toc}{chapter}{\numberline{}Abstract}
 % TODO <-----ABSTRACT GOES HERE------>
 
+\begin{abstract}
+\section*{}
+\addcontentsline{toc}{subsection}{Abstract}
 Static Authentication methods, although providing a rigid and secure framework to this one-time authentication session, do not provide authentication of the user throughout the session. This leaves the possibility of an imposter gaining access in multiple scenarios.\\
 The goal of \emph{Continuous Authentication} is to authenticate the user right from the initial stages of log-in through log-out.
 This can be implemented by extrapolating the tried-and-tested static authentication techniques thoughout the session.
@@ -100,6 +177,8 @@ This project proposes Continuous Authentication, using login through conventiona
 
 \end{abstract}				% end of the abstract
 \newpage
+\section*{}
+\addcontentsline{toc}{subsection}{Acknowledgements}
 \begin{center}
 {\LARGE \bf Acknowledgements}
 \\[6ex]
@@ -109,14 +188,23 @@ We are thankful to the Department of Computer Science and Engineering, and our H
 We also thank the lab assistants and our friends for their immense help and suggestions that helped us further improve this project. 
 
 \newpage				% start a new page
+
+\section*{}
+\addcontentsline{toc}{subsection}{Contents}
 \tableofcontents			% create table of contents automatically
 
-%\newpage				% start a new page
+\newpage				% start a new page
 %\listoffigures				% to create list of figures automatically
+\section*{}
+\addcontentsline{toc}{subsection}{List of Figures}
+\listoffigures
 
-%\newpage				% start a new page
 %list of tables				% create list of tables
 
+\newpage				% start a new page
+\section*{}
+\addcontentsline{toc}{subsection}{List of Tables}
+\listoftables
 \newpage				% start a new page
 \pagenumbering{arabic}			% Arabic page numbers from now on
 
@@ -180,7 +268,9 @@ The temporal information suggested earlier is used by this machine learning algo
 When the confidence of the system in the hard biometrics mode is beyond the specified threshold, the system enrolls the soft biometric template of the user and transitions into the soft biometrics mode.
 
 \subsection{ Statement of the Problem }
-Soft biometric traits don't provide as high a level of confidence as hard biometric traits. \cite{Niin10} suggests using these soft-biometric traits throughout the authenticated period to provide high tolerance to the user's posture in front of the computer system. Albeit, this being true as shown in our experiments, the problem is to incorporate both traits during the authenticated period, switching between them as and when necessary, depending on the confidence calculated using an appropriate mathematical model. \\
+
+Soft biometric traits don't provide as high a level of confidence as hard biometric traits. \cite{Niin10} suggests using these soft-biometric traits throughout the authenticated period to provide high tolerance to the user's posture in front of the computer system. Albeit, this being true as shown in our experiments, the problem is to incorporate both traits during the authenticated period, switching between them as and when necessary, depending on the confidence calculated using an appropriate mathematical model.
+
 Hard biometric traits, which in this case is face recognition using Eigenfaces\cite{Turk91} is used over its counterparts, such as iris and fingerprint based recognition, since these options are not only expensive, but also cannot be used during the authenticated session without interrupting the user from his work-flow. 
 Thw disadvantage of solely running on face recognition lies in the fact that its computationally expensive and posture-dependent. The problem hence extends to take into account these factors when building the system.
 
@@ -204,7 +294,7 @@ As a part of the proposed Continuous Authentication, the following falls in its 
 	\item Use temporal information to dampen noise. A machine learning algorithm, which in our case is a Support Vector Machine, uses the output produced by face recognition over a time period $T$ with each atomic time slice providing information on recognized person and confidence.
 \end{itemize}
 
-The following features do not fall in the scope of our project:
+\noindent The following features do not fall in the scope of our project:
 \begin{itemize}
 	\item A full-fledged front-end integrated with advanced back-end measures such as PolicyKit or dbus. 
 	\item Certain scenarios that haven't been yet captured in the training data. (But these can be easily trained and included in the next run)
@@ -681,22 +771,32 @@ function login():
     return False
 \end{verbatim}
 
-\begin{figure}[b]
-        \begin{subfigure}[b]{0.6\textwidth}
-                \centering
-                \includegraphics[scale=0.4]{img/login.png}
-                \caption{If password matches, proceed to face recognition}
-                \label{fig:pwd1}
-        \end{subfigure}%
-        \begin{subfigure}[b]{0.5\textwidth}
-                \centering
-                \includegraphics[scale=0.35]{img/login2.png}
-                \caption{Otherwise, wait till time-out and exit}
-                \label{fig:pwd2}
-        \end{subfigure}
-        \caption{Conventional username-password login}\label{fig:pwd}
-\end{figure}
+% \begin{figure}[b]
+%         \begin{subfigure}[b]{0.6\textwidth}
+%                 \centering
+%                 \includegraphics[scale=0.4]{img/login.png}
+%                 \caption{If password matches, proceed to face recognition}
+%                 \label{fig:pwd1}
+%         \end{subfigure}%
+%         \begin{subfigure}[b]{0.5\textwidth}
+%                 \centering
+%                 \includegraphics[scale=0.35]{img/login2.png}
+%                 \caption{Otherwise, wait till time-out and exit}
+%                 \label{fig:pwd2}
+%         \end{subfigure}
+%         \caption{Conventional username-password login}\label{fig:pwd}
+% \end{figure}
 
+\begin{figure}
+	\centering
+	\subfloat[If password matches, proceed to hard biometrics mode]{%
+		\label{fig:pwd1}%
+		\includegraphics[scale=0.4]{img/login.png}}
+	\quad
+	\subfloat[Other wait till time-out and exit]{%
+		\label{fig:pwd2}%
+		\includegraphics[scale=0.35]{img/login2.png}}
+\end{figure}
 \subsubsection{ Hard Biometrics Authentication }
 
 Few tasks common to both training and testing of hard biometrics traits are the load-store operations, which transfers data to and from the XML file.
@@ -763,56 +863,54 @@ The soft biometric trait here is the shirt colour, which is determined by a rect
 % 	\caption{Soft biometrics - Shirt colour detection}
 % \end{figure}
 
-\begin{figure}[h!]
-        \begin{subfigure}[b]{0.5\textwidth}
-                \centering
-                \includegraphics[scale=0.35]{img/soft2.png}
-                \caption{Face detection run on the capture image and shirt position detected.}
-                \label{fig:soft2_org}
-        \end{subfigure}%
-        \begin{subfigure}[b]{0.5\textwidth}
-                \centering
-                \includegraphics[scale=0.35]{img/soft2_csv.png}
-                \caption{Frame converted to CSV, and colour composition of the shirt is calculated}
-                \label{fig:soft2_csv}
-        \end{subfigure}
-        \caption{Authentication using soft biometrics}\label{fig:soft2}
-\end{figure}
+% \begin{figure}[h!]
+%         \begin{subfigure}[b]{0.5\textwidth}
+%                 \centering
+%                 \includegraphics[scale=0.35]{img/soft2.png}
+%                 \caption{Face detection run on the capture image and shirt position detected.}
+%                 \label{fig:soft2_org}
+%         \end{subfigure}%
+%         \begin{subfigure}[b]{0.5\textwidth}
+%                 \centering
+%                 \includegraphics[scale=0.35]{img/soft2_csv.png}
+%                 \caption{Frame converted to CSV, and colour composition of the shirt is calculated}
+%                 \label{fig:soft2_csv}
+%         \end{subfigure}
+%         \caption{Authentication using soft biometrics}\label{fig:soft2}
+% \end{figure}
 
+\begin{figure}
+	\centering
+	\subfloat[Face detection runs on the captured image and shirt position is detected.]{%
+		\label{fig:pwd1}%
+		\includegraphics[scale=0.4]{img/login.png}}
+	\quad
+	\subfloat[Frame converted to HSV to analyse colour composition]{%
+		\label{fig:pwd2}%
+		\includegraphics[scale=0.35]{img/login2.png}}
+\end{figure}
 The soft biometrics template is averaged over frames in $X_{t-k}$ and $X_{t}$ right after the level confidence is highest, that is following the conventional username and password authentication and hard biometrics. Every subsequent k frames are again averaged and compared to the template. 
-
-\begin{figure}[h!]
-        \begin{subfigure}[b]{0.5\textwidth}
-                \centering
-                \includegraphics[scale=0.35]{img/soft6.png}
-                \caption{Face detection detects with high accuracy even in natural postures}
-                \label{fig:soft3_org}
-        \end{subfigure}%
-        \begin{subfigure}[b]{0.5\textwidth}
-                \centering
-                \includegraphics[scale=0.35]{img/soft6_csv.png}
-                \caption{Frame converted to CSV, and colour composition of the area is calculated}
-                \label{fig:soft3_csv}
-        \end{subfigure}
-        \caption{Authentication using soft biometrics - Posture}\label{fig:soft3}
+\begin{figure}
+	\centering
+	\subfloat[Face detection detects with high accuracy even in natural positions]{%
+		\label{fig:soft3_org}%
+		\includegraphics[scale=0.35]{img/soft6.png}}
+	\quad
+	\subfloat[Frame converted to HSV to analyze colour composition]{%
+		\label{fig:soft3_csv}%
+		\includegraphics[scale=0.35]{img/soft6_csv.png}}
 \end{figure}
 
-\begin{figure}[h!]
-        \begin{subfigure}[b]{0.5\textwidth}
-                \centering
-                \includegraphics[scale=0.35]{img/soft5.png}
-                \caption{Face detection run on the capture image, and new colour composition detected.}
-                \label{fig:soft5_org}
-        \end{subfigure}%
-        \begin{subfigure}[b]{0.5\textwidth}
-                \centering
-                \includegraphics[scale=0.35]{img/soft5_csv.png}
-                \caption{Frame converted to CSV, and colour composition of the shirt is calculated}
-                \label{fig:soft5_csv}
-        \end{subfigure}
-        \caption{Authentication using soft biometrics - Occlusion }\label{fig:soft5}
+\begin{figure}
+	\centering
+	\subfloat[Face detection runs on captured image and new colour composition is enrolled]{%
+		\label{fig:soft5_org}%
+		\includegraphics[scale=0.4]{img/soft5.png}}
+	\quad
+	\subfloat[Frame converted to HSV to analyze colour composition]{%
+		\label{fig:soft5_csv}%
+		\includegraphics[scale=0.35]{img/soft5_csv.png}}
 \end{figure}
-
 %$\cdot$\\[10ex]
 %$\cdot$\\[10ex]
 
@@ -906,7 +1004,7 @@ It can be seen that the average image shows a smooth face structure, the first f
 
 \begin{figure}[h!]
 	\centering
-	\includegraphics[scale=0.40]{img/fdr.png}
+	\includegraphics[scale=0.40]{img/fd_fr_fdfr.png}
 	\caption{Comparison of the facial features processing tasks}
 	\label{fig:fdfr}
 \end{figure}
