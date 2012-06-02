@@ -20,7 +20,7 @@
         final,
         %
         %technote,
-        internal,
+        %internal,
         %submitted,
         %inpress,
         %reprint,
@@ -79,20 +79,20 @@ listofformat=subsimple}
       Tribhuvanesh Orekondy
       \authorinfo{%
       Department of Computer Science and Engineering,
-      M.S.Ramaiah Institute of Technology, Bangalore, India
+      M.S.Ramaiah Institute of Technology, Bangalore, India\\
       email: \mbox{tribhuvanesh@gmail.com}}
     \and
       Soumya Gosukonda
       \authorinfo{%
       Department of Computer Science and Engineering,
-      M.S.Ramaiah Institute of Technology, Bangalore, India
+      M.S.Ramaiah Institute of Technology, Bangalore, India\\
       email: \mbox{soumya.gk@gmail.com}}
     \and
       and  K.G.Srinivasa\member{Member}
       \authorinfo{%
       Department of Computer Science and Engineering,
-      M.S.Ramaiah Institute of Technology, Bangalore, India
-      email: \mbox{tribhuvanesh@gmail.com}}
+      M.S.Ramaiah Institute of Technology, Bangalore, India\\
+      email: \mbox{kgsrinivas@msrit.edu}}
   }
 
 % format author this way for conference proceedings
@@ -126,10 +126,12 @@ listofformat=subsimple}
 % do the abstract
 \begin{abstract}
 Static Authentication provides a rigid and secure framework for a one-time authentication session, but fails to authenticate the user throughout the session.
-This leaves the possibility of an imposter gaining access in multiple scenarios.\\
+This leaves the possibility of an imposter gaining access in multiple scenarios.
+
 The goal of \emph{Continuous Authentication} is to authenticate the user right from the initial stages of log-in through log-out, which can be implemented by extrapolating the tried-and-tested static authentication techniques thoughout the session.
 But, this introduces new challenges, since these "one-time authentication" techniques are computationally expensive, restrict the user's movement and postures in front of the system, require extra expensive hardware and deviate the user from his work-flow.
-In these situations, the user no longer remains uninterrupted by the authentication process in the background.\\
+In these situations, the user no longer remains uninterrupted by the authentication process in the background.
+
 This project proposes Continuous Authentication, using login through conventional passwords followed by authentication using two modes - hard and soft biometrics till logout.
 The hard biometric trait - facial features, is chosen so that the user need not invest in any additional expensive hardware.
 The noise inherent in the process of face recognition, is managed by using a supervised machine learning algorithm which uses output from the facial recognition module to predict if the session has been compromised.
@@ -263,7 +265,7 @@ Furthermore, we look into the implementation aspects of the solution by developi
 Our approach to advance the field of Continuous Authentication can summarized as being made in the following fields:
 \begin{itemize}
 	\item Hard and soft biometric modes are implemented as black-boxes. The control flow transitions from hard to soft biometric based on confidence $\theta_{H}$ to save the system from additional resources as well as allow the user flexibility in his/her posture. The flow once again enters hard biometric mode based on confidence $\theta_{S}$, which might occur when the user is tailgated.
-	\item The hard biometrics predominantly used in this project is the facial features captured using Eigenfaces\cite{Turk91}. More advanced algorithms such as Fisherfaces do exist, but we show that our face recognition module can be easily substituted for any of these alternatives. This is achieved by using the features common among face recognition algorithms - the value of indicator function $1\{user_{recognized}=user_{authenticated}\}$ and a confidence measure.
+	\item The hard biometrics predominantly used in this project is the facial features captured using Eigenfaces\ref{Turk91}. More advanced algorithms such as Fisherfaces do exist, but we show that our face recognition module can be easily substituted for any of these alternatives. This is achieved by using the features common among face recognition algorithms - the value of indicator function $1\{user_{recognized}=user_{authenticated}\}$ and a confidence measure.
 	\item Most of the face recognition algorithms that have evolved over the years are still striving to achieve a perfect accuracy. As show in \cite{fig:no_svm}, Eigenfaces too falls into this category and in our case, this inaccuracy is exhibited in the form of noise. We develop a novel technique to dampen noise using a machine learning algorithm.
 	\item Using face recognition algorithms to authenticate faces poses another challenge that the chances of an imposter being missclassified increases when the training set is biased towards a small group of people. We overcome this, once again using machine learning algorithm.
 \end{itemize}
@@ -413,7 +415,7 @@ Eigenfaces are generated in the following manner, as described in \cite{Turk91}:
 \begin{equation}
 {\bf C} = \frac{1}{M}\sum_{n=1}^{M}\phi_{n}\phi_{n}^{T}
 \end{equation}
-	\item Since the dimension of C is very high (of the order of the number of pixels in the image), another matrix {\bf L} as analyzed in \cite{Turk91} with the dimensions $M\timesM$ is constructed, 
+	\item Since the dimension of C is very high (of the order of the number of pixels in the image), another matrix {\bf L} as analyzed in \cite{Turk91} with the dimensions $M\times M$ is constructed, 
 	\begin{equation}
 	{\bf L} = {\bf A}^{T}{\bf A}
 	\end{equation}
@@ -685,6 +687,7 @@ This can be seen in both the figures where the peaks are dampened out as a resul
 	\subfloat[Authenticated user is tailgated]{%
 		\label{fig:softa}%
 		\includegraphics[scale=0.40]{img/soft_conf_away.png}}
+	\caption{Variation of Soft Biometric confidence}
 \end{figure}
 
 \subsection{Noise dampening using SVM} \label{sec:results-svm}
@@ -701,6 +704,7 @@ This noise exists as a result of false positives and false negatives from the pr
 	\subfloat[Confidence estimated by SVM using Face recognition data]{%
 		\label{fig:svm2}%
 		\includegraphics[scale=0.40]{img/svm.png}}
+	\caption{Face recognition output comparison with and without SVM}
 \end{figure}
 
 Our solution overcomes this by extracting temporal information and the confidence estimated by the face recognition algorithm.
@@ -727,6 +731,7 @@ This is not only because the number of frames processed varies among these time 
 	\subfloat[]{%
 		\label{fig:trans2}%
 		\includegraphics[scale=0.40]{img/trans_2.png}}
+	\caption{Confidence as estimated by the entire system}
 \end{figure}
 In this subsection, we briefly look into how the control flow jumps between the hard and soft biometrics modules.
 Figure \ref{fig:trans1} was plotted by alternating the authenticated user and an imposter in front of the system.
@@ -735,17 +740,23 @@ Figure \ref{fig:trans2} models real-world condition where in the authenticated u
 Thus, the soft biometrics mode confidence drops which activates the hard biometrics module.
 The predictions made here prove that the authenticated user has been tailgated.
 
-Another notable result as published in \cite{fdetGPU,cudafrec} is the performance of the Viola-Jones face detection and Eigenfaces face recognition algorithms when ported on to a GPU. As per \cite{fdetGPU}, a CPU-GPU cooperative implementation of the Viola-Jones face detection algorithm on GTX280 graphics card achieved speed-ups of over 20\times as compared to its implementation on the Intel Core 2 Duo CPU alone. As for Eigenfaces, it was shown by \cite{cudafrec} that a highly parallelised implementation of Eigenfaces achieved highest speedups on GeForce GTX 480 for database of 15,000 images. A speedup of 207\times was achieved for extraction of feature vectors in training process while the same for the recognition pipeline was shown to be 330\times. Overall testing process yielded a speedup of 165\times (testing over 40 images). The OpenCV implementations of both these algorithms can be modified to run on a GPGPU architecture to achieve a boost in their performance, thereby improving the performance of the proposed Multimodal Continuous Authentication System, if the parallelized implementations are considered. 
+Another notable result as published in \cite{fdetGPU,cudafrec} is the performance of the Viola-Jones face detection and Eigenfaces face recognition algorithms when ported on to a GPU. As per \cite{fdetGPU}, a CPU-GPU cooperative implementation of the Viola-Jones face detection algorithm on GTX280 graphics card achieved speed-ups of over 20$\times$ as compared to its implementation on the Intel Core 2 Duo CPU alone. As for Eigenfaces, it was shown by \cite{cudafrec} that a highly parallelised implementation of Eigenfaces achieved highest speedups on GeForce GTX 480 for database of 15,000 images. A speedup of 207$\times$ was achieved for extraction of feature vectors in training process while the same for the recognition pipeline was shown to be 330$\times$. Overall testing process yielded a speedup of 165$\times$ (testing over 40 images). The OpenCV implementations of both these algorithms can be modified to run on a GPGPU architecture to achieve a boost in their performance, thereby improving the performance of the proposed Multimodal Continuous Authentication System, if the parallelized implementations are considered. 
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Conclusion and Future enhancements
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 \section{Conclusion and Future enhancements} \label{sec:conclusion}
-\noindent{}
+In order to continuously authenticate the user, we presented an approach of alternating between two modes - Hard biometrics and Soft biometrics.
+The control flow transtitions between these modes depending on the need to re-inforce the system's belief.
+Efforts made to increase the accuracy of face recognition algorithms fail to take into account the need to continuously recognize the user throughout a session.
+The result of this was seen in section \ref{sec:results}, where the predictions made become noisy due to variations in postures, since the user is unaware of the recognition process in the background.
+By learning from temporal data using Support Vector Machines, we attenuate this noise and make confident predictions over a stretch of time.
+The framework used also provides flexibility in replacing as well as extending the current setup to include other modules by transitioning based on only confidence of each mode.
 
-\noindent{}The Multimodal Continuous Authentication System provides scope for future enhancements such as the following:
+Our future work in this field involves enhancements such as:
 \begin{itemize}
-\item Online Learning: The training of the user's face model can be improved by introducing Online Training where each time the user is authenticated with a high level of confidence, a few face images are captured and the face model is retrained.
+\item Taking advantage of the enormous speed-ups when face detection and recognition are processed on the GPU.
+\item The training of the user's face model can be improved by introducing Online Training where each time the user is authenticated with a high level of confidence, a few face images are captured and the face model is retrained.
 \item The whole system can be implemented on a distributed architecture, with the face database in a central repository and the users logging in via different nodes associated with this central repository. The Client - Server architecture may be implemented for this.
 \item The Soft Biometric Traits may be expanded to include more features such as the complexion of the user, eye colour or other facial features like facial hair. 
 \item Support for multiple users sharing a certain account; this may require a biometric handoff\cite{Klos00} to occur between users.
